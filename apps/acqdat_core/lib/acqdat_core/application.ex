@@ -7,8 +7,9 @@ defmodule AcqdatCore.Application do
 
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: AcqdatCore.Worker.start_link(arg)
-      # {AcqdatCore.Worker, arg}
+      # Start the Ecto repository
+      AcqdatCore.Repo,
+      AcqdatCore.Domain.Notification.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

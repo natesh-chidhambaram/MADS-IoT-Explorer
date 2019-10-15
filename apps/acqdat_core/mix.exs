@@ -10,25 +10,84 @@ defmodule AcqdatCore.MixProject do
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
       elixir: "~> 1.9",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      aliases: aliases(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+        ignore_warnings: ".dialyzer_ignore.exs"
+      ]
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
-      mod: {AcqdatCore.Application, []}
+      mod: {AcqdatCore.Application, []},
+      extra_applications: [:logger]
     ]
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib", "priv/repo/seed/"]
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
-      # {:sibling_app_in_umbrella, in_umbrella: true}
+      {:ecto_sql, "~> 3.2.0"},
+      {:postgrex, ">= 0.0.0"},
+
+      # auth
+      {:comeonin, "~> 4.1.1"},
+      {:argon2_elixir, "~> 1.2"},
+
+      # testing
+      {:ex_machina, "~> 2.3"},
+      {:excoveralls, "~> 0.10", only: :test},
+      {:elixir_uuid, "~> 1.2"},
+      {:timex, "~> 3.1"},
+
+      # enumeration
+      {:ecto_enum, "~> 1.2"},
+
+      # worker pool
+      {:poolboy, "~> 1.5"},
+
+      # mailer
+      {:poison, "~> 3.1"},
+      {:bamboo, github: "thoughtbot/bamboo"},
+      {:phoenix, "~> 1.4.10"},
+      {:gettext, "~> 0.11"},
+      {:phoenix_html, "~> 2.13.2"},
+
+      # Phone Number Validation
+      {:ex_phone_number, "~> 0.2"}
+    ]
+  end
+
+  defp aliases do
+    [
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      test: ["ecto.create --quiet", "ecto.migrate", "test"],
+      quality: ["format", "credo --strict", "sobelow --verbose", "dialyzer", "test"],
+      "quality.ci": [
+        "test",
+        "format --check-formatted",
+        "credo --strict",
+        "sobelow --exit",
+        "dialyzer --halt-exit-status"
+      ]
     ]
   end
 end
