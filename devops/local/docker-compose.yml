@@ -1,0 +1,30 @@
+version: "3.1"
+
+services:
+  database:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: acqdat_prod
+    
+  web:
+    build: 
+      context: ../../
+      dockerfile: ./devops/local/Dockerfile
+    restart: always
+    ports:
+      - ${APP_IOT_PORT}:${APP_IOT_PORT}
+      - ${APP_API_PORT}:${APP_API_PORT}
+    environment:
+      APP_IOT_PORT: ${APP_IOT_PORT}
+      APP_API_PORT: ${APP_API_PORT}
+      APP_HOSTNAME: ${APP_HOSTNAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      SENDGRID_KEY: ${SENDGRID_KEY}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+    depends_on:
+      - database

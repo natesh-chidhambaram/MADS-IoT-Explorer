@@ -18,6 +18,14 @@ defmodule AcqdatUmbrella.MixProject do
       dialyzer: [
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
         ignore_warnings: ".dialyzer_ignore.exs"
+      ],
+      releases: [
+        web_and_iot: [
+          applications: [
+            acqdat_api: :permanent,
+            acqdat_iot: :permanent
+          ]
+        ]
       ]
     ]
   end
