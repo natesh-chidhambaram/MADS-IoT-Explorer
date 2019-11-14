@@ -23,6 +23,7 @@ defmodule AcqdatApiWeb.Router do
 
     post "/sign-in", AuthController, :sign_in
     post "/refresh", AuthController, :refresh_token
+    resources "/sensor_type", SensorTypeController, only: [:create]
   end
 
   scope "/", AcqdatApiWeb do
