@@ -5,7 +5,7 @@ defmodule AcqdatApiWeb.AuthView do
     %{
       access_token: manifest.access_token,
       refresh_token: manifest.refresh_token,
-      user_id: manifest.user_id,
+      user_id: manifest.user_id
     }
   end
 

@@ -13,6 +13,7 @@ defmodule AcqdatCore.Domain.AccountTest do
         password: "stark1234",
         password_confirmation: "stark1234"
       }
+
       {:ok, user} = User.create(params)
       [user: user, user_params: params]
     end
@@ -24,14 +25,22 @@ defmodule AcqdatCore.Domain.AccountTest do
     end
 
     test "fails if email wrong", %{user_params: params} do
-      assert {:error, message} = Account.authenticate("xyz@gmail.com",
-        params.password)
+      assert {:error, message} =
+               Account.authenticate(
+                 "xyz@gmail.com",
+                 params.password
+               )
+
       assert message == :not_found
     end
 
     test "fails if password wrong", %{user: user} do
-      assert {:error, message} = Account.authenticate(user.email,
-        "abc123")
+      assert {:error, message} =
+               Account.authenticate(
+                 user.email,
+                 "abc123"
+               )
+
       assert message == :not_found
     end
   end

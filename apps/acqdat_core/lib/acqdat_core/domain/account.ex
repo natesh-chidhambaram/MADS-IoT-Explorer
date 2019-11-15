@@ -11,8 +11,9 @@ defmodule AcqdatCore.Domain.Account do
 
   Returns user struct if found else returns not_found.
   """
-  @spec authenticate(String.t(), String.t()) :: {:ok, UserSchema.t()}
-    | {:error, :not_found}
+  @spec authenticate(String.t(), String.t()) ::
+          {:ok, UserSchema.t()}
+          | {:error, :not_found}
   def authenticate(email, password) do
     email
     |> User.get()

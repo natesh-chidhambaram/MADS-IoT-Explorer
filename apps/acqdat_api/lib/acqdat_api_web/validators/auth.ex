@@ -5,14 +5,17 @@ defmodule AcqdatApiWeb.Validators.Auth do
 
   use Params
 
-  defparams verify_login_credentials %{
-    email!: :string,
-    password!: :string
-  }
+  defparams(
+    verify_login_credentials(%{
+      email!: :string,
+      password!: :string
+    })
+  )
 
-  defparams verify_refresh_params %{
-    access_token!: :string,
-    refresh_token!: :string
-  }
-
+  defparams(
+    verify_refresh_params(%{
+      access_token!: :string,
+      refresh_token!: :string
+    })
+  )
 end

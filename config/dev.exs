@@ -23,8 +23,7 @@ config :acqdat_api, AcqdatApiWeb.Endpoint,
   check_origin: false,
   watchers: []
 
-config :acqdat_core, AcqdatCore.Mailer,
-  adapter: Bamboo.LocalAdapter
+config :acqdat_core, AcqdatCore.Mailer, adapter: Bamboo.LocalAdapter
 
 # ## SSL Support
 #

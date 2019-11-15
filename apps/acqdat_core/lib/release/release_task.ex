@@ -5,7 +5,7 @@ defmodule AcqdatCore.ReleaseTasks do
     [:postgrex, :ecto, :logger, :ecto_sql]
     |> Enum.each(&Application.ensure_all_started/1)
 
-    AcqdatCore.Repo.start_link
+    AcqdatCore.Repo.start_link()
 
     path = Application.app_dir(:acqdat_core, "priv/repo/seeds.exs")
 

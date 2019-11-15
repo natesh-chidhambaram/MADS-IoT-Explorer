@@ -27,8 +27,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Add git
-      run: apt-get update && apt-get install -y git
+    - name: Add Build essential
+      run: apt-get update && apt-get install -y git && apt-get install -y make && apt-get -y install build-essential
     - name: Install Dependencies
       run: |
         mix local.rebar --force

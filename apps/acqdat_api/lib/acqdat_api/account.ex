@@ -33,32 +33,33 @@ defmodule AcqdatApi.Account do
   """
   @spec refresh_token(map) :: {:ok, String.t()} | {:error, String.t()}
   def refresh_token(refresh_token) do
-    case Guardian.exchange(refresh_token, "refresh",
-        "access", ttl: @access_time_hours)
-      do
-        {:ok, token, _claims} ->
-          {:ok, token}
-        {:error, _reason} = error ->
-          error
+    case Guardian.exchange(refresh_token, "refresh", "access", ttl: @access_time_hours) do
+      {:ok, token, _claims} ->
+        {:ok, token}
+
+      {:error, _reason} = error ->
+        error
     end
   end
 
   ############## private functions #####################
 
   defp verify_account({:ok, user}) do
-    {:ok, access_token, _claims} = guardian_create_token(
-      user, {@access_time_hours, :hours}, :access
-    )
+    {:ok, access_token, _claims} =
+      guardian_create_token(
+        user,
+        {@access_time_hours, :hours},
+        :access
+      )
 
-    {:ok, refresh_token, _claims} = guardian_create_token(
-      user, {@refresh_time_weeks, :weeks}, :refresh
-    )
+    {:ok, refresh_token, _claims} =
+      guardian_create_token(
+        user,
+        {@refresh_time_weeks, :weeks},
+        :refresh
+      )
 
-    {:ok, %{
-        access_token: access_token,
-        user_id: user.id,
-        refresh_token: refresh_token}
-    }
+    {:ok, %{access_token: access_token, user_id: user.id, refresh_token: refresh_token}}
   end
 
   defp verify_account({:error, _message}) do

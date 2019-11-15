@@ -8,14 +8,14 @@ defmodule AcqdatApiWeb.AuthController do
     changeset = verify_login_credentials(params)
 
     with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
-        {:login, {:ok, result}} <- {:login, Account.sign_in(data)}
-      do
-        conn
-        |> put_status(200)
-        |> render("signin.json", result)
+         {:login, {:ok, result}} <- {:login, Account.sign_in(data)} do
+      conn
+      |> put_status(200)
+      |> render("signin.json", result)
     else
       {:extract, {:error, error}} ->
         send_error(conn, 400, error)
+
       {:login, {:error, message}} ->
         send_error(conn, 200, message)
     end
@@ -25,20 +25,19 @@ defmodule AcqdatApiWeb.AuthController do
     changeset = verify_refresh_params(params)
 
     with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
-        {:refresh, {:ok, result}} <- {:refresh, Account.refresh_token(data)}
-      do
-        conn
-        |> put_status(200)
-        |> render("refresh.json", token: result)
+         {:refresh, {:ok, result}} <- {:refresh, Account.refresh_token(data)} do
+      conn
+      |> put_status(200)
+      |> render("refresh.json", token: result)
     else
       {:extract, {:error, error}} ->
         send_error(conn, 400, error)
+
       {:refresh, {:error, message}} ->
         send_error(conn, 200, message)
     end
   end
 
   def sign_out(conn, params) do
-
   end
 end

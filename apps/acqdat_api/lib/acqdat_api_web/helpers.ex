@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.Helpers do
-	@moduledoc """
+  @moduledoc """
   Generic helper functions for API application.
   """
 
@@ -15,10 +15,10 @@ defmodule AcqdatApiWeb.Helpers do
   end
 
   def extract_changeset_error(changeset) do
-		Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-			Enum.reduce(opts, msg, fn {key, value}, acc ->
-					String.replace(acc, "%{#{key}}", to_string(value))
-			end)
+    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+      Enum.reduce(opts, msg, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
     end)
   end
 

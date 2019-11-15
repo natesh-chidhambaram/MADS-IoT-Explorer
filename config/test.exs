@@ -28,7 +28,7 @@ config :acqdat_core, AcqdatCore.Repo,
   username: "postgres",
   password: "postgres",
   database: "acqdat_core_test",
-  hostname: "localhost",
+  hostname: System.get_env("DB_HOST", "localhost"),
   pool: Ecto.Adapters.SQL.Sandbox
 
 config :argon2_elixir,

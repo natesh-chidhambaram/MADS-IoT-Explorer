@@ -1,7 +1,7 @@
 defmodule AcqdatApiWeb.Router do
   use AcqdatApiWeb, :router
 
-  if Mix.env == :dev do
+  if Mix.env() == :dev do
     # If using Phoenix
     forward "/sent_emails", Bamboo.SentEmailViewerPlug
   end

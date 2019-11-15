@@ -31,21 +31,22 @@ defmodule AcqdatApiWeb.AuthControllerTest do
       data = %{email: user.email}
       conn = post(conn, Routes.auth_path(conn, :sign_in), data)
       response = conn |> json_response(400)
+
       assert response == %{
-        "errors" => %{"message" => %{"password" => ["can't be blank"]}}
-      }
+               "errors" => %{"message" => %{"password" => ["can't be blank"]}}
+             }
     end
   end
 
   describe "refresh_token/2" do
     setup :setup_user_with_conn
+
     setup %{conn: conn, user: user, user_params: params} do
       data = %{email: user.email, password: params.password}
       conn = post(conn, Routes.auth_path(conn, :sign_in), data)
       result = conn |> json_response(200)
 
-      [access_token: result["access_token"],
-        refresh_token: result["refresh_token"]]
+      [access_token: result["access_token"], refresh_token: result["refresh_token"]]
     end
 
     test "returns a new access token", context do
@@ -56,7 +57,8 @@ defmodule AcqdatApiWeb.AuthControllerTest do
   end
 
   def setup_user_with_conn(_context) do
-    params = build(:user)
+    params =
+      build(:user)
       |> Map.put(:password, "stark1234")
       |> Map.put(:password_confirmation, "stark1234")
       |> Map.from_struct()
@@ -67,7 +69,7 @@ defmodule AcqdatApiWeb.AuthControllerTest do
       build_conn()
       |> put_req_header("accept", "application/json")
       |> put_req_header("content-type", "application/json")
+
     [user: user, user_params: params, conn: conn]
   end
-
 end
