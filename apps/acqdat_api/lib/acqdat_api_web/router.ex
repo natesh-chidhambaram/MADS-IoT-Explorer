@@ -28,5 +28,7 @@ defmodule AcqdatApiWeb.Router do
 
   scope "/", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
+    post "/refresh", AuthController, :refresh_token
+    post "/sign-out", AuthController, :sign_out
   end
 end

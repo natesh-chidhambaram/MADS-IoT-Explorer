@@ -3,7 +3,8 @@ defmodule AcqdatApiWeb.ErrorHandler do
 
   def auth_error(conn, {type, _reason}, _opts) do
     conn
-    |> put_status(401)
-    |> render(AcqdatApiWeb.AuthView, "401.json", message: to_string(type))
+    |> put_status(403)
+    |> put_view(AcqdatApiWeb.ErrorView)
+    |> render("403.json", message: to_string(type))
   end
 end

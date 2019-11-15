@@ -15,11 +15,13 @@ defmodule AcqdatApiWeb.AuthView do
     }
   end
 
-  def render("delete.json", _) do
-    %{ok: true}
+  def render("signout.json", %{message: message}) do
+    %{
+      status: message
+    }
   end
 
-  def render("401.json", message) do
-    %{error: message.message}
+  def render("delete.json", _) do
+    %{ok: true}
   end
 end
