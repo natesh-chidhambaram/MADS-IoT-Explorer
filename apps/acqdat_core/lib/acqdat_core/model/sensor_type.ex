@@ -20,6 +20,10 @@ defmodule AcqdatCore.Model.SensorType do
     Repo.all(SensorType)
   end
 
+  def get_all(%{page_size: page_size, page_number: page_number}) do
+    SensorType |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+  end
+
   def get(id) when is_integer(id) do
     case Repo.get(SensorType, id) do
       nil ->

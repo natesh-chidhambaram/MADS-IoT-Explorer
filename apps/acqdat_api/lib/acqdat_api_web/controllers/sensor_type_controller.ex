@@ -7,14 +7,32 @@ defmodule AcqdatApiWeb.SensorTypeController do
 
   plug :load_sensor_type when action in [:update, :delete]
 
+  def index(conn, params) do
+    changeset = verify_index_params(params)
+
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        {:list, sensor_types} = {:list, SensorTypeModel.get_all(data)}
+
+        conn
+        |> put_status(200)
+        |> render("index.json", sensor_types)
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+    end
+  end
+
   def create(conn, params) do
     changeset = verify_sensor_type_params(params)
 
     with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
-         {:create, {:ok, result}} <- {:create, SensorType.create(data)} do
+         {:create, {:ok, sensor_type}} <- {:create, SensorType.create(data)} do
       conn
       |> put_status(200)
-      |> render("sensor_type.json", result)
+      |> render("sensor_type.json", %{sensor_type: sensor_type})
     else
       {:extract, {:error, error}} ->
         send_error(conn, 400, error)
@@ -33,7 +51,7 @@ defmodule AcqdatApiWeb.SensorTypeController do
           {:ok, sensor_type} ->
             conn
             |> put_status(200)
-            |> render("sensor_type.json", sensor_type)
+            |> render("sensor_type.json", %{sensor_type: sensor_type})
 
           {:error, sensor_type} ->
             error = extract_changeset_error(sensor_type)
@@ -45,20 +63,6 @@ defmodule AcqdatApiWeb.SensorTypeController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
-    end
-  end
-
-  def load_sensor_type(%{params: %{"id" => id}} = conn, params) do
-    {id, _} = Integer.parse(id)
-
-    case SensorTypeModel.get(id) do
-      {:ok, sensor_type} ->
-        assign(conn, :sensor_type, sensor_type)
-
-      {:error, _message} ->
-        conn
-        # need to look into this
-        |> put_status(404)
     end
   end
 
@@ -69,7 +73,7 @@ defmodule AcqdatApiWeb.SensorTypeController do
           {:ok, sensor_type} ->
             conn
             |> put_status(200)
-            |> render("sensor_type.json", sensor_type)
+            |> render("sensor_type.json", %{sensor_type: sensor_type})
 
           {:error, sensor_type} ->
             error = extract_changeset_error(sensor_type)
@@ -81,6 +85,22 @@ defmodule AcqdatApiWeb.SensorTypeController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+    end
+  end
+
+  # Private functions from here
+
+  defp load_sensor_type(%{params: %{"id" => id}} = conn, params) do
+    {id, _} = Integer.parse(id)
+
+    case SensorTypeModel.get(id) do
+      {:ok, sensor_type} ->
+        assign(conn, :sensor_type, sensor_type)
+
+      {:error, _message} ->
+        conn
+        # need to look into this
+        |> put_status(404)
     end
   end
 end
