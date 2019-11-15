@@ -9,7 +9,6 @@ defmodule AcqdatApiWeb.ErrorViewTest do
   end
 
   test "renders 500.json" do
-    assert render(AcqdatApiWeb.ErrorView, "500.json", []) ==
-             %{errors: %{message: "Server Error"}}
+    assert render(AcqdatApiWeb.ErrorView, "500.json", []) == %{errors: %{message: "Server Error"}}
   end
 end

@@ -1,13 +1,24 @@
 defmodule AcqdatApiWeb.SensorTypeView do
   use AcqdatApiWeb, :view
   alias AcqdatApiWeb.ErrorView
+  alias AcqdatApiWeb.SensorTypeView
 
-  def render("sensor_type.json", manifest) do
+  def render("sensor_type.json", %{sensor_type: sensor_type}) do
     %{
-      id: manifest.id,
-      name: manifest.name,
-      make: manifest.make,
-      identifier: manifest.identifier
+      id: sensor_type.id,
+      name: sensor_type.name,
+      make: sensor_type.make,
+      identifier: sensor_type.identifier
+    }
+  end
+
+  def render("index.json", sensor_types) do
+    %{
+      sensor_types: render_many(sensor_types.entries, SensorTypeView, "sensor_type.json"),
+      page_number: sensor_types.page_number,
+      page_size: sensor_types.page_size,
+      total_entries: sensor_types.total_entries,
+      total_pages: sensor_types.total_pages
     }
   end
 

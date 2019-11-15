@@ -14,4 +14,11 @@ defmodule AcqdatApiWeb.Validators.SensorType do
       visualizer: :string
     })
   )
+
+  defparams(
+    verify_index_params(%{
+      page_size: :integer,
+      page_number: :integer
+    })
+  )
 end
