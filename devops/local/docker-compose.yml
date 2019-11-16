@@ -26,5 +26,7 @@ services:
       DB_HOST: ${DB_HOST}
       SENDGRID_KEY: ${SENDGRID_KEY}
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      GUARDIAN_API_KEY: ${GUARDIAN_API_KEY}
+      GUARDIAN_IOT_KEY: ${GUARDIAN_IOT_KEY}
     depends_on:
       - database
