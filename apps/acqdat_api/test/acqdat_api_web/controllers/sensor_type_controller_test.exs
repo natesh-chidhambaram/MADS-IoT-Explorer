@@ -83,6 +83,26 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
       assert Map.has_key?(response, "id")
       assert Map.has_key?(response, "make")
     end
+
+    test "fails if require headers are missing", context do
+      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
+      conn =
+        build_conn()
+        |> put_req_header("authorization", "Bearer #{refresh_token}")
+      data = %{name: params.name, make: params.make, visualizer: params.visualizer, identifier: params.identifier, value_keys: params.value_keys}
+      conn = post(conn, Routes.sensor_type_path(conn, :create), data)
+      response  = conn |> json_response(200)
+      %{ "id" => id} = response
+      context = Map.put(context,:refresh_token, "avcbd123489u")
+      %{refresh_token: refresh_token} = context
+      conn =
+        build_conn()
+        |> put_req_header("authorization", "Bearer #{refresh_token}")
+      data = Map.put(data, :name, "Sensor76")
+      conn = put(conn, Routes.sensor_type_path(conn, :update, id), data)  
+      result = conn |> json_response(403)
+      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+    end
   end
 
   describe "delete/2" do
@@ -103,6 +123,25 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
       assert Map.has_key?(response, "identifier")
       assert Map.has_key?(response, "id")
       assert Map.has_key?(response, "make")
+    end
+
+    test "fails if require headers are missing", context do
+      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
+      conn =
+        build_conn()
+        |> put_req_header("authorization", "Bearer #{refresh_token}")
+      data = %{name: params.name, make: params.make, visualizer: params.visualizer, identifier: params.identifier, value_keys: params.value_keys}
+      conn = post(conn, Routes.sensor_type_path(conn, :create), data)
+      response  = conn |> json_response(200)
+      %{ "id" => id} = response
+      context = Map.put(context,:refresh_token, "avcbd123489u")
+      %{refresh_token: refresh_token} = context
+      conn =
+        build_conn()
+        |> put_req_header("authorization", "Bearer #{refresh_token}")
+      conn = delete(conn, Routes.sensor_type_path(conn, :delete, id), data)
+      result = conn |> json_response(403)
+      assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
   end
 
