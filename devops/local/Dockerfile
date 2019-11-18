@@ -24,6 +24,8 @@ RUN mix local.hex --force && \
 RUN mkdir /app
 WORKDIR /app
 
+ADD http://api.geonames.org/timezoneJSON?formatted=true&lat=47.01&lng=10.2&username=demo&style=full /tmp/bustcache
+
 # Copy over all the necessary application files and directories
 # for umbrella
 COPY mix.exs .
