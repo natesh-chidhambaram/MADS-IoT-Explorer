@@ -99,7 +99,6 @@ defmodule AcqdatApiWeb.SensorTypeController do
 
       {:error, _message} ->
         conn
-        # need to look into this
         |> put_status(404)
     end
   end
