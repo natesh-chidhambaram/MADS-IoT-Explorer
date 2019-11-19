@@ -47,7 +47,10 @@ defmodule AcqdatApi.MixProject do
       {:guardian, "~> 2.0"},
 
       # validation api params
-      {:params, "~> 2.0"}
+      {:params, "~> 2.0"},
+
+      # cors
+      {:corsica, "~> 1.0"}
     ]
   end
 end
