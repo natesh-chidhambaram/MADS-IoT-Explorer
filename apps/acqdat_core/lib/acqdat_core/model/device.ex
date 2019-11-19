@@ -1,4 +1,5 @@
 defmodule AcqdatCore.Model.Device do
+  import Ecto.Query
   alias AcqdatCore.Schema.Device
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Sensor
@@ -36,6 +37,10 @@ defmodule AcqdatCore.Model.Device do
 
   def get_all() do
     Repo.all(Device)
+  end
+
+  def get_all(%{page_size: page_size, page_number: page_number}) do
+    Device |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
   end
 
   def delete(id) do
