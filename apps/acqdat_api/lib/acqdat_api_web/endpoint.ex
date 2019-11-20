@@ -58,5 +58,6 @@ defmodule AcqdatApiWeb.Endpoint do
     key: "_acqdat_api_key",
     signing_salt: "mrmJ4v60"
 
+  plug(AcqdatApiWeb.Plug.CORS)
   plug AcqdatApiWeb.Router
 end
