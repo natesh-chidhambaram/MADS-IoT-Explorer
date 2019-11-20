@@ -1,4 +1,4 @@
-defmodule AcqdatApiWeb.SensorTypeControllerTest do
+defmodule AcqdatApiWeb.DeviceControllerTest do
   use ExUnit.Case, async: true
   use AcqdatApiWeb.ConnCase
   use AcqdatCore.DataCase
@@ -7,50 +7,48 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
 
   describe "create/2" do
     setup :setup_conn
-
-    test "sensor type create", %{conn: conn} do
-      sensor_type_manifest = build(:sensor_type)
-
+    
+    test "device create", %{conn: conn} do
+      device_manifest = build(:device)
+      
       data = %{
-        name: sensor_type_manifest.name,
-        make: sensor_type_manifest.make,
-        visualizer: sensor_type_manifest.visualizer,
-        identifier: sensor_type_manifest.identifier,
-        value_keys: sensor_type_manifest.value_keys
+        name: device_manifest.name,
+        access_token: device_manifest.access_token,
+        description: device_manifest.description,
+        uuid: device_manifest.uuid        
       }
 
-      conn = post(conn, Routes.sensor_type_path(conn, :create), data)
+      conn = post(conn, Routes.device_path(conn, :create), data)
       response = conn |> json_response(200)
       assert Map.has_key?(response, "name")
-      assert Map.has_key?(response, "identifier")
-      assert Map.has_key?(response, "id")
-      assert Map.has_key?(response, "make")
+      assert Map.has_key?(response, "access_token")
+      assert Map.has_key?(response, "description")
+      assert Map.has_key?(response, "uuid")
     end
 
     test "fails if authorization header not found", %{conn: conn} do
-      bad_access_token = "avcbd123489u"
+      bad_access_token = "qwerty1234567uiop"
 
       conn =
         conn
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
       data = %{}
-      conn = post(conn, Routes.sensor_type_path(conn, :create), data)
+      conn = post(conn, Routes.device_path(conn, :create), data)
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
 
     test "fails if sent params are not unique", %{conn: conn} do
-      sensor_type = insert(:sensor_type)  
+      device = insert(:device)  
       data = %{
-        name: sensor_type.name,
-        make: sensor_type.make,
-        visualizer: sensor_type.visualizer,
-        identifier: sensor_type.identifier,
-        value_keys: sensor_type.value_keys
+        name: device.name,
+        access_token: device.access_token,
+        description: device.description,
+        uuid: device.uuid   
       }
 
-      conn = post(conn, Routes.sensor_type_path(conn, :create), data)
+      conn = post(conn, Routes.device_path(conn, :create), data)
       response = conn |> json_response(400)
 
       assert response == %{
@@ -61,15 +59,13 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
     end
 
     test "fails if required params are missing", %{conn: conn} do
-      conn = post(conn, Routes.sensor_type_path(conn, :create), %{})
+      conn = post(conn, Routes.device_path(conn, :create), %{})
       response = conn |> json_response(400)
-
       assert response == %{
                "errors" => %{
                  "message" => %{
                    "name" => ["can't be blank"],
-                   "identifier" => ["can't be blank"],
-                   "value_keys" => ["can't be blank"]
+                   "access_token" => ["can't be blank"]
                  }
                }
              }
@@ -79,29 +75,29 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
   describe "update/2" do
     setup :setup_conn
 
-    test "sensor type update", %{conn: conn} do
-      sensor_type = insert(:sensor_type)
-      data = Map.put(%{}, :name, "Sensor76")
+    test "device update", %{conn: conn} do
+      device = insert(:device)
+      data = Map.put(%{}, :name, "Water Plant")
 
-      conn = put(conn, Routes.sensor_type_path(conn, :update, sensor_type.id), data)
+      conn = put(conn, Routes.device_path(conn, :update, device.id), data)
       response = conn |> json_response(200)
 
       assert Map.has_key?(response, "name")
-      assert Map.has_key?(response, "identifier")
-      assert Map.has_key?(response, "id")
-      assert Map.has_key?(response, "make")
+      assert Map.has_key?(response, "access_token")
+      assert Map.has_key?(response, "description")
+      assert Map.has_key?(response, "uuid")
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do
-      bad_access_token = "avcbd123489u"
-      sensor_type = insert(:sensor_type)
+      bad_access_token = "qwerty12345678qwer"
+      device = insert(:device)
 
       conn =
         conn
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-      data = Map.put(%{}, :name, "Sensor76")
-      conn = put(conn, Routes.sensor_type_path(conn, :update, sensor_type.id), data)
+      data = Map.put(%{}, :name, "Water Plant")
+      conn = put(conn, Routes.device_path(conn, :update, device.id), data)
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
@@ -111,48 +107,48 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
     setup :setup_conn
 
     test "Big page size", %{conn: conn} do
-      insert_list(3, :sensor_type)
+      insert_list(3, :device)
 
       params = %{
         "page_size" => 100,
         "page_number" => 1
       }
 
-      conn = get(conn, Routes.sensor_type_path(conn, :index, params))
+      conn = get(conn, Routes.device_path(conn, :index, params))
       response = conn |> json_response(200)
       assert response["page_number"] == params["page_number"]
       assert response["page_size"] == params["page_size"]
       assert response["total_pages"] == 1
-      assert length(response["sensor_types"]) == response["total_entries"]
+      assert length(response["devices"]) == response["total_entries"]
     end
 
     test "Pagination", %{conn: conn} do
-      insert_list(3, :sensor_type)
+      insert_list(3, :device)
 
       params = %{
         "page_size" => 2,
         "page_number" => 1
       }
 
-      conn = get(conn, Routes.sensor_type_path(conn, :index, params))
+      conn = get(conn, Routes.device_path(conn, :index, params))
       page1_response = conn |> json_response(200)
       assert page1_response["page_number"] == params["page_number"]
       assert page1_response["page_size"] == params["page_size"]
       assert page1_response["total_pages"] == 2
-      assert length(page1_response["sensor_types"]) == page1_response["page_size"]
+      assert length(page1_response["devices"]) == page1_response["page_size"]
 
       params = Map.put(params, "page_number", 2)
-      conn = get(conn, Routes.sensor_type_path(conn, :index, params))
+      conn = get(conn, Routes.device_path(conn, :index, params))
       page2_response = conn |> json_response(200)
 
       assert page2_response["page_number"] == params["page_number"]
       assert page2_response["page_size"] == params["page_size"]
       assert page2_response["total_pages"] == 2
-      assert length(page2_response["sensor_types"]) == 1
+      assert length(page2_response["devices"]) == 1
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do
-      bad_access_token = "avcbd12 3489u"
+      bad_access_token = "qwerty1234567qwerty12"
 
       conn =
         conn
@@ -163,7 +159,7 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
         "page_number" => 1
       }
 
-      conn = get(conn, Routes.sensor_type_path(conn, :index, params))
+      conn = get(conn, Routes.device_path(conn, :index, params))
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
@@ -172,26 +168,26 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
   describe "delete/2" do
     setup :setup_conn
 
-    test "sensor type delete", %{conn: conn} do
-      sensor_type = insert(:sensor_type)
+    test "device delete", %{conn: conn} do
+      device = insert(:device)
 
-      conn = delete(conn, Routes.sensor_type_path(conn, :delete, sensor_type.id), %{})
+      conn = delete(conn, Routes.device_path(conn, :delete, device.id), %{})
       response = conn |> json_response(200)
       assert Map.has_key?(response, "name")
-      assert Map.has_key?(response, "identifier")
-      assert Map.has_key?(response, "id")
-      assert Map.has_key?(response, "make")
+      assert Map.has_key?(response, "access_token")
+      assert Map.has_key?(response, "description")
+      assert Map.has_key?(response, "uuid")
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do
-      sensor_type = insert(:sensor_type)
-      bad_access_token = "avcbd123489u"
+      device = insert(:device)
+      bad_access_token = "qwerty1234567qwerty"
 
       conn =
         conn
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-      conn = delete(conn, Routes.sensor_type_path(conn, :delete, sensor_type.id), %{})
+      conn = delete(conn, Routes.device_path(conn, :delete, device.id), %{})
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
@@ -209,7 +205,7 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
     conn = post(conn, Routes.auth_path(conn, :sign_in), sign_in_data)
     result = conn |> json_response(200)
     access_token = result["access_token"]
-
+    
     conn =
       build_conn()
       |> put_req_header("accept", "application/json")
