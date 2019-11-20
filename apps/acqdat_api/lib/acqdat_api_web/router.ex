@@ -28,6 +28,6 @@ defmodule AcqdatApiWeb.Router do
     post "/refresh", AuthController, :refresh_token
     post "/sign-out", AuthController, :sign_out
     resources "/sensor_type", SensorTypeController, only: [:create, :update, :delete, :index]
-    resources "/device", DeviceController, only: [:create, :update, :delete, :index] 
+    resources "/device", DeviceController, only: [:create, :update, :delete, :index]
   end
 end

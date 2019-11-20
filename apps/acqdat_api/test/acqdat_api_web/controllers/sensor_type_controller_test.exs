@@ -41,7 +41,8 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
     end
 
     test "fails if sent params are not unique", %{conn: conn} do
-      sensor_type = insert(:sensor_type)  
+      sensor_type = insert(:sensor_type)
+
       data = %{
         name: sensor_type.name,
         make: sensor_type.make,

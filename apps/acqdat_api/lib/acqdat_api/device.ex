@@ -22,11 +22,11 @@ defmodule AcqdatApi.Device do
   defp verify_device({:ok, device}) do
     {:ok,
      %{
-      id: device.id, 
-      name: device.name,
-      access_token: device.access_token,
-      description: device.description,
-      uuid: device.uuid
+       id: device.id,
+       name: device.name,
+       access_token: device.access_token,
+       description: device.description,
+       uuid: device.uuid
      }}
   end
 

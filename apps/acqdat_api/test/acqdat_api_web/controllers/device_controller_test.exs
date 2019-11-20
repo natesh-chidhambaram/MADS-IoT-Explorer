@@ -7,15 +7,15 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
 
   describe "create/2" do
     setup :setup_conn
-    
+
     test "device create", %{conn: conn} do
       device_manifest = build(:device)
-      
+
       data = %{
         name: device_manifest.name,
         access_token: device_manifest.access_token,
         description: device_manifest.description,
-        uuid: device_manifest.uuid        
+        uuid: device_manifest.uuid
       }
 
       conn = post(conn, Routes.device_path(conn, :create), data)
@@ -40,12 +40,13 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
     end
 
     test "fails if sent params are not unique", %{conn: conn} do
-      device = insert(:device)  
+      device = insert(:device)
+
       data = %{
         name: device.name,
         access_token: device.access_token,
         description: device.description,
-        uuid: device.uuid   
+        uuid: device.uuid
       }
 
       conn = post(conn, Routes.device_path(conn, :create), data)
@@ -61,6 +62,7 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
     test "fails if required params are missing", %{conn: conn} do
       conn = post(conn, Routes.device_path(conn, :create), %{})
       response = conn |> json_response(400)
+
       assert response == %{
                "errors" => %{
                  "message" => %{
@@ -205,7 +207,7 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
     conn = post(conn, Routes.auth_path(conn, :sign_in), sign_in_data)
     result = conn |> json_response(200)
     access_token = result["access_token"]
-    
+
     conn =
       build_conn()
       |> put_req_header("accept", "application/json")

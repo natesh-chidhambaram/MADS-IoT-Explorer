@@ -13,7 +13,6 @@ defmodule AcqdatApiWeb.DeviceView do
     }
   end
 
-
   def render("index.json", device) do
     %{
       devices: render_many(device.entries, DeviceView, "device.json"),

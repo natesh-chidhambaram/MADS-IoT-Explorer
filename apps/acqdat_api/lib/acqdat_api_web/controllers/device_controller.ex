@@ -27,19 +27,19 @@ defmodule AcqdatApiWeb.DeviceController do
 
   def create(conn, params) do
     changeset = verify_device_params(params)
-    
+
     with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
-          {:create, {:ok, device}} <- {:create, Device.create(data)} do
+         {:create, {:ok, device}} <- {:create, Device.create(data)} do
       conn
-        |> put_status(200)
-        |> render("device.json", %{device: device})
+      |> put_status(200)
+      |> render("device.json", %{device: device})
     else
       {:extract, {:error, error}} ->
         send_error(conn, 400, error)
-    
+
       {:create, {:error, message}} ->
         send_error(conn, 400, message)
-    end       
+    end
   end
 
   def update(conn, params) do
@@ -65,7 +65,6 @@ defmodule AcqdatApiWeb.DeviceController do
         |> send_error(404, "Resource Not Found")
     end
   end
-
 
   def delete(conn, %{"id" => id} = params) do
     case conn.status do

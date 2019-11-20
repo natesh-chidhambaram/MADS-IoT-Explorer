@@ -6,9 +6,9 @@ defmodule AcqdatApiWeb.Validators.Device do
       name!: :string,
       access_token!: :string,
       description: :string
-      })
+    })
   )
-  
+
   defparams(
     verify_index_params(%{
       page_size: :integer,
