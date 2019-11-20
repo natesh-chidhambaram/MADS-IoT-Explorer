@@ -33,7 +33,7 @@ defmodule AcqdatCore.MixProject do
   def application do
     [
       mod: {AcqdatCore.Application, []},
-      extra_applications: [:logger]
+      extra_applications: [:logger, :scrivener_ecto]
     ]
   end
 
@@ -50,6 +50,9 @@ defmodule AcqdatCore.MixProject do
       # auth
       {:comeonin, "~> 4.1.1"},
       {:argon2_elixir, "~> 1.2"},
+
+      # Pagination
+      {:scrivener_ecto, "~> 2.0"},
 
       # testing
       {:ex_machina, "~> 2.3"},
