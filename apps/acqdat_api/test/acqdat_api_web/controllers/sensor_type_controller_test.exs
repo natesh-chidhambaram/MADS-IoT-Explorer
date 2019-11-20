@@ -2,26 +2,21 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
   use ExUnit.Case, async: true
   use AcqdatApiWeb.ConnCase
   use AcqdatCore.DataCase
-  alias AcqdatCore.Model.SensorType
   alias AcqdatCore.Model.User
   import AcqdatCore.Support.Factory
 
   describe "create/2" do
-    setup :setup_sensor_type_with_conn
+    setup :setup_conn
 
-    test "sensor type create", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
-
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
+    test "sensor type create", %{conn: conn} do
+      sensor_type_manifest = build(:sensor_type)
 
       data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
+        name: sensor_type_manifest.name,
+        make: sensor_type_manifest.make,
+        visualizer: sensor_type_manifest.visualizer,
+        identifier: sensor_type_manifest.identifier,
+        value_keys: sensor_type_manifest.value_keys
       }
 
       conn = post(conn, Routes.sensor_type_path(conn, :create), data)
@@ -32,43 +27,30 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
       assert Map.has_key?(response, "make")
     end
 
-    test "fails if authorization header not found", context do
-      context = Map.put(context, :refresh_token, "avcbd123489u")
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
+    test "fails if authorization header not found", %{conn: conn} do
+      bad_access_token = "avcbd123489u"
 
       conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-      data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
-      }
-
+      data = %{}
       conn = post(conn, Routes.sensor_type_path(conn, :create), data)
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
 
-    test "fails if required headers are not unique", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
-
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
+    test "fails if sent params are not unique", %{conn: conn} do
+      sensor_type = insert(:sensor_type)
 
       data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
+        name: sensor_type.name,
+        make: sensor_type.make,
+        visualizer: sensor_type.visualizer,
+        identifier: sensor_type.identifier,
+        value_keys: sensor_type.value_keys
       }
 
-      conn = post(conn, Routes.sensor_type_path(conn, :create), data)
       conn = post(conn, Routes.sensor_type_path(conn, :create), data)
       response = conn |> json_response(400)
 
@@ -79,80 +61,47 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
              }
     end
 
-    test "fails if require headers are missing", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
-
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
-
-      data = %{
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
-      }
-
-      conn = post(conn, Routes.sensor_type_path(conn, :create), data)
+    test "fails if required params are missing", %{conn: conn} do
+      conn = post(conn, Routes.sensor_type_path(conn, :create), %{})
       response = conn |> json_response(400)
-      assert response == %{"errors" => %{"message" => %{"name" => ["can't be blank"]}}}
+
+      assert response == %{
+               "errors" => %{
+                 "message" => %{
+                   "name" => ["can't be blank"],
+                   "identifier" => ["can't be blank"],
+                   "value_keys" => ["can't be blank"]
+                 }
+               }
+             }
     end
   end
 
   describe "update/2" do
-    setup :setup_sensor_type_with_conn
+    setup :setup_conn
 
-    test "sensor type update", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
+    test "sensor type update", %{conn: conn} do
+      sensor_type = insert(:sensor_type)
+      data = Map.put(%{}, :name, "Sensor76")
 
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
-
-      data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
-      }
-
-      {:ok, sensor_type} = SensorType.create(data)
-
-      data = Map.put(data, :name, "Sensor76")
       conn = put(conn, Routes.sensor_type_path(conn, :update, sensor_type.id), data)
       response = conn |> json_response(200)
+
       assert Map.has_key?(response, "name")
       assert Map.has_key?(response, "identifier")
       assert Map.has_key?(response, "id")
       assert Map.has_key?(response, "make")
     end
 
-    test "fails if require headers are missing", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
+    test "fails if invalid token in authorization header", %{conn: conn} do
+      bad_access_token = "avcbd123489u"
+      sensor_type = insert(:sensor_type)
 
       conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-      data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
-      }
-
-      {:ok, sensor_type} = SensorType.create(data)
-
-      context = Map.put(context, :refresh_token, "avcbd123489u")
-      %{refresh_token: refresh_token} = context
-
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
-
-      data = Map.put(data, :name, "Sensor76")
+      data = Map.put(%{}, :name, "Sensor76")
       conn = put(conn, Routes.sensor_type_path(conn, :update, sensor_type.id), data)
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
@@ -160,32 +109,10 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
   end
 
   describe "index/2" do
-    setup :setup_sensor_type_with_conn
+    setup :setup_conn
 
-    test "Big page size", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
-
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
-
-      data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
-      }
-
-      {:ok, sensor_type1} = SensorType.create(data)
-
-      data = Map.put(data, :name, "Sensor10001")
-      data = Map.put(data, :identifier, "Sensor10001")
-      {:ok, sensor_type2} = SensorType.create(data)
-
-      data = Map.put(data, :name, "Sensor1002")
-      data = Map.put(data, :identifier, "Sensor1002")
-      {:ok, sensor_type3} = SensorType.create(data)
+    test "Big page size", %{conn: conn} do
+      insert_list(3, :sensor_type)
 
       params = %{
         "page_size" => 100,
@@ -200,30 +127,8 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
       assert length(response["sensor_types"]) == response["total_entries"]
     end
 
-    test "Pagination", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
-
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
-
-      data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
-      }
-
-      {:ok, sensor_type1} = SensorType.create(data)
-
-      data = Map.put(data, :name, "Sensor10001")
-      data = Map.put(data, :identifier, "Sensor10001")
-      {:ok, sensor_type2} = SensorType.create(data)
-
-      data = Map.put(data, :name, "Sensor1002")
-      data = Map.put(data, :identifier, "Sensor1002")
-      {:ok, sensor_type3} = SensorType.create(data)
+    test "Pagination", %{conn: conn} do
+      insert_list(3, :sensor_type)
 
       params = %{
         "page_size" => 2,
@@ -237,68 +142,41 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
       assert page1_response["total_pages"] == 2
       assert length(page1_response["sensor_types"]) == page1_response["page_size"]
 
-      params = Map.put(params, :page_number, 2)
-
+      params = Map.put(params, "page_number", 2)
+      conn = get(conn, Routes.sensor_type_path(conn, :index, params))
       page2_response = conn |> json_response(200)
+
       assert page2_response["page_number"] == params["page_number"]
       assert page2_response["page_size"] == params["page_size"]
       assert page2_response["total_pages"] == 2
-      assert length(page2_response["sensor_types"]) == 2
+      assert length(page2_response["sensor_types"]) == 1
     end
 
-    test "fails if require headers are missing", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
+    test "fails if invalid token in authorization header", %{conn: conn} do
+      bad_access_token = "avcbd12 3489u"
 
       conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-      data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
+      params = %{
+        "page_size" => 2,
+        "page_number" => 1
       }
 
-      conn = post(conn, Routes.sensor_type_path(conn, :create), data)
-      response = conn |> json_response(200)
-      %{"id" => id} = response
-      context = Map.put(context, :refresh_token, "avcbd123489u")
-      %{refresh_token: refresh_token} = context
-
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
-
-      data = Map.put(data, :name, "Sensor76")
-      conn = put(conn, Routes.sensor_type_path(conn, :update, id), data)
+      conn = get(conn, Routes.sensor_type_path(conn, :index, params))
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
   end
 
   describe "delete/2" do
-    setup :setup_sensor_type_with_conn
+    setup :setup_conn
 
-    test "sensor type delete", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
+    test "sensor type delete", %{conn: conn} do
+      sensor_type = insert(:sensor_type)
 
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
-
-      data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
-      }
-
-      {:ok, sensor_type} = SensorType.create(data)
-
-      conn = delete(conn, Routes.sensor_type_path(conn, :delete, sensor_type.id), data)
+      conn = delete(conn, Routes.sensor_type_path(conn, :delete, sensor_type.id), %{})
       response = conn |> json_response(200)
       assert Map.has_key?(response, "name")
       assert Map.has_key?(response, "identifier")
@@ -306,65 +184,39 @@ defmodule AcqdatApiWeb.SensorTypeControllerTest do
       assert Map.has_key?(response, "make")
     end
 
-    test "fails if required headers are missing", context do
-      %{sensor_type_params: params, conn: conn, refresh_token: refresh_token} = context
+    test "fails if invalid token in authorization header", %{conn: conn} do
+      sensor_type = insert(:sensor_type)
+      bad_access_token = "avcbd123489u"
 
       conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-      data = %{
-        name: params.name,
-        make: params.make,
-        visualizer: params.visualizer,
-        identifier: params.identifier,
-        value_keys: params.value_keys
-      }
-
-      {:ok, sensor_type} = SensorType.create(data)
-
-      context = Map.put(context, :refresh_token, "avcbd123489u")
-      %{refresh_token: refresh_token} = context
-
-      conn =
-        build_conn()
-        |> put_req_header("authorization", "Bearer #{refresh_token}")
-
-      conn = delete(conn, Routes.sensor_type_path(conn, :delete, sensor_type.id), data)
+      conn = delete(conn, Routes.sensor_type_path(conn, :delete, sensor_type.id), %{})
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
   end
 
-  def setup_sensor_type_with_conn(_context) do
-    sign_up_params =
+  def setup_conn(%{conn: conn}) do
+    params =
       build(:user)
-      |> Map.put(:email, "ayoushchourasia@gmail.com")
-      |> Map.put(:password, "Qwerty123@")
-      |> Map.put(:password_confirmation, "Qwerty123@")
+      |> Map.put(:password, "stark1234")
+      |> Map.put(:password_confirmation, "stark1234")
       |> Map.from_struct()
 
-    {:ok, user} = User.create(sign_up_params)
-
-    sign_in_data = %{email: "ayoushchourasia@gmail.com", password: "Qwerty123@"}
+    {:ok, user} = User.create(params)
+    sign_in_data = %{email: user.email, password: params.password}
     conn = post(conn, Routes.auth_path(conn, :sign_in), sign_in_data)
     result = conn |> json_response(200)
-    refresh_token = result["refresh_token"]
-
-    params =
-      build(:sensor_type)
-      |> Map.put(:name, "Sensor#{Enum.random(0..100)}")
-      |> Map.put(:make, "Hitachi")
-      |> Map.put(:visualizer, "Chart")
-      |> Map.put(:identifier, "MP09SX2218")
-      |> Map.put(:value_keys, ["gx", "gy", "gz"])
-      |> Map.from_struct()
+    access_token = result["access_token"]
 
     conn =
       build_conn()
       |> put_req_header("accept", "application/json")
       |> put_req_header("content-type", "application/json")
+      |> put_req_header("authorization", "Bearer #{access_token}")
 
-    [sensor_type_params: params, conn: conn, refresh_token: refresh_token]
+    [conn: conn]
   end
 end

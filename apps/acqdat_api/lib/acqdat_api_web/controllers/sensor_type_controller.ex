@@ -66,7 +66,7 @@ defmodule AcqdatApiWeb.SensorTypeController do
     end
   end
 
-  def delete(conn, %{"id" => id} = params) do
+  def delete(conn, %{"id" => id}) do
     case conn.status do
       nil ->
         case SensorTypeModel.delete(id) do
@@ -88,9 +88,9 @@ defmodule AcqdatApiWeb.SensorTypeController do
     end
   end
 
-  # Private functions from here
+  ############################ Private functions ########################
 
-  defp load_sensor_type(%{params: %{"id" => id}} = conn, params) do
+  defp load_sensor_type(%{params: %{"id" => id}} = conn, _params) do
     {id, _} = Integer.parse(id)
 
     case SensorTypeModel.get(id) do
