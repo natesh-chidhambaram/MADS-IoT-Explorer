@@ -66,7 +66,7 @@ defmodule AcqdatApiWeb.DeviceController do
     end
   end
 
-  def delete(conn, %{"id" => id} = params) do
+  def delete(conn, %{"id" => id}) do
     case conn.status do
       nil ->
         case DeviceModel.delete(id) do
@@ -88,7 +88,7 @@ defmodule AcqdatApiWeb.DeviceController do
     end
   end
 
-  defp load_device(%{params: %{"id" => id}} = conn, params) do
+  defp load_device(%{params: %{"id" => id}} = conn, _params) do
     {id, _} = Integer.parse(id)
 
     case DeviceModel.get(id) do
