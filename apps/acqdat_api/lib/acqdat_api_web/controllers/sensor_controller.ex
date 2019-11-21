@@ -17,6 +17,7 @@ defmodule AcqdatApiWeb.SensorController do
       nil ->
         {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
         {:list, sensor} = {:list, SensorModel.get_all(data)}
+
         conn
         |> put_status(200)
         |> render("index.json", sensor)
@@ -31,6 +32,7 @@ defmodule AcqdatApiWeb.SensorController do
     case conn.status do
       nil ->
         changeset = verify_sensor_params(params)
+
         with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
              {:create, {:ok, sensor}} <- {:create, Sensor.create(data)} do
           conn
@@ -43,16 +45,18 @@ defmodule AcqdatApiWeb.SensorController do
           {:create, {:error, message}} ->
             send_error(conn, 400, message)
         end
+
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
     end
   end
-  
+
   def update(conn, params) do
     case conn.status do
       nil ->
         %{assigns: %{sensor: sensor}} = conn
+
         case SensorModel.update(sensor, params) do
           {:ok, sensor} ->
             conn
@@ -107,7 +111,10 @@ defmodule AcqdatApiWeb.SensorController do
     end
   end
 
-  defp load_device_and_sensor_type(%{params: %{"device_id" => device_id, "sensor_type_id" => sensor_type_id}} = conn, _params) do
+  defp load_device_and_sensor_type(
+         %{params: %{"device_id" => device_id, "sensor_type_id" => sensor_type_id}} = conn,
+         _params
+       ) do
     {device_id, _} = Integer.parse(device_id)
     {sensor_type_id, _} = Integer.parse(sensor_type_id)
 
@@ -117,14 +124,15 @@ defmodule AcqdatApiWeb.SensorController do
           {:ok, sensor_type} ->
             sensor_type = Map.put(sensor_type, :device, device)
             assign(conn, :sensor_type, sensor_type)
-    
+
           {:error, _message} ->
             conn
             |> put_status(404)
         end
+
       {:error, _message} ->
         conn
         |> put_status(404)
-    end    
+    end
   end
 end
