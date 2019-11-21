@@ -29,5 +29,6 @@ defmodule AcqdatApiWeb.Router do
     post "/sign-out", AuthController, :sign_out
     resources "/sensor_type", SensorTypeController, only: [:create, :update, :delete, :index]
     resources "/device", DeviceController, only: [:create, :update, :delete, :index]
+    resources "/sensor", SensorController, only: [:create, :update, :delete, :index]
   end
 end

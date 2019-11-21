@@ -18,6 +18,10 @@ defmodule AcqdatCore.Model.Sensor do
     end
   end
 
+  def get_all(%{page_size: page_size, page_number: page_number}) do
+    Sensor |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+  end
+
   def get(query) when is_map(query) do
     case Repo.get_by(Sensor, query) do
       nil ->
