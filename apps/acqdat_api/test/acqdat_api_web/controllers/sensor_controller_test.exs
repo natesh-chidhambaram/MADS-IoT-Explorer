@@ -16,7 +16,7 @@ defmodule AcqdatApiWeb.SensorControllerTest do
 
       data = %{
         name: sensor_manifest.name,
-        uuid: sensor_manifest.uuid  
+        uuid: sensor_manifest.uuid
       }
 
       params = %{
@@ -71,12 +71,14 @@ defmodule AcqdatApiWeb.SensorControllerTest do
 
     test "fails if required params are missing", %{conn: conn} do
       sensor = insert(:sensor)
+
       params = %{
         device_id: sensor.device_id,
         sensor_type_id: sensor.sensor_type_id
       }
+
       conn = post(conn, Routes.sensor_path(conn, :create, params), %{})
-      
+
       response = conn |> json_response(400)
 
       assert response == %{
@@ -98,7 +100,7 @@ defmodule AcqdatApiWeb.SensorControllerTest do
 
       conn = put(conn, Routes.sensor_path(conn, :update, sensor.id), data)
       response = conn |> json_response(200)
-      
+
       assert Map.has_key?(response, "device_id")
       assert Map.has_key?(response, "name")
       assert Map.has_key?(response, "id")
@@ -211,7 +213,7 @@ defmodule AcqdatApiWeb.SensorControllerTest do
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
   end
-  
+
   def setup_conn(%{conn: conn}) do
     params =
       build(:user)
