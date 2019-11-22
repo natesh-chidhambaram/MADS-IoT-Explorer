@@ -1,6 +1,5 @@
 defmodule AcqdatApiWeb.SensorView do
   use AcqdatApiWeb, :view
-  alias AcqdatApiWeb.ErrorView
   alias AcqdatApiWeb.SensorView
 
   def render("sensor.json", %{sensor: sensor}) do
