@@ -155,6 +155,27 @@ defmodule AcqdatApiWeb.SensorControllerTest do
   describe "index/2" do
     setup :setup_conn
 
+    test "Sensor Data", %{conn: conn} do
+      test_sensor = insert(:sensor)
+
+      params = %{
+        "page_size" => 100,
+        "page_number" => 1
+      }
+
+      conn = get(conn, Routes.sensor_path(conn, :index, params))
+      response = conn |> json_response(200)
+      assert length(response["sensors"]) == 1
+      assertion_sensor = List.first(response["sensors"])
+      assert assertion_sensor["id"] == test_sensor.id
+      assert assertion_sensor["device_id"] == test_sensor.device_id
+      assert assertion_sensor["device"]["id"] == test_sensor.device.id
+      assert assertion_sensor["device"]["name"] == test_sensor.device.name
+      assert assertion_sensor["sensor_type_id"] == test_sensor.sensor_type_id
+      assert assertion_sensor["sensor_type"]["id"] == test_sensor.sensor_type.id
+      assert assertion_sensor["sensor_type"]["name"] == test_sensor.sensor_type.name
+    end
+
     test "Big page size", %{conn: conn} do
       insert_list(3, :sensor)
 

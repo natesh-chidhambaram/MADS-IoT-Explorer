@@ -16,7 +16,7 @@ defmodule AcqdatApiWeb.SensorController do
     case conn.status do
       nil ->
         {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
-        {:list, sensor} = {:list, SensorModel.get_all(data)}
+        {:list, sensor} = {:list, SensorModel.get_all(data, [:sensor_type, :device])}
 
         conn
         |> put_status(200)
