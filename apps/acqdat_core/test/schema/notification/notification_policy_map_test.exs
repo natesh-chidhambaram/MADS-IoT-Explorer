@@ -33,7 +33,7 @@ defmodule AcqdatCore.Notification.PolicyMapTest do
 
   describe "policies" do
     test "returns all notification policies" do
-      policy_list = PolicyMap.policies()
+      _policy_list = PolicyMap.policies()
     end
   end
 end

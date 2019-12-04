@@ -2,7 +2,6 @@ defmodule AcqdatApiWeb.SensorControllerTest do
   use ExUnit.Case, async: true
   use AcqdatApiWeb.ConnCase
   use AcqdatCore.DataCase
-  alias AcqdatCore.Model.User
   import AcqdatCore.Support.Factory
 
   describe "create/2" do
@@ -111,7 +110,7 @@ defmodule AcqdatApiWeb.SensorControllerTest do
     end
 
     test "sensors of a device with invalid device id", %{conn: conn} do
-      sensor = insert(:sensor)
+      insert(:sensor)
 
       params = %{
         device_id: 3
@@ -179,7 +178,7 @@ defmodule AcqdatApiWeb.SensorControllerTest do
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
       data = Map.put(%{}, :name, "Water Plant")
-      conn = put(conn, Routes.device_path(conn, :update, sensor.id), data)
+      conn = put(conn, Routes.sensor_path(conn, :update, sensor.id), data)
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
@@ -188,7 +187,7 @@ defmodule AcqdatApiWeb.SensorControllerTest do
   describe "delete/2" do
     setup :setup_conn
 
-    test "device delete", %{conn: conn} do
+    test "sensor delete", %{conn: conn} do
       sensor = insert(:sensor)
 
       conn = delete(conn, Routes.sensor_path(conn, :delete, sensor.id), %{})
@@ -303,27 +302,5 @@ defmodule AcqdatApiWeb.SensorControllerTest do
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
-  end
-
-  def setup_conn(%{conn: conn}) do
-    params =
-      build(:user)
-      |> Map.put(:password, "stark1234")
-      |> Map.put(:password_confirmation, "stark1234")
-      |> Map.from_struct()
-
-    {:ok, user} = User.create(params)
-    sign_in_data = %{email: user.email, password: params.password}
-    conn = post(conn, Routes.auth_path(conn, :sign_in), sign_in_data)
-    result = conn |> json_response(200)
-    access_token = result["access_token"]
-
-    conn =
-      build_conn()
-      |> put_req_header("accept", "application/json")
-      |> put_req_header("content-type", "application/json")
-      |> put_req_header("authorization", "Bearer #{access_token}")
-
-    [conn: conn]
   end
 end

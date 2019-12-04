@@ -5,7 +5,7 @@ defmodule AcqdatApiWeb.DeviceController do
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.Device
 
-  plug :load_device when action in [:update, :delete]
+  plug :load_device when action in [:update, :delete, :show]
 
   def index(conn, params) do
     changeset = verify_index_params(params)
@@ -18,6 +18,22 @@ defmodule AcqdatApiWeb.DeviceController do
         conn
         |> put_status(200)
         |> render("index.json", device)
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+    end
+  end
+
+  def show(conn, %{"id" => id}) do
+    case conn.status do
+      nil ->
+        {id, _} = Integer.parse(id)
+        {:list, {:ok, device}} = {:list, DeviceModel.get(id)}
+
+        conn
+        |> put_status(200)
+        |> render("device.json", device)
 
       404 ->
         conn

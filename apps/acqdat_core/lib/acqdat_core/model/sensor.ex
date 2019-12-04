@@ -52,10 +52,10 @@ defmodule AcqdatCore.Model.Sensor do
     Repo.all(query)
   end
 
-  def get_all_by_device(device_id, preloads) do
+  def get_all_by_criteria(id, preloads) when is_integer(id) do
     query =
       from(sensor in Sensor,
-        where: sensor.device_id == ^device_id,
+        where: sensor.device_id == ^id,
         select: sensor
       )
 

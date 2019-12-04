@@ -1,21 +1,21 @@
-defmodule AcqdatApiWeb.SensorTypeController do
+defmodule AcqdatApiWeb.ToolManagement.ToolBoxController do
   use AcqdatApiWeb, :controller
-  alias AcqdatApi.SensorType
-  alias AcqdatCore.Model.SensorType, as: SensorTypeModel
+  alias AcqdatApi.ToolManagement.ToolBox
+  alias AcqdatCore.Model.ToolManagement.ToolBox, as: ToolBoxModel
   import AcqdatApiWeb.Helpers
-  import AcqdatApiWeb.Validators.SensorType
+  import AcqdatApiWeb.Validators.ToolManagement.ToolBox
 
-  plug :load_sensor_type when action in [:update, :delete, :show]
+  plug :load_tool_box when action in [:update, :delete, :show]
 
   def show(conn, %{"id" => id}) do
     case conn.status do
       nil ->
         {id, _} = Integer.parse(id)
-        {:list, {:ok, sensor_type}} = {:list, SensorTypeModel.get(id)}
+        {:list, {:ok, tool_box}} = {:list, ToolBoxModel.get(id)}
 
         conn
         |> put_status(200)
-        |> render("sensor_type.json", sensor_type)
+        |> render("tool_box.json", %{tool_box: tool_box})
 
       404 ->
         conn
@@ -29,11 +29,11 @@ defmodule AcqdatApiWeb.SensorTypeController do
     case conn.status do
       nil ->
         {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
-        {:list, sensor_types} = {:list, SensorTypeModel.get_all(data)}
+        {:list, tool_box} = {:list, ToolBoxModel.get_all(data)}
 
         conn
         |> put_status(200)
-        |> render("index.json", sensor_types)
+        |> render("index.json", tool_box)
 
       404 ->
         conn
@@ -42,13 +42,13 @@ defmodule AcqdatApiWeb.SensorTypeController do
   end
 
   def create(conn, params) do
-    changeset = verify_sensor_type_params(params)
+    changeset = verify_tool_box_params(params)
 
     with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
-         {:create, {:ok, sensor_type}} <- {:create, SensorType.create(data)} do
+         {:create, {:ok, tool_box}} <- {:create, ToolBox.create(data)} do
       conn
       |> put_status(200)
-      |> render("sensor_type.json", %{sensor_type: sensor_type})
+      |> render("tool_box.json", %{tool_box: tool_box})
     else
       {:extract, {:error, error}} ->
         send_error(conn, 400, error)
@@ -61,16 +61,16 @@ defmodule AcqdatApiWeb.SensorTypeController do
   def update(conn, params) do
     case conn.status do
       nil ->
-        %{assigns: %{sensor_type: sensor_type}} = conn
+        %{assigns: %{tool_box: tool_box}} = conn
 
-        case SensorTypeModel.update(sensor_type, params) do
-          {:ok, sensor_type} ->
+        case ToolBoxModel.update(tool_box, params) do
+          {:ok, tool_box} ->
             conn
             |> put_status(200)
-            |> render("sensor_type.json", %{sensor_type: sensor_type})
+            |> render("tool_box.json", %{tool_box: tool_box})
 
-          {:error, sensor_type} ->
-            error = extract_changeset_error(sensor_type)
+          {:error, tool_box} ->
+            error = extract_changeset_error(tool_box)
 
             conn
             |> send_error(400, error)
@@ -85,14 +85,14 @@ defmodule AcqdatApiWeb.SensorTypeController do
   def delete(conn, %{"id" => id}) do
     case conn.status do
       nil ->
-        case SensorTypeModel.delete(id) do
-          {:ok, sensor_type} ->
+        case ToolBoxModel.delete(id) do
+          {:ok, tool_box} ->
             conn
             |> put_status(200)
-            |> render("sensor_type.json", %{sensor_type: sensor_type})
+            |> render("tool_box.json", %{tool_box: tool_box})
 
-          {:error, sensor_type} ->
-            error = extract_changeset_error(sensor_type)
+          {:error, tool_box} ->
+            error = extract_changeset_error(tool_box)
 
             conn
             |> send_error(400, error)
@@ -104,14 +104,12 @@ defmodule AcqdatApiWeb.SensorTypeController do
     end
   end
 
-  ############################ Private functions ########################
-
-  defp load_sensor_type(%{params: %{"id" => id}} = conn, _params) do
+  defp load_tool_box(%{params: %{"id" => id}} = conn, _params) do
     {id, _} = Integer.parse(id)
 
-    case SensorTypeModel.get(id) do
-      {:ok, sensor_type} ->
-        assign(conn, :sensor_type, sensor_type)
+    case ToolBoxModel.get(id) do
+      {:ok, tool_box} ->
+        assign(conn, :tool_box, tool_box)
 
       {:error, _message} ->
         conn

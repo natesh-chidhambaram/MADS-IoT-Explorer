@@ -1,4 +1,4 @@
-defmodule AcqdatApiWeb.DeviceControllerTest do
+defmodule AcqdatApiWeb.ToolManagement.EmployeeControllerTest do
   use ExUnit.Case, async: true
   use AcqdatApiWeb.ConnCase
   use AcqdatCore.DataCase
@@ -7,66 +7,70 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
   describe "create/2" do
     setup :setup_conn
 
-    test "device create", %{conn: conn} do
-      device_manifest = build(:device)
+    test "employee create", %{conn: conn} do
+      employee_manifest = build(:employee)
 
       data = %{
-        name: device_manifest.name,
-        access_token: device_manifest.access_token,
-        description: device_manifest.description,
-        uuid: device_manifest.uuid
+        name: employee_manifest.name,
+        phone_number: employee_manifest.phone_number,
+        role: "supervisor",
+        uuid: employee_manifest.uuid,
+        address: employee_manifest.address
       }
 
-      conn = post(conn, Routes.device_path(conn, :create), data)
+      conn = post(conn, Routes.employee_path(conn, :create), data)
       response = conn |> json_response(200)
       assert Map.has_key?(response, "name")
-      assert Map.has_key?(response, "access_token")
-      assert Map.has_key?(response, "description")
+      assert Map.has_key?(response, "phone_number")
+      assert Map.has_key?(response, "role")
+      assert Map.has_key?(response, "address")
       assert Map.has_key?(response, "uuid")
     end
 
     test "fails if authorization header not found", %{conn: conn} do
-      bad_access_token = "qwerty1234567uiop"
+      bad_access_token = "avcbd123489u"
 
       conn =
         conn
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
       data = %{}
-      conn = post(conn, Routes.device_path(conn, :create), data)
+      conn = post(conn, Routes.employee_path(conn, :create), data)
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
 
     test "fails if sent params are not unique", %{conn: conn} do
-      device = insert(:device)
+      employee_manifest = insert(:employee)
 
       data = %{
-        name: device.name,
-        access_token: device.access_token,
-        description: device.description,
-        uuid: device.uuid
+        name: employee_manifest.name,
+        phone_number: employee_manifest.phone_number,
+        role: "supervisor",
+        uuid: employee_manifest.uuid,
+        address: employee_manifest.address
       }
 
-      conn = post(conn, Routes.device_path(conn, :create), data)
+      conn = post(conn, Routes.employee_path(conn, :create), data)
       response = conn |> json_response(400)
 
       assert response == %{
                "errors" => %{
-                 "message" => %{"error" => %{"name" => ["has already been taken"]}}
+                 "message" => %{"error" => %{"name" => ["User already exists!"]}}
                }
              }
     end
 
     test "fails if required params are missing", %{conn: conn} do
-      conn = post(conn, Routes.device_path(conn, :create), %{})
+      conn = post(conn, Routes.employee_path(conn, :create), %{})
       response = conn |> json_response(400)
 
       assert response == %{
                "errors" => %{
                  "message" => %{
                    "name" => ["can't be blank"],
-                   "access_token" => ["can't be blank"]
+                   "phone_number" => ["can't be blank"],
+                   "role" => ["can't be blank"]
                  }
                }
              }
@@ -76,29 +80,30 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
   describe "update/2" do
     setup :setup_conn
 
-    test "device update", %{conn: conn} do
-      device = insert(:device)
-      data = Map.put(%{}, :name, "Water Plant")
+    test "employee update", %{conn: conn} do
+      employee = insert(:employee)
+      data = Map.put(%{}, :name, "Vikram")
 
-      conn = put(conn, Routes.device_path(conn, :update, device.id), data)
+      conn = put(conn, Routes.employee_path(conn, :update, employee.id), data)
       response = conn |> json_response(200)
 
       assert Map.has_key?(response, "name")
-      assert Map.has_key?(response, "access_token")
-      assert Map.has_key?(response, "description")
+      assert Map.has_key?(response, "phone_number")
+      assert Map.has_key?(response, "role")
+      assert Map.has_key?(response, "address")
       assert Map.has_key?(response, "uuid")
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do
-      bad_access_token = "qwerty12345678qwer"
-      device = insert(:device)
+      bad_access_token = "avcbd123489u"
+      employee = insert(:employee)
 
       conn =
         conn
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-      data = Map.put(%{}, :name, "Water Plant")
-      conn = put(conn, Routes.device_path(conn, :update, device.id), data)
+      data = Map.put(%{}, :name, "Vikram")
+      conn = put(conn, Routes.employee_path(conn, :update, employee.id), data)
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
@@ -108,48 +113,48 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
     setup :setup_conn
 
     test "Big page size", %{conn: conn} do
-      insert_list(3, :device)
+      insert_list(3, :employee)
 
       params = %{
         "page_size" => 100,
         "page_number" => 1
       }
 
-      conn = get(conn, Routes.device_path(conn, :index, params))
+      conn = get(conn, Routes.employee_path(conn, :index, params))
       response = conn |> json_response(200)
       assert response["page_number"] == params["page_number"]
       assert response["page_size"] == params["page_size"]
       assert response["total_pages"] == 1
-      assert length(response["devices"]) == response["total_entries"]
+      assert length(response["employee"]) == response["total_entries"]
     end
 
     test "Pagination", %{conn: conn} do
-      insert_list(3, :device)
+      insert_list(3, :employee)
 
       params = %{
         "page_size" => 2,
         "page_number" => 1
       }
 
-      conn = get(conn, Routes.device_path(conn, :index, params))
+      conn = get(conn, Routes.employee_path(conn, :index, params))
       page1_response = conn |> json_response(200)
       assert page1_response["page_number"] == params["page_number"]
       assert page1_response["page_size"] == params["page_size"]
       assert page1_response["total_pages"] == 2
-      assert length(page1_response["devices"]) == page1_response["page_size"]
+      assert length(page1_response["employee"]) == page1_response["page_size"]
 
       params = Map.put(params, "page_number", 2)
-      conn = get(conn, Routes.device_path(conn, :index, params))
+      conn = get(conn, Routes.employee_path(conn, :index, params))
       page2_response = conn |> json_response(200)
 
       assert page2_response["page_number"] == params["page_number"]
       assert page2_response["page_size"] == params["page_size"]
       assert page2_response["total_pages"] == 2
-      assert length(page2_response["devices"]) == 1
+      assert length(page2_response["employee"]) == 1
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do
-      bad_access_token = "qwerty1234567qwerty12"
+      bad_access_token = "avcbd12 3489u"
 
       conn =
         conn
@@ -160,7 +165,7 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
         "page_number" => 1
       }
 
-      conn = get(conn, Routes.device_path(conn, :index, params))
+      conn = get(conn, Routes.employee_path(conn, :index, params))
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
@@ -169,26 +174,27 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
   describe "delete/2" do
     setup :setup_conn
 
-    test "device delete", %{conn: conn} do
-      device = insert(:device)
+    test "employee delete", %{conn: conn} do
+      employee = insert(:employee)
 
-      conn = delete(conn, Routes.device_path(conn, :delete, device.id), %{})
+      conn = delete(conn, Routes.employee_path(conn, :delete, employee.id), %{})
       response = conn |> json_response(200)
       assert Map.has_key?(response, "name")
-      assert Map.has_key?(response, "access_token")
-      assert Map.has_key?(response, "description")
+      assert Map.has_key?(response, "phone_number")
+      assert Map.has_key?(response, "role")
+      assert Map.has_key?(response, "address")
       assert Map.has_key?(response, "uuid")
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do
-      device = insert(:device)
-      bad_access_token = "qwerty1234567qwerty"
+      employee = insert(:employee)
+      bad_access_token = "avcbd123489u"
 
       conn =
         conn
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-      conn = delete(conn, Routes.device_path(conn, :delete, device.id), %{})
+      conn = delete(conn, Routes.employee_path(conn, :delete, employee.id), %{})
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end

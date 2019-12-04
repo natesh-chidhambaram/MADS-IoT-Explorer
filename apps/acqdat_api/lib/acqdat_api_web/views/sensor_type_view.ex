@@ -8,6 +8,7 @@ defmodule AcqdatApiWeb.SensorTypeView do
       id: sensor_type.id,
       name: sensor_type.name,
       make: sensor_type.make,
+      value_keys: sensor_type.value_keys,
       identifier: sensor_type.identifier
     }
   end
