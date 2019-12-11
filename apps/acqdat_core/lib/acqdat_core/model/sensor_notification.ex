@@ -2,10 +2,11 @@ defmodule AcqdatCore.Model.SensorNotification do
   @moduledoc """
   Models functions for configuring data for sensor notifications.
   """
-
+  import Ecto.Query
   alias AcqdatCore.Schema.SensorNotifications, as: SNotifications
   alias AcqdatCore.Repo
   alias AcqdatCore.Notification.PolicyMap
+  alias AcqdatCore.Model.Helper, as: ModelHelper
 
   def create(params) do
     changeset = SNotifications.changeset(%SNotifications{}, params)
@@ -36,6 +37,19 @@ defmodule AcqdatCore.Model.SensorNotification do
     SNotifications |> Repo.all() |> Repo.preload(sensor: :device)
   end
 
+  def get_all(%{page_size: page_size, page_number: page_number}, preloads) do
+    paginated_sensor_notification_data =
+      SNotifications |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+
+    sensor_notification_data_with_preloads =
+      paginated_sensor_notification_data.entries |> Repo.preload(sensor: preloads)
+
+    ModelHelper.paginated_response(
+      sensor_notification_data_with_preloads,
+      paginated_sensor_notification_data
+    )
+  end
+
   def delete(id) do
     SNotifications
     |> Repo.get(id)
@@ -49,6 +63,17 @@ defmodule AcqdatCore.Model.SensorNotification do
       module = String.to_existing_atom(policy)
       rule_name = module.rule_name
       {rule_name, policy}
+    end)
+  end
+
+  def get_policies_with_preferences() do
+    policies = PolicyMap.policies()
+
+    Enum.map(policies, fn policy ->
+      module = String.to_existing_atom(policy)
+      rule_name = module.rule_name
+      preferences = policy_preferences(policy, %{})
+      %{rule_name: rule_name, policy_name: policy, preferences: preferences}
     end)
   end
 

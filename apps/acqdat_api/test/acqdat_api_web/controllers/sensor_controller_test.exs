@@ -91,6 +91,68 @@ defmodule AcqdatApiWeb.SensorControllerTest do
     end
   end
 
+  describe "sensor_by_criteria/2" do
+    setup :setup_conn
+
+    test "fails if invalid token in authorization header", %{conn: conn} do
+      bad_access_token = "qwerty1234567qwerty12"
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
+
+      params = %{
+        device_id: 3
+      }
+
+      conn = get(conn, Routes.sensor_path(conn, :sensor_by_criteria, params.device_id))
+      result = conn |> json_response(403)
+      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+    end
+
+    test "sensors of a device with invalid device id", %{conn: conn} do
+      sensor = insert(:sensor)
+
+      params = %{
+        device_id: 3
+      }
+
+      conn = get(conn, Routes.sensor_path(conn, :sensor_by_criteria, params.device_id))
+      result = conn |> json_response(404)
+      assert result == %{"errors" => %{"message" => "Resource Not Found"}}
+    end
+
+    test "sensors of a device with valid device id", %{conn: conn} do
+      sensor = insert(:sensor)
+
+      params = %{
+        device_id: sensor.device_id
+      }
+
+      conn = get(conn, Routes.sensor_path(conn, :sensor_by_criteria, params.device_id))
+      result = conn |> json_response(200)
+
+      assert result == %{
+               "sensors" => [
+                 %{
+                   "device_id" => sensor.device_id,
+                   "id" => sensor.id,
+                   "name" => sensor.name,
+                   "sensor_type" => %{
+                     "id" => sensor.sensor_type.id,
+                     "identifier" => sensor.sensor_type.identifier,
+                     "make" => sensor.sensor_type.make,
+                     "name" => sensor.sensor_type.name,
+                     "value_keys" => sensor.sensor_type.value_keys
+                   },
+                   "sensor_type_id" => sensor.sensor_type_id,
+                   "uuid" => sensor.uuid
+                 }
+               ]
+             }
+    end
+  end
+
   describe "update/2" do
     setup :setup_conn
 
@@ -174,6 +236,14 @@ defmodule AcqdatApiWeb.SensorControllerTest do
       assert assertion_sensor["sensor_type_id"] == test_sensor.sensor_type_id
       assert assertion_sensor["sensor_type"]["id"] == test_sensor.sensor_type.id
       assert assertion_sensor["sensor_type"]["name"] == test_sensor.sensor_type.name
+    end
+
+    test "if params are missing", %{conn: conn} do
+      insert_list(3, :sensor)
+      conn = get(conn, Routes.sensor_path(conn, :index, %{}))
+      response = conn |> json_response(200)
+      assert response["total_pages"] == 1
+      assert length(response["sensors"]) == response["total_entries"]
     end
 
     test "Big page size", %{conn: conn} do
