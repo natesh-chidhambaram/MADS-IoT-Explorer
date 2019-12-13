@@ -21,6 +21,7 @@ defmodule AcqdatApiWeb.SensorNotificationView do
 
   def render("sensor_notification_with_preloads.json", %{sensor_notification: sensor_notification}) do
     %{
+      id: sensor_notification.id,
       rule_values: sensor_notification.rule_values,
       sensor_id: sensor_notification.sensor_id,
       alarm_status: sensor_notification.alarm_status,
