@@ -1,8 +1,6 @@
 defmodule AcqdatCore.Model.ToolManagament.ToolTypeTest do
   use ExUnit.Case, async: true
   use AcqdatCore.DataCase
-  import AcqdatCore.Support.Factory
-  alias AcqdatCore.Model.ToolManagement.ToolType
 
   describe "create/1" do
   end

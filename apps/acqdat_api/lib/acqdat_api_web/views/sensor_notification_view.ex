@@ -3,6 +3,7 @@ defmodule AcqdatApiWeb.SensorNotificationView do
   alias AcqdatApiWeb.SensorNotificationView
   alias AcqdatApiWeb.SensorView
   alias AcqdatApiWeb.DeviceView
+  alias AcqdatCore.Notification.PolicyMap
 
   def render("index.json", sensor_notification) do
     %{
@@ -22,7 +23,7 @@ defmodule AcqdatApiWeb.SensorNotificationView do
   def render("sensor_notification_with_preloads.json", %{sensor_notification: sensor_notification}) do
     %{
       id: sensor_notification.id,
-      rule_values: sensor_notification.rule_values,
+      rule_values: render_rule_values(sensor_notification.rule_values),
       sensor_id: sensor_notification.sensor_id,
       alarm_status: sensor_notification.alarm_status,
       sensor: render_one(sensor_notification.sensor, SensorView, "sensor.json"),
@@ -32,7 +33,7 @@ defmodule AcqdatApiWeb.SensorNotificationView do
 
   def render("sensor_notification_with_device.json", %{sensor_notification: sensor_notification}) do
     %{
-      rule_values: sensor_notification.rule_values,
+      rule_values: render_rule_values(sensor_notification.rule_values),
       sensor_id: sensor_notification.sensor_id,
       alarm_status: sensor_notification.alarm_status,
       sensor: render_one(sensor_notification.sensor, SensorView, "sensor.json"),
@@ -42,9 +43,17 @@ defmodule AcqdatApiWeb.SensorNotificationView do
 
   def render("sensor_notification.json", %{sensor_notification: sensor_notification}) do
     %{
-      rule_values: sensor_notification.rule_values,
+      rule_values: render_rule_values(sensor_notification.rule_values),
       sensor_id: sensor_notification.sensor_id,
       alarm_status: sensor_notification.alarm_status
     }
+  end
+
+  defp render_rule_values(rule_values) do
+    Enum.reduce(rule_values, %{}, fn {rule_key, rule_value}, acc ->
+      {:ok, module} = PolicyMap.load(rule_value["module"])
+      rule_value = Map.put(rule_value, "module", module)
+      Map.put(acc, rule_key, rule_value)
+    end)
   end
 end

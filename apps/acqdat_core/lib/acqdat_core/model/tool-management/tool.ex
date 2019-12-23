@@ -9,7 +9,12 @@ defmodule AcqdatCore.Model.ToolManagement.Tool do
 
   def create(params) do
     changeset = Tool.create_changeset(%Tool{}, params)
-    Repo.insert(changeset)
+
+    with {:ok, changeset} <- Repo.insert(changeset) do
+      {:ok, changeset |> Repo.preload([:tool_box, :tool_type])}
+    else
+      {:error, error} -> {:error, error}
+    end
   end
 
   def get(id) when is_integer(id) do
@@ -18,7 +23,7 @@ defmodule AcqdatCore.Model.ToolManagement.Tool do
         {:error, "not found"}
 
       tool ->
-        {:ok, tool}
+        {:ok, tool |> Repo.preload([:tool_box, :tool_type])}
     end
   end
 
@@ -39,6 +44,21 @@ defmodule AcqdatCore.Model.ToolManagement.Tool do
 
   def get_all() do
     Repo.all(Tool)
+  end
+
+  def get_all(%{page_size: page_size, page_number: page_number}, preloads) do
+    paginated_tool_data =
+      Tool |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+
+    tool_data_with_preloads = paginated_tool_data.entries |> Repo.preload(preloads)
+
+    %{
+      entries: tool_data_with_preloads,
+      page_number: paginated_tool_data.page_number,
+      page_size: paginated_tool_data.page_size,
+      total_entries: paginated_tool_data.total_entries,
+      total_pages: paginated_tool_data.total_pages
+    }
   end
 
   def delete(id) do

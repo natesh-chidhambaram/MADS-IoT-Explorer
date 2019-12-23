@@ -2,7 +2,7 @@ defmodule AcqdatCore.Model.ToolManagement.ToolBox do
   @moduledoc """
   Exposes APIs to interact with tool_box DB table.
   """
-
+  import Ecto.Query
   alias AcqdatCore.Repo
   alias AcqdatCore.Schema.ToolManagement.ToolBox
 
@@ -38,6 +38,12 @@ defmodule AcqdatCore.Model.ToolManagement.ToolBox do
 
   def get_all() do
     Repo.all(ToolBox)
+  end
+
+  def get_all(%{page_size: page_size, page_number: page_number}) do
+    ToolBox
+    |> order_by(:id)
+    |> Repo.paginate(page: page_number, page_size: page_size)
   end
 
   def delete(id) do

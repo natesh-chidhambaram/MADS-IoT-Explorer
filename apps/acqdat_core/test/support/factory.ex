@@ -1,6 +1,10 @@
 defmodule AcqdatCore.Support.Factory do
   use ExMachina.Ecto, repo: AcqdatCore.Repo
   use AcqdatCore.Schema
+  alias AcqdatApiWeb.Guardian
+  import Plug.Conn
+
+  @access_time_hours 5
 
   alias AcqdatCore.Schema.{
     User,
@@ -15,7 +19,8 @@ defmodule AcqdatCore.Support.Factory do
     ToolType,
     ToolBox,
     Tool,
-    ToolIssue
+    ToolIssue,
+    ToolReturn
   }
 
   def user_factory() do
@@ -118,12 +123,53 @@ defmodule AcqdatCore.Support.Factory do
     [tools: tools]
   end
 
-  def tool_issue() do
+  def tool_issue_factory() do
     %ToolIssue{
       employee: build(:employee),
       tool: build(:tool),
       tool_box: build(:tool_box),
       issue_time: DateTime.truncate(DateTime.utc_now(), :second)
     }
+  end
+
+  def tool_return(tool_issue) do
+    return_params = %{
+      employee_id: tool_issue.employee_id,
+      tool_id: tool_issue.tool.id,
+      tool_box_id: tool_issue.tool_box.id,
+      tool_issue_id: tool_issue.id,
+      return_time: DateTime.truncate(DateTime.utc_now(), :second)
+    }
+
+    changeset = ToolReturn.changeset(%ToolReturn{}, return_params)
+    Repo.insert(changeset)
+  end
+
+  def setup_conn(%{conn: conn}) do
+    user = insert(:user)
+
+    {:ok, access_token, _claims} =
+      guardian_create_token(
+        user,
+        {@access_time_hours, :hours},
+        :access
+      )
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> put_req_header("content-type", "application/json")
+      |> put_req_header("authorization", "Bearer #{access_token}")
+
+    [conn: conn]
+  end
+
+  defp guardian_create_token(resource, time, token_type) do
+    Guardian.encode_and_sign(
+      resource,
+      %{},
+      token_type: token_type,
+      ttl: time
+    )
   end
 end

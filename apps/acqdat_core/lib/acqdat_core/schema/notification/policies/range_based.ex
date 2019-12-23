@@ -48,8 +48,8 @@ defmodule AcqdatCore.Schema.Notification.RangeBased do
 
   @impl SensorNotifications
   def eligible?(preferences, value) do
-    lower_limit = Decimal.new(preferences["lower_limit"])
-    upper_limit = Decimal.new(preferences["upper_limit"])
+    lower_limit = Decimal.cast(preferences["lower_limit"])
+    upper_limit = Decimal.cast(preferences["upper_limit"])
     value = Decimal.new(value)
 
     check_eligibility?(lower_limit, upper_limit, value)

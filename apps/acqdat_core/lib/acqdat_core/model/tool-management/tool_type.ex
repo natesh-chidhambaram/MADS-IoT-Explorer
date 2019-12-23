@@ -41,6 +41,12 @@ defmodule AcqdatCore.Model.ToolManagement.ToolType do
     Repo.all(ToolType)
   end
 
+  def get_all(%{page_size: page_size, page_number: page_number}) do
+    ToolType
+    |> order_by(:id)
+    |> Repo.paginate(page: page_number, page_size: page_size)
+  end
+
   def delete(id) do
     ToolType
     |> Repo.get(id)

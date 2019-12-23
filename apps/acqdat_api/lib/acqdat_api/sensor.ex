@@ -1,5 +1,4 @@
 defmodule AcqdatApi.Sensor do
-  alias AcqdatCore.Schema.Sensor
   alias AcqdatCore.Model.Sensor, as: SensorModel
   import AcqdatApiWeb.Helpers
 
@@ -32,5 +31,10 @@ defmodule AcqdatApi.Sensor do
 
   defp verify_sensor({:error, sensor}) do
     {:error, %{error: extract_changeset_error(sensor)}}
+  end
+
+  def sensor_by_criteria(%{"device_id" => device_id} = _criteria) do
+    {device_id, _} = Integer.parse(device_id)
+    {:list, SensorModel.get_all_by_criteria(device_id, [:sensor_type])}
   end
 end

@@ -1,5 +1,4 @@
 defmodule AcqdatApi.SensorNotification do
-  alias AcqdatCore.Schema.SensorNotifications
   alias AcqdatCore.Model.SensorNotification, as: SensorNotificationModel
   import AcqdatApiWeb.Helpers
 

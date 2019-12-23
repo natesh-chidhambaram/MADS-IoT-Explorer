@@ -4,7 +4,8 @@ defmodule AcqdatCore.Model.ToolManagement.Employee do
   """
 
   alias AcqdatCore.Repo
-  alias AcqdatCore.Schema.ToolManagement.Employee
+  alias AcqdatCore.Schema.ToolManagement.{Employee, ToolIssue}
+  import Ecto.Query
 
   def create(params) do
     changeset = Employee.create_changeset(%Employee{}, params)
@@ -38,6 +39,31 @@ defmodule AcqdatCore.Model.ToolManagement.Employee do
 
   def get_all() do
     Repo.all(Employee)
+  end
+
+  @spec employee_tool_issue_status(non_neg_integer) :: [ToolIssue]
+  def employee_tool_issue_status(employee_id) do
+    query =
+      from(tool_issue in ToolIssue,
+        where: tool_issue.employee_id == ^employee_id and fragment("
+            NOT EXISTS(
+              SELECT 1
+              FROM acqdat_tm_tool_return as tr
+              WHERE tr.employee_id = ? and
+              tr.tool_issue_id = ?
+            )
+            ", ^employee_id, tool_issue.id),
+        preload: [:tool],
+        select: tool_issue
+      )
+
+    query |> Repo.all() |> Enum.map(fn tool_issue -> tool_issue.tool end)
+  end
+
+  def get_all(%{page_size: page_size, page_number: page_number}) do
+    Employee
+    |> order_by(:id)
+    |> Repo.paginate(page: page_number, page_size: page_size)
   end
 
   def delete(id) do

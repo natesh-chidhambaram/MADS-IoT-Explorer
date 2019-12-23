@@ -2,7 +2,6 @@ defmodule AcqdatApiWeb.SensorNotificationControllerTest do
   use ExUnit.Case, async: true
   use AcqdatApiWeb.ConnCase
   use AcqdatCore.DataCase
-  alias AcqdatCore.Model.User
   import AcqdatCore.Support.Factory
 
   describe "create/2" do
@@ -243,27 +242,5 @@ defmodule AcqdatApiWeb.SensorNotificationControllerTest do
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
-  end
-
-  def setup_conn(%{conn: conn}) do
-    params =
-      build(:user)
-      |> Map.put(:password, "stark1234")
-      |> Map.put(:password_confirmation, "stark1234")
-      |> Map.from_struct()
-
-    {:ok, user} = User.create(params)
-    sign_in_data = %{email: user.email, password: params.password}
-    conn = post(conn, Routes.auth_path(conn, :sign_in), sign_in_data)
-    result = conn |> json_response(200)
-    access_token = result["access_token"]
-
-    conn =
-      build_conn()
-      |> put_req_header("accept", "application/json")
-      |> put_req_header("content-type", "application/json")
-      |> put_req_header("authorization", "Bearer #{access_token}")
-
-    [conn: conn]
   end
 end
