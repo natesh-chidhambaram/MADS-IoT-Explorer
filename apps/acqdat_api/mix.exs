@@ -23,7 +23,7 @@ defmodule AcqdatApi.MixProject do
   def application do
     [
       mod: {AcqdatApi.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :google_maps, :runtime_tools]
     ]
   end
 
@@ -50,7 +50,10 @@ defmodule AcqdatApi.MixProject do
       {:params, "~> 2.0"},
 
       # cors
-      {:corsica, "~> 1.0"}
+      {:corsica, "~> 1.0"},
+
+      # google places
+      {:google_maps, "~> 0.11"}
     ]
   end
 end

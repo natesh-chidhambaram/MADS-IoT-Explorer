@@ -33,7 +33,7 @@ defmodule AcqdatCore.MixProject do
   def application do
     [
       mod: {AcqdatCore.Application, []},
-      extra_applications: [:logger, :scrivener_ecto]
+      extra_applications: [:logger, :arc_ecto, :scrivener_ecto]
     ]
   end
 
@@ -65,6 +65,15 @@ defmodule AcqdatCore.MixProject do
 
       # worker pool
       {:poolboy, "~> 1.5"},
+
+      # image uploading
+      {:arc, "~> 0.11.0"},
+      {:arc_ecto, "~> 0.11.0"},
+      {:ex_aws, "~> 2.0"},
+      {:ex_aws_s3, "~> 2.0"},
+      {:hackney, "~> 1.6"},
+      {:poison, "~> 3.1"},
+      {:sweet_xml, "~> 0.6"},
 
       # mailer
       {:poison, "~> 3.1"},

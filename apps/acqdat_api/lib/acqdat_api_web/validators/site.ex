@@ -1,12 +1,10 @@
-defmodule AcqdatApiWeb.Validators.Device do
+defmodule AcqdatApiWeb.Validators.Site do
   use Params
 
   defparams(
-    verify_device_params(%{
+    verify_site_params(%{
       name!: :string,
-      access_token!: :string,
-      description: :string,
-      site_id: :integer,
+      location_details!: :map,
       image_url: :string
     })
   )

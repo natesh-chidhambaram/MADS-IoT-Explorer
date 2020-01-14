@@ -9,7 +9,8 @@ defmodule AcqdatApi.Application do
     # List all child processes to be supervised
     children = [
       # Start the endpoint when the application starts
-      AcqdatApiWeb.Endpoint
+      AcqdatApiWeb.Endpoint,
+      {Task.Supervisor, name: Datakrew.TaskSupervisor}
       # Starts a worker by calling: AcqdatApi.Worker.start_link(arg)
       # {AcqdatApi.Worker, arg},
     ]

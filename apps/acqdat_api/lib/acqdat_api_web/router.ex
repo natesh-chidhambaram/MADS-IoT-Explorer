@@ -27,13 +27,21 @@ defmodule AcqdatApiWeb.Router do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
     post "/refresh", AuthController, :refresh_token
     post "/sign-out", AuthController, :sign_out
+    post "/search-location", PlaceController, :search_location
 
     resources "/sensor_type", SensorTypeController,
       only: [:create, :update, :delete, :index, :show]
 
     resources "/device", DeviceController, only: [:create, :update, :delete, :index, :show]
     get "/sensor-criteria/:device_id", SensorController, :sensor_by_criteria
+    get "/device-criteria/:site_id", DeviceController, :device_by_criteria
     resources "/sensor", SensorController, only: [:create, :update, :delete, :index, :show]
+    resources "/site", SiteController, only: [:create, :update, :delete, :index, :show]
+    resources "/process", ProcessController, only: [:create, :update, :delete, :index, :show]
+
+    resources "/digital-twin", DigitalTwinController,
+      only: [:create, :update, :delete, :index, :show]
+
     resources "/policies", NotificationPolicyController, only: [:index]
 
     resources "/sensor_notification", SensorNotificationController,

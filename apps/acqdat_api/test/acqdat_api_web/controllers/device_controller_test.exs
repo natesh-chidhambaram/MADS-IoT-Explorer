@@ -9,46 +9,64 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
 
     test "device create", %{conn: conn} do
       device_manifest = build(:device)
+      site = insert(:site)
+
+      params = %{
+        site_id: site.id
+      }
 
       data = %{
         name: device_manifest.name,
         access_token: device_manifest.access_token,
         description: device_manifest.description,
-        uuid: device_manifest.uuid
+        uuid: device_manifest.uuid,
+        image_url: device_manifest.image_url
       }
 
-      conn = post(conn, Routes.device_path(conn, :create), data)
+      conn = post(conn, Routes.device_path(conn, :create, params), data)
       response = conn |> json_response(200)
       assert Map.has_key?(response, "name")
       assert Map.has_key?(response, "access_token")
       assert Map.has_key?(response, "description")
       assert Map.has_key?(response, "uuid")
+      assert Map.has_key?(response, "image_url")
     end
 
     test "fails if authorization header not found", %{conn: conn} do
       bad_access_token = "qwerty1234567uiop"
+      site = insert(:site)
+
+      params = %{
+        site_id: site.id
+      }
 
       conn =
         conn
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
       data = %{}
-      conn = post(conn, Routes.device_path(conn, :create), data)
+      conn = post(conn, Routes.device_path(conn, :create, params), data)
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
 
     test "fails if sent params are not unique", %{conn: conn} do
       device = insert(:device)
+      site = insert(:site)
+
+      params = %{
+        site_id: site.id
+      }
 
       data = %{
         name: device.name,
         access_token: device.access_token,
         description: device.description,
-        uuid: device.uuid
+        uuid: device.uuid,
+        image_url: device.image_url
       }
 
-      conn = post(conn, Routes.device_path(conn, :create), data)
+      conn = post(conn, Routes.device_path(conn, :create, params), data)
       response = conn |> json_response(400)
 
       assert response == %{
@@ -59,7 +77,13 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
     end
 
     test "fails if required params are missing", %{conn: conn} do
-      conn = post(conn, Routes.device_path(conn, :create), %{})
+      site = insert(:site)
+
+      params = %{
+        site_id: site.id
+      }
+
+      conn = post(conn, Routes.device_path(conn, :create, params), %{})
       response = conn |> json_response(400)
 
       assert response == %{
@@ -69,6 +93,88 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
                    "access_token" => ["can't be blank"]
                  }
                }
+             }
+    end
+
+    test "device created without image url", %{conn: conn} do
+      device_manifest = build(:device)
+      site = insert(:site)
+
+      params = %{
+        site_id: site.id
+      }
+
+      data = %{
+        name: device_manifest.name,
+        access_token: device_manifest.access_token,
+        description: device_manifest.description,
+        uuid: device_manifest.uuid
+      }
+
+      conn = post(conn, Routes.device_path(conn, :create, params), data)
+      response = conn |> json_response(200)
+      assert Map.has_key?(response, "name")
+      assert Map.has_key?(response, "access_token")
+      assert Map.has_key?(response, "description")
+      assert Map.has_key?(response, "uuid")
+      assert Map.has_key?(response, "image_url")
+    end
+  end
+
+  describe "device_by_criteria/2" do
+    setup :setup_conn
+
+    test "fails if invalid token in authorization header", %{conn: conn} do
+      bad_access_token = "qwerty1234567qwerty12"
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
+
+      params = %{
+        site_id: 3
+      }
+
+      conn = get(conn, Routes.device_path(conn, :device_by_criteria, params.site_id))
+      result = conn |> json_response(403)
+      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+    end
+
+    test "device of a site with invalid site id", %{conn: conn} do
+      insert(:site)
+
+      params = %{
+        site_id: 3
+      }
+
+      conn = get(conn, Routes.device_path(conn, :device_by_criteria, params.site_id))
+      result = conn |> json_response(404)
+      assert result == %{"errors" => %{"message" => "Resource Not Found"}}
+    end
+
+    test "device of a site with valid site id", %{conn: conn} do
+      device = insert(:device)
+
+      conn = get(conn, Routes.device_path(conn, :device_by_criteria, device.site_id))
+      result = conn |> json_response(200)
+
+      assert result == %{
+               "devices" => [
+                 %{
+                   "access_token" => device.access_token,
+                   "description" => device.description,
+                   "id" => device.id,
+                   "name" => device.name,
+                   "site" => %{
+                     "id" => device.site.id,
+                     "name" => device.site.name,
+                     "location_details" => device.site.location_details,
+                     "image_url" => device.site.image_url
+                   },
+                   "site_id" => device.site_id,
+                   "uuid" => device.uuid
+                 }
+               ]
              }
     end
   end
@@ -82,11 +188,11 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
 
       conn = put(conn, Routes.device_path(conn, :update, device.id), data)
       response = conn |> json_response(200)
-
       assert Map.has_key?(response, "name")
       assert Map.has_key?(response, "access_token")
       assert Map.has_key?(response, "description")
       assert Map.has_key?(response, "uuid")
+      assert Map.has_key?(response, "image_url")
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do
@@ -178,6 +284,7 @@ defmodule AcqdatApiWeb.DeviceControllerTest do
       assert Map.has_key?(response, "access_token")
       assert Map.has_key?(response, "description")
       assert Map.has_key?(response, "uuid")
+      assert Map.has_key?(response, "image_url")
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do

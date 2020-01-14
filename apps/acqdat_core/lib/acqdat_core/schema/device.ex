@@ -8,6 +8,7 @@ defmodule AcqdatCore.Schema.Device do
   use AcqdatCore.Schema
 
   alias AcqdatCore.Schema.Sensor
+  alias AcqdatCore.Schema.Site
 
   @typedoc """
   `uuid`: A universally unique id to identify the device.
@@ -20,16 +21,19 @@ defmodule AcqdatCore.Schema.Device do
   schema("acqdat_devices") do
     field(:uuid, :string)
     field(:name, :string)
+    field(:image_url, :string)
+    field(:image, :any, virtual: true)
     field(:access_token, :string)
     field(:description, :string)
 
     has_many(:sensors, Sensor)
+    belongs_to(:site, Site)
 
     timestamps(type: :utc_datetime)
   end
 
   @required_params ~w(name access_token uuid)a
-  @optional_params ~w(description)a
+  @optional_params ~w(description site_id image_url)a
 
   @permitted @required_params ++ @optional_params
   @update_required_params ~w(name access_token)a

@@ -5,13 +5,21 @@ defmodule AcqdatCore.Support.Factory do
   import Plug.Conn
 
   @access_time_hours 5
+  # @image %Plug.Upload{
+  #   content_type: "image/png",
+  #   filename: "image.png",
+  #   path: "test/support/image.png"
+  # }
 
   alias AcqdatCore.Schema.{
     User,
     Device,
     SensorType,
     Sensor,
-    SensorNotifications
+    SensorNotifications,
+    Site,
+    Process,
+    DigitalTwin
   }
 
   alias AcqdatCore.Schema.ToolManagement.{
@@ -43,7 +51,37 @@ defmodule AcqdatCore.Support.Factory do
       uuid: UUID.uuid1(:hex),
       name: sequence(:device_name, &"device#{&1}"),
       access_token: "abcd1234",
-      description: "new user device"
+      description: "new user device",
+      image: sequence(:image_url, &"device-image_url-#{&1}.com"),
+      site: build(:site)
+    }
+  end
+
+  def site_factory() do
+    %Site{
+      name: sequence(:site_name, &"site#{&1}"),
+      location_details: %{
+        "lat" => "18.5737046",
+        "lng" => "73.76185509999999",
+        "name" => "acqdat_location",
+        "place_id" => UUID.uuid1(:hex)
+      },
+      image: sequence(:image_url, &"device-image_url-#{&1}.com")
+    }
+  end
+
+  def process_factory() do
+    %Process{
+      name: sequence(:process, &"process#{&1}"),
+      site: build(:site),
+      image_url: sequence(:image_url, &"device-image_url-#{&1}.com")
+    }
+  end
+
+  def digital_twin_factory do
+    %DigitalTwin{
+      name: sequence(:digital_twin, &"digital_twin#{&1}"),
+      process: build(:process)
     }
   end
 

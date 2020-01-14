@@ -4,6 +4,7 @@ defmodule AcqdatCore.Model.Device do
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Sensor
   alias AcqdatCore.Domain.Notification.Server, as: NotificationServer
+  alias AcqdatCore.Model.Helper, as: ModelHelper
 
   def create(params) do
     changeset = Device.changeset(%Device{}, params)
@@ -72,6 +73,25 @@ defmodule AcqdatCore.Model.Device do
       {:error, message} ->
         {:error, message}
     end
+  end
+
+  def get_all(%{page_size: page_size, page_number: page_number}, preloads) do
+    paginated_device_data =
+      Device |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+
+    device_data_with_preloads = paginated_device_data.entries |> Repo.preload(preloads)
+
+    ModelHelper.paginated_response(device_data_with_preloads, paginated_device_data)
+  end
+
+  def get_all_by_criteria(id, preloads) when is_integer(id) do
+    query =
+      from(device in Device,
+        where: device.site_id == ^id,
+        select: device
+      )
+
+    Repo.all(query) |> Repo.preload(preloads)
   end
 
   defp insert_data(device, data) do
