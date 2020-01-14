@@ -17,6 +17,7 @@ defmodule AcqdatCore.Model.Device do
         {:error, "not found"}
 
       device ->
+        device = device |> Repo.preload([:site])
         {:ok, device}
     end
   end

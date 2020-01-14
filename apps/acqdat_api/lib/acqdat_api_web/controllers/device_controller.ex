@@ -37,7 +37,7 @@ defmodule AcqdatApiWeb.DeviceController do
 
         conn
         |> put_status(200)
-        |> render("device.json", device)
+        |> render("device_with_sites.json", device)
 
       404 ->
         conn
