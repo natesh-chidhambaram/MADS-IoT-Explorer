@@ -11,14 +11,12 @@ defmodule AcqdatCore.Support.Factory do
   #   path: "test/support/image.png"
   # }
 
+  alias AcqdatCore.Test.Support.WidgetData
+  alias AcqdatCore.Widgets.Schema.{Widget, WidgetType}
+
   alias AcqdatCore.Schema.{
     User,
-    Device,
-    SensorType,
     Sensor,
-    SensorNotifications,
-    Site,
-    Process,
     DigitalTwin
   }
 
@@ -40,80 +38,43 @@ defmodule AcqdatCore.Support.Factory do
     }
   end
 
+  def widget_type_factory() do
+    %WidgetType{
+      name: sequence(:name, &"Widget_Type-#{&1}"),
+      vendor: "Highcharts",
+      module: "Elixir.AcqdatCore.Widgets.Schema.Vendors.HighCharts",
+      vendor_metadata: %{}
+    }
+  end
+
+  def widget_factory() do
+    widget_params = WidgetData.data()
+    widget_type = insert(:widget_type)
+
+    widget_params =
+      Map.replace!(widget_params, :widget_type_id, widget_type.id)
+      |> Map.put_new(:widget_type, widget_type)
+
+    # widget = Widget.changeset(%Widget{}, widget_params)
+    struct(%Widget{}, widget_params)
+  end
+
   def set_password(user, password) do
     user
     |> User.changeset(%{password: password, password_confirmation: password})
     |> Ecto.Changeset.apply_changes()
   end
 
-  def device_factory() do
-    %Device{
-      uuid: UUID.uuid1(:hex),
-      name: sequence(:device_name, &"device#{&1}"),
-      access_token: "abcd1234",
-      description: "new user device",
-      image: sequence(:image_url, &"device-image_url-#{&1}.com"),
-      site: build(:site)
-    }
-  end
-
-  def site_factory() do
-    %Site{
-      name: sequence(:site_name, &"site#{&1}"),
-      location_details: %{
-        "lat" => "18.5737046",
-        "lng" => "73.76185509999999",
-        "name" => "acqdat_location",
-        "place_id" => UUID.uuid1(:hex)
-      },
-      image: sequence(:image_url, &"device-image_url-#{&1}.com")
-    }
-  end
-
-  def process_factory() do
-    %Process{
-      name: sequence(:process, &"process#{&1}"),
-      site: build(:site),
-      image_url: sequence(:image_url, &"device-image_url-#{&1}.com")
-    }
-  end
-
   def digital_twin_factory do
     %DigitalTwin{
-      name: sequence(:digital_twin, &"digital_twin#{&1}"),
-      process: build(:process)
-    }
-  end
-
-  def sensor_type_factory() do
-    %SensorType{
-      name: sequence(:sensor_type_name, &"Sensor#{&1}"),
-      make: "From Adafruit",
-      identifier: sequence(:type_identifier, &"identifier#{&1}"),
-      visualizer: "pie-chart",
-      value_keys: ["temp", "humid"]
+      name: sequence(:digital_twin, &"digital_twin#{&1}")
     }
   end
 
   def sensor_factory() do
-    %Sensor{
+    asd = %Sensor{
       uuid: UUID.uuid1(:hex),
-      name: sequence(:sensor_name, &"Sensor#{&1}"),
-      device: build(:device),
-      sensor_type: build(:sensor_type)
-    }
-  end
-
-  def sensor_notification_factory() do
-    %SensorNotifications{
-      alarm_status: true,
-      sensor: build(:sensor),
-      rule_values: %{
-        "temp" => %{
-          "module" => "Elixir.AcqdatCore.Schema.Notification.RangeBased",
-          "preferences" => %{"lower_limit" => "10.0", "upper_limit" => "20"}
-        }
-      }
+      name: sequence(:sensor_name, &"Sensor#{&1}")
     }
   end
 

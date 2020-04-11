@@ -5,9 +5,9 @@ defmodule AcqdatCore.Seed.User do
 
   def seed_user!() do
     params = %{
-      first_name: "DataKrew",
-      last_name: "Admin",
-      email: "admin@datakrew.com",
+      first_name: "Chandu",
+      last_name: "Developer",
+      email: "chandu@stack-avenue.com",
       password: "datakrew",
       password_confirmation: "datakrew",
     }

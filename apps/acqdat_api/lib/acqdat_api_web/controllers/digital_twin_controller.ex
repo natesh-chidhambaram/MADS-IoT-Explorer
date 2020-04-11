@@ -2,12 +2,9 @@ defmodule AcqdatApiWeb.DigitalTwinController do
   use AcqdatApiWeb, :controller
   alias AcqdatApi.DigitalTwin
   alias AcqdatCore.Model.DigitalTwin, as: DigitalTwinModel
-  alias AcqdatCore.Model.Site, as: SiteModel
-  alias AcqdatCore.Model.Process, as: ProcessModel
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.DigitalTwin
 
-  plug :load_process_and_site when action in [:create]
   plug :load_digital_twin when action in [:update, :delete, :show]
 
   def show(conn, %{"id" => id}) do
@@ -114,48 +111,6 @@ defmodule AcqdatApiWeb.DigitalTwinController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
-    end
-  end
-
-  defp load_process_and_site(conn, _params) do
-    case is_nil(conn.params["process_id"]) do
-      false ->
-        case is_nil(conn.params["site_id"]) do
-          false ->
-            conn
-            |> put_status(404)
-
-          true ->
-            {process_id, _} = Integer.parse(conn.params["process_id"])
-
-            case ProcessModel.get(process_id) do
-              {:ok, process} ->
-                assign(conn, :process, process)
-
-              {:error, _message} ->
-                conn
-                |> put_status(404)
-            end
-        end
-
-      true ->
-        case is_nil(conn.params["site_id"]) do
-          false ->
-            {site_id, _} = Integer.parse(conn.params["site_id"])
-
-            case SiteModel.get(site_id) do
-              {:ok, site} ->
-                assign(conn, :site, site)
-
-              {:error, _message} ->
-                conn
-                |> put_status(404)
-            end
-
-          true ->
-            conn
-            |> put_status(404)
-        end
     end
   end
 

@@ -26,7 +26,13 @@ defmodule AcqdatCore.Model.User do
   Returns a user by the supplied email.
   """
   def get(id) when is_integer(id) do
-    Repo.get_by(User, id: id)
+    case Repo.get_by(User, id: id) do
+      nil ->
+        {:error, "not found"}
+
+      user ->
+        {:ok, user}
+    end
   end
 
   @doc """

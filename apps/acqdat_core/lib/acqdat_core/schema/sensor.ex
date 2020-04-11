@@ -10,7 +10,7 @@ defmodule AcqdatCore.Schema.Sensor do
   """
 
   use AcqdatCore.Schema
-  alias AcqdatCore.Schema.{Device, SensorType, SensorData}
+  alias AcqdatCore.Schema.{SensorData}
 
   @typedoc """
   `uuid`: A universallly unique id for the sensor.
@@ -29,15 +29,13 @@ defmodule AcqdatCore.Schema.Sensor do
     field(:name, :string)
 
     # associations
-    belongs_to(:device, Device, on_replace: :delete)
-    belongs_to(:sensor_type, SensorType)
 
     has_many(:sensor_data, SensorData)
     timestamps(type: :utc_datetime)
   end
 
-  @permitted ~w(device_id sensor_type_id uuid name)a
-  @update_params ~w(device_id sensor_type_id name)a
+  @permitted ~w(uuid name)a
+  @update_params ~w(name)a
 
   @spec changeset(
           __MODULE__.t(),
@@ -48,21 +46,12 @@ defmodule AcqdatCore.Schema.Sensor do
     |> cast(params, @permitted)
     |> add_uuid()
     |> validate_required(@permitted)
-    |> common_changeset()
   end
 
   def update_changeset(%__MODULE__{} = sensor, params) do
     sensor
     |> cast(params, @update_params)
     |> validate_required(@permitted)
-    |> common_changeset()
-  end
-
-  def common_changeset(changeset) do
-    changeset
-    |> assoc_constraint(:device)
-    |> assoc_constraint(:sensor_type)
-    |> unique_constraint(:name, name: :unique_sensor_per_device)
   end
 
   defp add_uuid(%Ecto.Changeset{valid?: true} = changeset) do

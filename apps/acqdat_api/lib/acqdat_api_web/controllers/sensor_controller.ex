@@ -1,15 +1,11 @@
 defmodule AcqdatApiWeb.SensorController do
   use AcqdatApiWeb, :controller
   alias AcqdatApi.Sensor
-  alias AcqdatCore.Model.Device, as: DeviceModel
   alias AcqdatCore.Model.Sensor, as: SensorModel
-  alias AcqdatCore.Model.SensorType, as: SensorTypeModel
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.Sensor
 
-  plug :load_device_and_sensor_type when action in [:create]
   plug :load_sensor when action in [:update, :delete, :show]
-  plug :load_device when action in [:sensor_by_criteria]
 
   def show(conn, %{"id" => id}) do
     case conn.status do
@@ -38,23 +34,6 @@ defmodule AcqdatApiWeb.SensorController do
         conn
         |> put_status(200)
         |> render("index.json", sensor)
-
-      404 ->
-        conn
-        |> send_error(404, "Resource Not Found")
-    end
-  end
-
-  def sensor_by_criteria(conn, params) do
-    case conn.status do
-      nil ->
-        {:list, sensors_by_criteria} = Sensor.sensor_by_criteria(params)
-
-        conn
-        |> put_status(200)
-        |> render("sensors_by_criteria_with_preloads.json",
-          sensors_by_criteria: sensors_by_criteria
-        )
 
       404 ->
         conn
@@ -138,44 +117,6 @@ defmodule AcqdatApiWeb.SensorController do
     case SensorModel.get(id) do
       {:ok, sensor} ->
         assign(conn, :sensor, sensor)
-
-      {:error, _message} ->
-        conn
-        |> put_status(404)
-    end
-  end
-
-  defp load_device_and_sensor_type(
-         %{params: %{"device_id" => device_id, "sensor_type_id" => sensor_type_id}} = conn,
-         _params
-       ) do
-    {device_id, _} = Integer.parse(device_id)
-    {sensor_type_id, _} = Integer.parse(sensor_type_id)
-
-    case DeviceModel.get(device_id) do
-      {:ok, device} ->
-        case SensorTypeModel.get(sensor_type_id) do
-          {:ok, sensor_type} ->
-            sensor_type = Map.put(sensor_type, :device, device)
-            assign(conn, :sensor_type, sensor_type)
-
-          {:error, _message} ->
-            conn
-            |> put_status(404)
-        end
-
-      {:error, _message} ->
-        conn
-        |> put_status(404)
-    end
-  end
-
-  defp load_device(%{params: %{"device_id" => device_id}} = conn, _params) do
-    {device_id, _} = Integer.parse(device_id)
-
-    case DeviceModel.get(device_id) do
-      {:ok, device} ->
-        assign(conn, :device, device)
 
       {:error, _message} ->
         conn
