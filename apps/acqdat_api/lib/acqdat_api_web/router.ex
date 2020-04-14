@@ -27,6 +27,7 @@ defmodule AcqdatApiWeb.Router do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
     post "/refresh", AuthController, :refresh_token
     post "/sign-out", AuthController, :sign_out
+    resources "/org", OrganisationController, only: [:show]
 
     # resources "/widget-type", Widgets.WidgetTypeController,
     #   only: [:create, :update, :delete, :index, :show]

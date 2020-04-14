@@ -1,10 +1,13 @@
 defmodule AcqdatCore.Support.Factory do
   use ExMachina.Ecto, repo: AcqdatCore.Repo
   use AcqdatCore.Schema
+  use AcqdatCore.Factory.Hierarchy
+
   alias AcqdatApiWeb.Guardian
   import Plug.Conn
 
   @access_time_hours 5
+
   # @image %Plug.Upload{
   #   content_type: "image/png",
   #   filename: "image.png",
@@ -17,7 +20,9 @@ defmodule AcqdatCore.Support.Factory do
   alias AcqdatCore.Schema.{
     User,
     Sensor,
-    DigitalTwin
+    DigitalTwin,
+    Organisation,
+    Asset
   }
 
   alias AcqdatCore.Schema.ToolManagement.{
@@ -65,16 +70,18 @@ defmodule AcqdatCore.Support.Factory do
     |> Ecto.Changeset.apply_changes()
   end
 
-  def digital_twin_factory do
+  def digital_twin_factory() do
     %DigitalTwin{
       name: sequence(:digital_twin, &"digital_twin#{&1}")
     }
   end
 
   def sensor_factory() do
-    asd = %Sensor{
+    %Sensor{
       uuid: UUID.uuid1(:hex),
-      name: sequence(:sensor_name, &"Sensor#{&1}")
+      name: sequence(:sensor_name, &"Sensor#{&1}"),
+      slug: sequence(:sensor_name, &"Sensor#{&1}"),
+      org: build(:organisation)
     }
   end
 
@@ -142,6 +149,9 @@ defmodule AcqdatCore.Support.Factory do
 
     changeset = ToolReturn.changeset(%ToolReturn{}, return_params)
     Repo.insert(changeset)
+  end
+
+  def organisation() do
   end
 
   def setup_conn(%{conn: conn}) do
