@@ -19,6 +19,8 @@ defmodule AcqdatCore.Support.Factory do
 
   alias AcqdatCore.Schema.{
     User,
+    UserSetting,
+    Device,
     Sensor,
     DigitalTwin,
     Organisation,
@@ -40,6 +42,21 @@ defmodule AcqdatCore.Support.Factory do
       last_name: sequence(:last_name, &"Stark-#{&1}"),
       email: sequence(:email, &"ceo-#{&1}@stark.com"),
       password_hash: "NOTASECRET"
+    }
+  end
+
+  def user_setting_factory() do
+    %UserSetting{
+      user: build(:user),
+      visual_settings: %{
+        "recently_visited_apps" => ["data_cruncher", "support", "settings", "dashboard"],
+        "taskbar_pos" => "left",
+        "desktop_wallpaper" => "default.png"
+      },
+      data_settings: %{
+        "latitude" => 11.2,
+        "longitude" => 20.22
+      }
     }
   end
 
