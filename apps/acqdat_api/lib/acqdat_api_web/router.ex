@@ -27,26 +27,35 @@ defmodule AcqdatApiWeb.Router do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
     post "/validate-token", AuthController, :validate_token
     post "/sign-out", AuthController, :sign_out
-    resources "/org", OrganisationController, only: [:show]
 
-    # resources "/widget-type", Widgets.WidgetTypeController,
-    #   only: [:create, :update, :delete, :index, :show]
+    resources "/orgs", OrganisationController, only: [:show]
+    # NOTE: Kept widgets resources out of organisation_scope currently
+    resources "/widgets", Widgets.WidgetController,
+      only: [:create, :update, :delete, :index, :show]
+  end
+
+  # NOTE: Please add resources here, only if they needs to be scoped by organisation
+  scope "/orgs/:org_id", AcqdatApiWeb do
+    pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
     resources "/users", UserController, only: [:show] do
-      resources "/settings", UserSettingController, only: [:create, :update]
+      resources "/settings", UserSettingController, only: [:create, :update], as: :settings
     end
 
-    resources "/user_widgets", Widgets.UserController, only: [:index, :create]
+    resources "/user_widgets", Widgets.UserController,
+      only: [:index, :create],
+      as: :user_widgets
+  end
 
-    resources "/widget", Widgets.WidgetController,
-      only: [:create, :update, :delete, :index, :show]
-
+  # TODO: Need to remove this scope, after everything is moved to new routes
+  scope "/", AcqdatApiWeb do
     resources "/sensor", SensorController, only: [:create, :update, :delete, :index, :show]
 
     resources "/digital-twin", DigitalTwinController,
       only: [:create, :update, :delete, :index, :show]
   end
 
+  # TODO: Need to remove this scope later, and clean test-cases also
   scope "/tl-mgmt", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
     post("/employee/identify", ToolManagementController, :verify_employee)

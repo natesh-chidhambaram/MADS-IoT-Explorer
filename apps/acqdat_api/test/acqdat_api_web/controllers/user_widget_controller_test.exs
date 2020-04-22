@@ -7,16 +7,22 @@ defmodule AcqdatApiWeb.UserWidgetControllerTest do
   describe "create/2" do
     setup :setup_conn
 
-    test "user widget create", %{conn: conn} do
-      widget = insert(:widget)
+    setup do
+      org = insert(:organisation)
       user = insert(:user)
+      [org: org, user: user]
+    end
+
+    test "user widget create", context do
+      %{org: org, user: user, conn: conn} = context
+      widget = insert(:widget)
 
       params = %{
         user_id: user.id,
         widget_id: widget.id
       }
 
-      conn = post(conn, Routes.user_path(conn, :create, params), %{})
+      conn = post(conn, Routes.user_widgets_path(conn, :create, org.id, params), %{})
       response = conn |> json_response(200)
 
       assert response == %{
@@ -26,7 +32,8 @@ defmodule AcqdatApiWeb.UserWidgetControllerTest do
              }
     end
 
-    test "fails if authorization header not found", %{conn: conn} do
+    test "fails if authorization header not found", context do
+      %{org: org, conn: conn} = context
       bad_access_token = "qwerty1234567uiop"
 
       conn =
@@ -34,23 +41,23 @@ defmodule AcqdatApiWeb.UserWidgetControllerTest do
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
       data = %{}
-      conn = post(conn, Routes.user_path(conn, :create), data)
+      conn = post(conn, Routes.user_widgets_path(conn, :create, org.id, %{}), data)
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
 
-    test "fails if sent params are not unique", %{conn: conn} do
+    test "fails if sent params are not unique", context do
+      %{org: org, user: user, conn: conn} = context
       widget = insert(:widget)
-      user = insert(:user)
 
       params = %{
         user_id: user.id,
         widget_id: widget.id
       }
 
-      conn = post(conn, Routes.user_path(conn, :create, params), %{})
+      conn = post(conn, Routes.user_widgets_path(conn, :create, org.id, params), %{})
 
-      conn = post(conn, Routes.user_path(conn, :create, params), %{})
+      conn = post(conn, Routes.user_widgets_path(conn, :create, org.id, params), %{})
       response = conn |> json_response(400)
 
       assert response == %{
@@ -60,15 +67,15 @@ defmodule AcqdatApiWeb.UserWidgetControllerTest do
              }
     end
 
-    test "fails if required resource are missing", %{conn: conn} do
-      user = insert(:user)
+    test "fails if required resource are missing", context do
+      %{org: org, user: user, conn: conn} = context
 
       params = %{
         user_id: user.id,
         widget_id: 2
       }
 
-      conn = post(conn, Routes.user_path(conn, :create, params), %{})
+      conn = post(conn, Routes.user_widgets_path(conn, :create, org.id, params), %{})
 
       response = conn |> json_response(404)
       assert response == %{"errors" => %{"message" => "Resource Not Found"}}
@@ -78,16 +85,22 @@ defmodule AcqdatApiWeb.UserWidgetControllerTest do
   describe "index/2" do
     setup :setup_conn
 
-    test "User Widget Data", %{conn: conn} do
-      widget = insert(:widget)
+    setup do
+      org = insert(:organisation)
       user = insert(:user)
+      [org: org, user: user]
+    end
+
+    test "User Widget Data", context do
+      %{org: org, user: user, conn: conn} = context
+      widget = insert(:widget)
 
       params = %{
         user_id: user.id,
         widget_id: widget.id
       }
 
-      conn = post(conn, Routes.user_path(conn, :create, params), %{})
+      conn = post(conn, Routes.user_widgets_path(conn, :create, org.id, params), %{})
 
       params = %{
         "user_id" => user.id,
@@ -95,7 +108,7 @@ defmodule AcqdatApiWeb.UserWidgetControllerTest do
         "page_number" => 1
       }
 
-      conn = get(conn, Routes.user_path(conn, :index, params))
+      conn = get(conn, Routes.user_widgets_path(conn, :index, org.id, params))
       response = conn |> json_response(200)
       assert length(response["user_widgets"]) == 1
       assertion_user_widget = List.first(response["user_widgets"])
@@ -104,9 +117,11 @@ defmodule AcqdatApiWeb.UserWidgetControllerTest do
       assert assertion_user_widget["widget"]["widget_type_id"] == widget.widget_type_id
     end
 
-    test "fails if invalid token in authorization header", %{conn: conn} do
+    test "fails if invalid token in authorization header", context do
+      %{org: org, user: user, conn: conn} = context
       bad_access_token = "qwerty1234567qwerty12"
       user = insert(:user)
+      org = insert(:organisation)
 
       conn =
         conn
@@ -118,7 +133,7 @@ defmodule AcqdatApiWeb.UserWidgetControllerTest do
         "page_number" => 1
       }
 
-      conn = get(conn, Routes.user_path(conn, :index, params))
+      conn = get(conn, Routes.user_widgets_path(conn, :index, org.id, params), %{})
       result = conn |> json_response(403)
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
