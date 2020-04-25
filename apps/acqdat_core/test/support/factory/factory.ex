@@ -20,12 +20,12 @@ defmodule AcqdatCore.Support.Factory do
   alias AcqdatCore.Schema.{
     User,
     UserSetting,
-    Device,
     Sensor,
     DigitalTwin,
     Organisation,
     Asset,
-    Gateway
+    Gateway,
+    Role
   }
 
   alias AcqdatCore.Schema.ToolManagement.{
@@ -42,13 +42,14 @@ defmodule AcqdatCore.Support.Factory do
       first_name: sequence(:first_name, &"Tony-#{&1}"),
       last_name: sequence(:last_name, &"Stark-#{&1}"),
       email: sequence(:email, &"ceo-#{&1}@stark.com"),
-      password_hash: "NOTASECRET"
+      password_hash: "NOTASECRET",
+      role: build(:role),
+      org: build(:organisation)
     }
   end
 
   def user_setting_factory() do
     %UserSetting{
-      user: build(:user),
       visual_settings: %{
         "recently_visited_apps" => ["data_cruncher", "support", "settings", "dashboard"],
         "taskbar_pos" => "left",
@@ -58,6 +59,13 @@ defmodule AcqdatCore.Support.Factory do
         "latitude" => 11.2,
         "longitude" => 20.22
       }
+    }
+  end
+
+  def role_factory() do
+    %Role{
+      name: "member",
+      description: "Member of the organisation"
     }
   end
 
@@ -180,10 +188,15 @@ defmodule AcqdatCore.Support.Factory do
   end
 
   def organisation() do
+    %Organisation{
+      uuid: UUID.uuid1(:hex),
+      name: sequence(:organisation_name, &"Organisation#{&1}")
+    }
   end
 
   def setup_conn(%{conn: conn}) do
     user = insert(:user)
+    org = insert(:organisation)
 
     {:ok, access_token, _claims} =
       guardian_create_token(
@@ -198,7 +211,7 @@ defmodule AcqdatCore.Support.Factory do
       |> put_req_header("content-type", "application/json")
       |> put_req_header("authorization", "Bearer #{access_token}")
 
-    [conn: conn]
+    [conn: conn, user: user, org: org]
   end
 
   defp guardian_create_token(resource, time, token_type) do

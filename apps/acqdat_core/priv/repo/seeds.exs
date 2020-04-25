@@ -9,12 +9,14 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-alias AcqdatCore.Seed.{Widget, User, Sensor, Organisation, Asset}
+alias AcqdatCore.Seed.{Widget, User, Sensor, Organisation, Asset, Role}
 
 # The order here is important, don't modify it.
 
-User.seed_user!()
 Organisation.seed_organisation!()
+Role.seed()
+User.seed_user!()
 Asset.seed_asset!()
 Sensor.seed_sensors()
 Widget.seed()
+

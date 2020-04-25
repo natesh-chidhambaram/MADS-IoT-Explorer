@@ -1,4 +1,4 @@
-defmodule AcqdatApiWeb.Widgets.UserController do
+defmodule AcqdatApiWeb.Widgets.UserWidgetController do
   use AcqdatApiWeb, :controller
   alias AcqdatApi.Widgets.User
   alias AcqdatCore.Model.User, as: UserModel
@@ -8,7 +8,7 @@ defmodule AcqdatApiWeb.Widgets.UserController do
   import AcqdatApiWeb.Validators.Widgets.User
 
   plug :verify_widget_and_user when action in [:create]
-  plug :verify_user when action in [:index]
+  # plug :verify_user when action in [:index]
 
   def create(conn, params) do
     case conn.status do
@@ -93,19 +93,20 @@ defmodule AcqdatApiWeb.Widgets.UserController do
     end
   end
 
-  defp verify_user(
-         %{params: %{"user_id" => user_id}} = conn,
-         _params
-       ) do
-    {user_id, _} = Integer.parse(user_id)
+  # TODO it will be used for future user endpoints
+  # defp verify_user(
+  #        %{params: %{"user_id" => user_id}} = conn,
+  #        _params
+  #      ) do
+  #   {user_id, _} = Integer.parse(user_id)
 
-    case UserModel.get(user_id) do
-      {:ok, user} ->
-        assign(conn, :user, user)
+  #   case UserModel.get(user_id) do
+  #     {:ok, user} ->
+  #       assign(conn, :user, user)
 
-      {:error, _message} ->
-        conn
-        |> put_status(404)
-    end
-  end
+  #     {:error, _message} ->
+  #       conn
+  #       |> put_status(404)
+  #   end
+  # end
 end

@@ -1,7 +1,7 @@
 defmodule AcqdatApiWeb.OrganisationController do
   use AcqdatApiWeb, :controller
-  alias AcqdatCore.Model.Organisation, as: OrgModel
   import AcqdatApiWeb.Helpers
+  alias AcqdatCore.Model.Organisation, as: OrgModel
 
   plug :load_org when action in [:show]
 
@@ -21,6 +21,10 @@ defmodule AcqdatApiWeb.OrganisationController do
   end
 
   defp load_org(%{params: %{"id" => org_id}} = conn, _params) do
+    check_org(conn, org_id)
+  end
+
+  defp check_org(conn, org_id) do
     {org_id, _} = Integer.parse(org_id)
 
     case OrgModel.get(org_id) do

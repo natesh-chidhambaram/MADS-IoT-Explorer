@@ -1,7 +1,6 @@
 defmodule AcqdatApiWeb.OrganisationView do
   use AcqdatApiWeb, :view
   alias AcqdatApiWeb.AssetView
-  alias AcqdatApiWeb.SensorView
 
   def render("organisation_tree.json", %{org: org}) do
     %{
@@ -9,6 +8,14 @@ defmodule AcqdatApiWeb.OrganisationView do
       id: org.id,
       name: org.name,
       entities: render_many(org.assets, AssetView, "asset_tree.json")
+    }
+  end
+
+  def render("org.json", %{organisation: org}) do
+    %{
+      type: "Organisation",
+      id: org.id,
+      name: org.name
     }
   end
 end
