@@ -7,14 +7,11 @@ app_hostname = System.fetch_env!("APP_HOSTNAME")
 db_user = System.fetch_env!("DB_USER")
 db_password = System.fetch_env!("DB_PASSWORD")
 db_host = System.fetch_env!("DB_HOST")
+elastic_search_host = System.fetch_env!("ELASTIC_SEARCH_HOST")
 
-config :acqdat_iot, AcqdatIotWeb.Endpoint,
-  http: [:inet6, port: String.to_integer(app_iot_port)],
-  secret_key_base: secret_key_base
+config :acqdat_iot, AcqdatIotWeb.Endpoint, server: true
 
-config :acqdat_api, AcqdatApiWeb.Endpoint,
-  http: [:inet6, port: String.to_integer(app_api_port)],
-  secret_key_base: secret_key_base
+config :acqdat_api, AcqdatApiWeb.Endpoint, server: true
 
 # Configure Guardian
 config :acqdat_api, AcqdatApiWeb.Guardian,
@@ -45,3 +42,6 @@ config :acqdat_core, AcqdatCore.Repo,
   database: "acqdat_core_dev",
   hostname: db_host,
   pool_size: 40
+
+config :tirexs, :uri, elastic_search_host
+

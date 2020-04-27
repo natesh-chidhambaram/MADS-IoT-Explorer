@@ -50,6 +50,7 @@ services:
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       GUARDIAN_API_KEY: ${GUARDIAN_API_KEY}
       GUARDIAN_IOT_KEY: ${GUARDIAN_IOT_KEY}
+      ELASTIC_SEARCH_HOST: ${ELASTIC_SEARCH_HOST}
     depends_on:
       - database
       - elastic_search
@@ -64,6 +65,8 @@ services:
       - ./data/nginx/conf.d/:/etc/nginx/conf.d/
       # - ./data/certbot/conf:/etc/letsencrypt
       # - ./data/certbot/www:/var/www/certbot
+    depends_on: 
+      - web
   
   # certbot:
   #   image: certbot/certbot
