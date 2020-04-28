@@ -12,16 +12,16 @@ use Mix.Config
 config :acqdat_iot, AcqdatIotWeb.Endpoint,
   load_from_system_env: true,
   url: [
-    host: System.get_env("APP_HOSTNAME") || "localhost",
-    port: System.get_env("APP_IOT_PORT") || 4001
+    host: {:system, "APP_HOSTNAME"},
+    port: {:system, "APP_IOT_PORT"}
   ],
   server: true
 
 config :acqdat_api, AcqdatApiWeb.Endpoint,
   load_from_system_env: true,
   url: [
-    host: System.get_env("APP_HOSTNAME") || "localhost",
-    port: System.get_env("APP_API_PORT") || 4000
+    host: {:system, "APP_HOSTNAME"},
+    port: {:system, "APP_API_PORT"}
   ],
   server: true
 
