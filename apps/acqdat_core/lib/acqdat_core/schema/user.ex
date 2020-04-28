@@ -5,7 +5,9 @@ defmodule AcqdatCore.Schema.User do
 
   use AcqdatCore.Schema
   alias Comeonin.Argon2
-  alias AcqdatCore.Schema.{Role, UserSetting, Organisation}
+  alias AcqdatCore.Schema.{Role, UserSetting, Organisation, Asset, App}
+  alias AcqdatCore.Repo
+  import Ecto.Query
 
   @password_min_length 8
   @type t :: %__MODULE__{}
@@ -21,8 +23,10 @@ defmodule AcqdatCore.Schema.User do
 
     # associations
     belongs_to(:org, Organisation, on_replace: :delete)
-    has_one(:user_setting, UserSetting)
     belongs_to(:role, Role)
+    has_one(:user_setting, UserSetting)
+    many_to_many(:assets, Asset, join_through: "asset_user", on_replace: :delete)
+    many_to_many(:apps, App, join_through: "app_user", on_replace: :delete)
 
     timestamps(type: :utc_datetime)
   end
@@ -53,6 +57,20 @@ defmodule AcqdatCore.Schema.User do
     |> put_pass_hash()
     |> assoc_constraint(:org)
     |> assoc_constraint(:role)
+  end
+
+  def associate_asset_changeset(user, assets) do
+    user
+    |> Repo.preload(:assets)
+    |> change()
+    |> put_assoc(:assets, assets)
+  end
+
+  def associate_app_changeset(user, apps) do
+    user
+    |> Repo.preload(:apps)
+    |> change()
+    |> put_assoc(:apps, apps)
   end
 
   defp put_pass_hash(%Ecto.Changeset{valid?: true} = changeset) do

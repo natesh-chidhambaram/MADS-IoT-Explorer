@@ -3,8 +3,9 @@ defmodule AcqdatCore.Model.User do
   Exposes APIs for handling user related fields.
   """
 
-  alias AcqdatCore.Schema.{User, UserSetting}
+  alias AcqdatCore.Schema.{User, Asset, App, UserApp, UserAsset}
   alias AcqdatCore.Repo
+  import Ecto.Query
 
   @doc """
   Creates a User with the supplied params.
@@ -64,5 +65,32 @@ defmodule AcqdatCore.Model.User do
       {:ok, user} -> {:ok, user |> Repo.preload(:role)}
       {:error, message} -> {:error, message}
     end
+  end
+
+  def set_asset(user, assets) do
+    asset_ids = Enum.map(assets || [], & &1["id"])
+
+    user_assets =
+      Asset
+      |> where([asset], asset.id in ^asset_ids)
+      |> where([asset], asset.org_id == ^user.org_id)
+      |> Repo.all()
+
+    user
+    |> User.associate_asset_changeset(user_assets)
+    |> Repo.update()
+  end
+
+  def set_apps(user, apps) do
+    app_ids = Enum.map(apps || [], & &1["id"])
+
+    user_apps =
+      App
+      |> where([app], app.id in ^app_ids)
+      |> Repo.all()
+
+    user
+    |> User.associate_app_changeset(user_apps)
+    |> Repo.update()
   end
 end

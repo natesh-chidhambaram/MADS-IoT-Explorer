@@ -3,24 +3,24 @@ defmodule AcqdatApiWeb.Router do
 
   if Mix.env() == :dev do
     # If using Phoenix
-    forward "/sent_emails", Bamboo.SentEmailViewerPlug
+    forward("/sent_emails", Bamboo.SentEmailViewerPlug)
   end
 
   pipeline :api_bearer_auth do
-    plug AcqdatApiWeb.BearerAuthPipeline
+    plug(AcqdatApiWeb.BearerAuthPipeline)
   end
 
   pipeline :api_ensure_auth do
-    plug AcqdatApiWeb.EnsureAuthPipeline
+    plug(AcqdatApiWeb.EnsureAuthPipeline)
   end
 
   pipeline :api do
-    plug :accepts, ["json", "json-api"]
+    plug(:accepts, ["json", "json-api"])
   end
 
   scope "/", AcqdatApiWeb do
-    pipe_through :api
-    post "/sign-in", AuthController, :sign_in
+    pipe_through(:api)
+    post("/sign-in", AuthController, :sign_in)
   end
 
   scope "/", AcqdatApiWeb do
@@ -54,12 +54,15 @@ defmodule AcqdatApiWeb.Router do
       resources "/widgets", Widgets.UserWidgetController, only: [:index, :create], as: :widgets
     end
 
+    put("/users/:id/assets", UserController, :assets, as: :user_assets)
+    put("/users/:id/apps", UserController, :apps, as: :user_apps)
+
     resources "/sensors", SensorController, only: [:create, :update, :delete, :index, :show]
   end
 
   # TODO: Need to remove this scope later, and clean test-cases also
   scope "/tl-mgmt", AcqdatApiWeb do
-    pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
+    pipe_through([:api, :api_bearer_auth, :api_ensure_auth])
     post("/employee/identify", ToolManagementController, :verify_employee)
     post("/tool-transaction", ToolManagementController, :tool_transaction)
     post("/employees", ToolManagementController, :list_employees)
@@ -68,10 +71,11 @@ defmodule AcqdatApiWeb.Router do
     post("/tool-box-status", ToolManagementController, :tool_box_status)
 
     scope "/", ToolManagement do
-      resources "/employee", EmployeeController, only: [:create, :update, :delete, :index, :show]
-      resources "/tool-box", ToolBoxController, only: [:create, :update, :delete, :index, :show]
-      resources "/tools", ToolController, only: [:create, :update, :delete, :index, :show]
-      resources "/tool-type", ToolTypeController, only: [:create, :update, :delete, :index, :show]
+      resources("/employee", EmployeeController, only: [:create, :update, :delete, :index, :show])
+      resources("/tool-box", ToolBoxController, only: [:create, :update, :delete, :index, :show])
+      resources("/tools", ToolController, only: [:create, :update, :delete, :index, :show])
+
+      resources("/tool-type", ToolTypeController, only: [:create, :update, :delete, :index, :show])
     end
   end
 end

@@ -3,6 +3,7 @@ defmodule AcqdatCore.Schema.UserTest do
   use AcqdatCore.DataCase
   import AcqdatCore.Support.Factory
   alias AcqdatCore.Schema.User
+  import AcqdatCore.Support.Factory
 
   describe "changeset/2" do
     test "returns error changeset on empty params" do
@@ -58,6 +59,38 @@ defmodule AcqdatCore.Schema.UserTest do
       assert %{
                email: ["has invalid format"]
              } == errors_on(changeset)
+    end
+  end
+
+  describe "assets/2" do
+    setup do
+      user = insert(:user)
+
+      [user: user]
+    end
+
+    test "updates assets of the user", context do
+      asset = insert(:asset)
+      %{user: user} = context
+
+      %{valid?: validity} = User.associate_asset_changeset(user, [asset])
+      assert validity
+    end
+  end
+
+  describe "apps/2" do
+    setup do
+      user = insert(:user)
+
+      [user: user]
+    end
+
+    test "updates apps of the user", context do
+      app = insert(:app)
+      %{user: user} = context
+
+      %{valid?: validity} = User.associate_app_changeset(user, [app])
+      assert validity
     end
   end
 end

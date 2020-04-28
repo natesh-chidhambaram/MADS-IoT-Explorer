@@ -25,7 +25,8 @@ defmodule AcqdatCore.Support.Factory do
     Organisation,
     Asset,
     Gateway,
-    Role
+    Role,
+    App
   }
 
   alias AcqdatCore.Schema.ToolManagement.{
@@ -37,6 +38,12 @@ defmodule AcqdatCore.Support.Factory do
     ToolReturn
   }
 
+  def organisation_factory() do
+    %Organisation{
+      name: sequence(:name, &"Org-#{&1}")
+    }
+  end
+
   def user_factory() do
     %User{
       first_name: sequence(:first_name, &"Tony-#{&1}"),
@@ -45,6 +52,13 @@ defmodule AcqdatCore.Support.Factory do
       password_hash: "NOTASECRET",
       role: build(:role),
       org: build(:organisation)
+    }
+  end
+
+  def app_factory() do
+    %App{
+      name: sequence(:name, &"App_Name-#{&1}"),
+      description: "Demo App Testing"
     }
   end
 
@@ -64,7 +78,7 @@ defmodule AcqdatCore.Support.Factory do
 
   def role_factory() do
     %Role{
-      name: "member",
+      name: sequence(:name, &"Role-#{&1}"),
       description: "Member of the organisation"
     }
   end

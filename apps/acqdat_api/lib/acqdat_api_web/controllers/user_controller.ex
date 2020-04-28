@@ -4,9 +4,10 @@ defmodule AcqdatApiWeb.UserController do
   alias AcqdatCore.Model.User, as: UserModel
   alias AcqdatApi.ElasticSearch
   import AcqdatApiWeb.Helpers
+  import AcqdatApiWeb.Validators.User
 
   plug AcqdatApiWeb.Plug.LoadOrg when action in [:search_users, :index]
-  plug AcqdatApiWeb.Plug.LoadUser when action in [:show, :update]
+  plug AcqdatApiWeb.Plug.LoadUser when action in [:show, :update, :assets, :apps]
 
   def show(conn, %{"id" => id}) do
     case conn.status do
@@ -42,6 +43,58 @@ defmodule AcqdatApiWeb.UserController do
               "error" => true,
               "message:" => message
             })
+        end
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+    end
+  end
+
+  def assets(conn, params) do
+    case conn.status do
+      nil ->
+        %{assigns: %{user: user}} = conn
+
+        changeset = verify_assets_params(params)
+
+        with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
+             {:done, {:ok, user}} <- {:done, User.set_asset(user, data)} do
+          conn
+          |> put_status(200)
+          |> render("user_assets.json", %{user: user})
+        else
+          {:extract, {:error, error}} ->
+            send_error(conn, 400, error)
+
+          {:create, {:error, message}} ->
+            send_error(conn, 400, message)
+        end
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+    end
+  end
+
+  def apps(conn, params) do
+    case conn.status do
+      nil ->
+        %{assigns: %{user: user}} = conn
+
+        changeset = verify_apps_params(params)
+
+        with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
+             {:done, {:ok, user}} <- {:done, User.set_apps(user, data)} do
+          conn
+          |> put_status(200)
+          |> render("user_apps.json", %{user: user})
+        else
+          {:extract, {:error, error}} ->
+            send_error(conn, 400, error)
+
+          {:create, {:error, message}} ->
+            send_error(conn, 400, message)
         end
 
       404 ->
