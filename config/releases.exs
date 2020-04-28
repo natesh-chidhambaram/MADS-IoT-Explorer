@@ -44,4 +44,3 @@ config :acqdat_core, AcqdatCore.Repo,
   pool_size: 40
 
 config :tirexs, :uri, elastic_search_host
-
