@@ -20,7 +20,9 @@ defmodule AcqdatApiWeb.Router do
 
   scope "/", AcqdatApiWeb do
     pipe_through(:api)
+
     post("/sign-in", AuthController, :sign_in)
+    post("/orgs/:org_id/users", UserController, :create)
   end
 
   scope "/", AcqdatApiWeb do
@@ -56,6 +58,7 @@ defmodule AcqdatApiWeb.Router do
 
     put("/users/:id/assets", UserController, :assets, as: :user_assets)
     put("/users/:id/apps", UserController, :apps, as: :user_apps)
+    resources "/invitations", InvitationController, only: [:create]
 
     resources "/sensors", SensorController, only: [:create, :update, :delete, :index, :show]
   end
