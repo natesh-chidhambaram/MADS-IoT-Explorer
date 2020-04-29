@@ -35,7 +35,7 @@ services:
       context: ../../
       dockerfile: ./devops/local/Dockerfile
     restart: always
-    container_name: web_app
+    container_name: web
     ports:
       - 4001:4001
       - 4000:4000
@@ -58,7 +58,7 @@ services:
   nginx:
     image: nginx:1.17-alpine
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
       - ./data/nginx/conf.d/:/etc/nginx/conf.d/
       # - ./data/certbot/conf:/etc/letsencrypt
