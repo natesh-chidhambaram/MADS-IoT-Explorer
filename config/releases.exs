@@ -44,3 +44,23 @@ config :acqdat_core, AcqdatCore.Repo,
   pool_size: 40
 
 config :tirexs, :uri, elastic_search_host
+
+config :arc,
+  asset_host: "https://datakrew-image.s3.ap-south-1.amazonaws.com",
+  storage: Arc.Storage.S3,
+  bucket: {:system, "AWS_S3_BUCKET"}
+
+# virtual_host: true
+
+config :ex_aws,
+  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
+  secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
+  region: "ap-south-1"
+
+config :google_maps,
+  api_key: System.get_env("GOOGLE_SECRET_KEY")
+
+# Configure mailer using Thoughtbot/Bamboo
+config :acqdat_core, AcqdatCore.Mailer,
+  adapter: Bamboo.SendGridAdapter,
+  api_key: System.get_env("SENDGRID_KEY")
