@@ -11,23 +11,18 @@ use Mix.Config
 # before starting your production server.
 config :acqdat_iot, AcqdatIotWeb.Endpoint,
   load_from_system_env: true,
-  url: [
-    host: {:system, "APP_HOSTNAME"},
-    port: {:system, "APP_IOT_PORT"}
-  ],
+  http: [port: {:system, "APP_IOT_PORT"}],
   server: true
 
 config :acqdat_api, AcqdatApiWeb.Endpoint,
   load_from_system_env: true,
-  url: [
-    host: {:system, "APP_HOSTNAME"},
-    port: {:system, "APP_API_PORT"}
-  ],
+  http: [port: {:system, "APP_API_PORT"}],
   server: true
 
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :tirexs, :uri, {:system, "ELASTIC_SEARCH_HOST"}
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
