@@ -42,8 +42,9 @@ defmodule AcqdatApiWeb.Router do
 
     get "/search_widgets", Widgets.WidgetController, :search_widget
 
-    resources "/digital-twin", DigitalTwinController,
+    resources("/digital-twin", DigitalTwinController,
       only: [:create, :update, :delete, :index, :show]
+    )
   end
 
   # NOTE: Please add resources here, only if they needs to be scoped by organisation
@@ -56,10 +57,16 @@ defmodule AcqdatApiWeb.Router do
       resources "/widgets", Widgets.UserWidgetController, only: [:index, :create], as: :widgets
     end
 
+    resources("/teams", TeamController, only: [:create, :index, :update])
+    put("/teams/:id/assets", TeamController, :update_assets, as: :update_team_assets)
+    put("/teams/:id/apps", TeamController, :update_apps, as: :update_team_apps)
+    put("/teams/:id/members", TeamController, :update_members, as: :update_team_members)
+
     put("/users/:id/assets", UserController, :assets, as: :user_assets)
     put("/users/:id/apps", UserController, :apps, as: :user_apps)
-    resources "/invitations", InvitationController, only: [:create]
+    put("/users/:id/teams", UserController, :update_teams, as: :user_teams)
 
+    resources "/invitations", InvitationController, only: [:create]
     resources "/sensors", SensorController, only: [:create, :update, :delete, :index, :show]
   end
 

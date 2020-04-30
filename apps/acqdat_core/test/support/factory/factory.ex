@@ -18,6 +18,7 @@ defmodule AcqdatCore.Support.Factory do
   alias AcqdatCore.Widgets.Schema.{Widget, WidgetType}
 
   alias AcqdatCore.Schema.{
+    Team,
     User,
     UserSetting,
     Sensor,
@@ -59,7 +60,8 @@ defmodule AcqdatCore.Support.Factory do
   def app_factory() do
     %App{
       name: sequence(:name, &"App_Name-#{&1}"),
-      description: "Demo App Testing"
+      description: "Demo App Testing",
+      uuid: UUID.uuid1(:hex)
     }
   end
 
@@ -70,6 +72,14 @@ defmodule AcqdatCore.Support.Factory do
       inviter: build(:user),
       role: build(:role),
       org: build(:organisation)
+    }
+  end
+
+  def team_factory() do
+    %Team{
+      name: sequence(:name, &"Team_Name-#{&1}"),
+      org: build(:organisation),
+      creator: build(:user)
     }
   end
 

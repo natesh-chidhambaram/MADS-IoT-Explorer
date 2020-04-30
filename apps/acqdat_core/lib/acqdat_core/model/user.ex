@@ -3,7 +3,8 @@ defmodule AcqdatCore.Model.User do
   Exposes APIs for handling user related fields.
   """
 
-  alias AcqdatCore.Schema.{User, Asset, App, UserApp, UserAsset}
+  alias AcqdatCore.Schema.{User, Asset, App}
+  alias AcqdatCore.Schema.{User, Asset, App, Team}
   alias AcqdatCore.Repo
   import Ecto.Query
 
@@ -91,6 +92,19 @@ defmodule AcqdatCore.Model.User do
 
     user
     |> User.associate_app_changeset(user_apps)
+    |> Repo.update()
+  end
+
+  def update_teams(user, teams) do
+    team_ids = Enum.map(teams, & &1["id"])
+
+    user_teams =
+      Team
+      |> where([team], team.id in ^team_ids)
+      |> Repo.all()
+
+    user
+    |> User.associate_team_changeset(user_teams)
     |> Repo.update()
   end
 end
