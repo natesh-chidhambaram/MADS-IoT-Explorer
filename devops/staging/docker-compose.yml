@@ -51,6 +51,7 @@ services:
       GUARDIAN_API_KEY: ${GUARDIAN_API_KEY}
       GUARDIAN_IOT_KEY: ${GUARDIAN_IOT_KEY}
       ELASTIC_SEARCH_HOST: ${ELASTIC_SEARCH_HOST}
+      FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       - database
       - elastic_search
