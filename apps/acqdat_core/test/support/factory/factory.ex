@@ -18,14 +18,17 @@ defmodule AcqdatCore.Support.Factory do
   alias AcqdatCore.Widgets.Schema.{Widget, WidgetType}
 
   alias AcqdatCore.Schema.{
-    Team,
-    User,
-    UserSetting,
     Sensor,
     DigitalTwin,
     Organisation,
     Asset,
-    Gateway,
+    Gateway
+  }
+
+  alias AcqdatCore.Schema.RoleManagement.{
+    Team,
+    User,
+    UserSetting,
     Role,
     App,
     Invitation
@@ -69,6 +72,7 @@ defmodule AcqdatCore.Support.Factory do
     %Invitation{
       email: sequence(:email, &"ceo-#{&1}@stark.com"),
       token: UUID.uuid1(:hex),
+      salt: UUID.uuid1(:hex),
       inviter: build(:user),
       role: build(:role),
       org: build(:organisation)
