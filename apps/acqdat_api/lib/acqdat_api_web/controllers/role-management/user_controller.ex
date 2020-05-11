@@ -1,10 +1,10 @@
 defmodule AcqdatApiWeb.RoleManagement.UserController do
   use AcqdatApiWeb, :controller
   alias AcqdatApi.RoleManagement.User
-  alias AcqdatCore.Model.RoleManagement.User, as: UserModel
   alias AcqdatApi.ElasticSearch
-  import AcqdatApiWeb.Validators.RoleManagement.User
+  alias AcqdatApi.Image
   import AcqdatApiWeb.Helpers
+  import AcqdatApiWeb.Validators.RoleManagement.User
 
   plug AcqdatApiWeb.Plug.LoadOrg when action in [:search_users, :index]
   plug AcqdatApiWeb.Plug.LoadUser when action in [:show, :update, :assets, :apps, :update_teams]
@@ -182,7 +182,9 @@ defmodule AcqdatApiWeb.RoleManagement.UserController do
   def update(conn, params) do
     case conn.status do
       nil ->
-        case UserModel.update(conn.assigns.user, params) do
+        %{assigns: %{user: user}} = conn
+
+        case User.update_user(user, add_avatar_to_params(conn, params)) do
           {:ok, user} ->
             ElasticSearch.update_users("users", user)
 
@@ -200,6 +202,28 @@ defmodule AcqdatApiWeb.RoleManagement.UserController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+    end
+  end
+
+  defp add_avatar_to_params(conn, params) do
+    %{assigns: %{user: user}} = conn
+
+    params = Map.put(params, "avatar", user.avatar)
+
+    case is_nil(params["image"]) do
+      true ->
+        params
+
+      false ->
+        add_image_url(conn, params)
+    end
+  end
+
+  defp add_image_url(conn, %{"image" => image} = params) do
+    with {:ok, image_name} <- Image.store({image, "user"}) do
+      Map.replace!(params, "avatar", Image.url({image_name, "user"}))
+    else
+      {:error, error} -> send_error(conn, 400, error)
     end
   end
 end
