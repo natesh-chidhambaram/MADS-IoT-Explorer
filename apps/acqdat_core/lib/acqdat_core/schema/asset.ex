@@ -18,10 +18,10 @@ defmodule AcqdatCore.Schema.Asset do
   """
   use AcqdatCore.Schema
 
-  alias AcqdatCore.Schema.{Organisation, AssetCategory}
+  alias AcqdatCore.Schema.{Organisation, AssetCategory, Project}
   alias AcqdatCore.Schema.RoleManagement.User
 
-  use AsNestedSet, scope: [:org_id]
+  use AsNestedSet, scope: [:project_id]
 
   @typedoc """
   `uuid`: A universally unique id to identify the Asset.
@@ -58,13 +58,14 @@ defmodule AcqdatCore.Schema.Asset do
     field(:image, :any, virtual: true)
 
     belongs_to(:org, Organisation, on_replace: :delete)
+    belongs_to(:project, Project, on_replace: :delete)
     belongs_to(:asset_category, AssetCategory, on_replace: :raise)
     many_to_many(:users, User, join_through: "asset_user")
 
     timestamps(type: :utc_datetime)
   end
 
-  @required_params ~w(uuid slug parent_id org_id )a
+  @required_params ~w(uuid slug parent_id org_id project_id)a
   @optional_params ~w(name lft rgt metadata description properties image image_url asset_category_id)a
 
   @required_embedded_params ~w(name uuid parameter_uuid sensor_uuid)a
@@ -95,6 +96,7 @@ defmodule AcqdatCore.Schema.Asset do
   def common_changeset(changeset) do
     changeset
     |> assoc_constraint(:org)
+    |> assoc_constraint(:project)
     |> unique_constraint(:slug, name: :acqdat_gateway_slug_index)
     |> unique_constraint(:uuid, name: :acqdat_gateway_uuid_index)
     |> unique_constraint(:name,
