@@ -50,6 +50,7 @@ defmodule AcqdatCore.Schema.EntityManagement.Asset do
     embeds_many :mapped_parameters, MappedParameters do
       field(:name, :string, null: false)
       field(:uuid, :string, null: false)
+      field(:sensor_type_uuid, :string, null: false)
       field(:sensor_uuid, :string, null: false)
       field(:parameter_uuid, :string, null: false)
     end
@@ -57,18 +58,25 @@ defmodule AcqdatCore.Schema.EntityManagement.Asset do
     field(:image_url, :string)
     field(:image, :any, virtual: true)
 
+    # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:project, Project, on_replace: :delete)
     belongs_to(:asset_category, AssetCategory, on_replace: :raise)
+    belongs_to(:creator, User)
+    belongs_to(:owner, User)
     many_to_many(:users, User, join_through: "asset_user")
 
     timestamps(type: :utc_datetime)
   end
 
-  @required_params ~w(uuid slug parent_id org_id project_id)a
-  @optional_params ~w(name lft rgt metadata description properties image image_url asset_category_id)a
+  @required_params ~w(uuid slug org_id project_id)a
+  @update_required_params ~w(uuid slug org_id )a
+  @optional_params ~w(name lft rgt parent_id metadata description properties image creator_id owner_id image_url asset_category_id)a
 
-  @required_embedded_params ~w(name uuid parameter_uuid sensor_uuid)a
+  @required_embedded_params ~w(name)a
+  @optional_embedded_params ~w(name uuid parameter_uuid sensor_uuid)a
+
+  @permitted_embedded @required_embedded_params ++ @optional_embedded_params
   @permitted @required_params ++ @optional_params
 
   @spec changeset(
@@ -89,17 +97,17 @@ defmodule AcqdatCore.Schema.EntityManagement.Asset do
     asset
     |> cast(params, @permitted)
     |> cast_embed(:mapped_parameters, with: &mapped_parameters_changeset/2)
-    |> validate_required(@required_params)
+    |> validate_required(@update_required_params)
     |> common_changeset()
   end
 
   def common_changeset(changeset) do
-    # TODO: there is `:acqdat_gateway_slug_index` used here which seems wrong
+    # TODO: there is `:acqdat_asset_slug_index` used here which seems wrong
     changeset
     |> assoc_constraint(:org)
     |> assoc_constraint(:project)
-    |> unique_constraint(:slug, name: :acqdat_gateway_slug_index)
-    |> unique_constraint(:uuid, name: :acqdat_gateway_uuid_index)
+    |> unique_constraint(:slug, name: :acqdat_asset_slug_index)
+    |> unique_constraint(:uuid, name: :acqdat_asset_slug_index)
     |> unique_constraint(:name,
       name: :acqdat_asset_name_parent_id_org_id_index,
       message: "unique name under hierarchy"
@@ -122,7 +130,7 @@ defmodule AcqdatCore.Schema.EntityManagement.Asset do
 
   defp mapped_parameters_changeset(schema, params) do
     schema
-    |> cast(params, @required_embedded_params)
+    |> cast(params, @permitted_embedded)
     |> add_uuid()
     |> validate_required(@required_embedded_params)
   end

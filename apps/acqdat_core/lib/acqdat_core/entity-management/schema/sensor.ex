@@ -8,7 +8,9 @@ defmodule AcqdatCore.Schema.EntityManagement.Sensor do
   """
 
   use AcqdatCore.Schema
+
   alias AcqdatCore.Schema.EntityManagement.{Gateway, Organisation, Project}
+  alias AcqdatCore.Schema.EntityManagement.{SensorType}
 
   @typedoc """
   `uuid`: A universallly unique id for the sensor.
@@ -27,25 +29,20 @@ defmodule AcqdatCore.Schema.EntityManagement.Sensor do
     field(:slug, :string, null: false)
     field(:name, :string)
     field(:parent_id, :integer)
+    field(:metadata, :map)
     field(:parent_type, :string)
-
-    embeds_many :parameters, Parameters do
-      field(:name, :string, null: false)
-      field(:uuid, :string, null: false)
-      field(:data_type, :string, null: false)
-    end
 
     # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:project, Project, on_replace: :delete)
     belongs_to(:gateway, Gateway, on_replace: :delete)
+    belongs_to(:sensor_type, SensorType, on_replace: :delete)
 
     timestamps(type: :utc_datetime)
   end
 
-  @required_params ~w(org_id project_id uuid slug name)a
-  @optional_params ~w(gateway_id parent_id parent_type)a
-  @embedded_required_params ~w(name uuid data_type)a
+  @required_params ~w(org_id project_id uuid slug name sensor_type_id)a
+  @optional_params ~w(gateway_id metadata parent_id parent_type)a
 
   @permitted @required_params ++ @optional_params
 
@@ -56,26 +53,30 @@ defmodule AcqdatCore.Schema.EntityManagement.Sensor do
   def changeset(%__MODULE__{} = sensor, params) do
     sensor
     |> cast(params, @permitted)
-    |> cast_embed(:parameters, with: &parameters_changeset/2)
     |> add_uuid()
     |> add_slug()
     |> validate_required(@required_params)
     |> common_changeset()
   end
 
+  @spec update_changeset(
+          AcqdatCore.Schema.Sensor.t(),
+          :invalid | %{optional(:__struct__) => none, optional(atom | binary) => any}
+        ) :: Ecto.Changeset.t()
   def update_changeset(%__MODULE__{} = sensor, params) do
     sensor
     |> cast(params, @permitted)
-    |> cast_embed(:parameters, with: &parameters_changeset/2)
     |> validate_required(@required_params)
     |> common_changeset()
   end
 
+  @spec common_changeset(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def common_changeset(changeset) do
     changeset
     |> assoc_constraint(:org)
     |> assoc_constraint(:project)
     |> assoc_constraint(:gateway)
+    |> assoc_constraint(:sensor_type)
   end
 
   defp add_uuid(%Ecto.Changeset{valid?: true} = changeset) do
@@ -90,12 +91,5 @@ defmodule AcqdatCore.Schema.EntityManagement.Sensor do
 
   defp random_string(length) do
     :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
-  end
-
-  defp parameters_changeset(schema, params) do
-    schema
-    |> cast(params, @embedded_required_params)
-    |> add_uuid()
-    |> validate_required(@embedded_required_params)
   end
 end

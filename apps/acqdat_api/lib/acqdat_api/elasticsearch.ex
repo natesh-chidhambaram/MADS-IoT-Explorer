@@ -83,25 +83,31 @@ defmodule AcqdatApi.ElasticSearch do
     end
   end
 
-  defp do_widget_search(type, params) do
-    query =
-      search index: "#{type}" do
-        query do
-          wildcard("label", "#{params}*")
-        end
-      end
+  def search_assets(type, params) do
+    case do_asset_search(type, params) do
+      {:ok, _return_code, hits} ->
+        {:ok, hits.hits}
 
+      {:error, _return_code, hits} ->
+        {:error, hits}
+
+      :error ->
+        {:error, "elasticsearch is not running"}
+    end
+  end
+
+  defp do_widget_search(type, params) do
+    query = create_query("label", params, type)
     Tirexs.Query.create_resource(query)
   end
 
   defp do_user_search(type, params) do
-    query =
-      search index: "#{type}" do
-        query do
-          wildcard("first_name", "#{params}*")
-        end
-      end
+    query = create_query("first_name", params, type)
+    Tirexs.Query.create_resource(query)
+  end
 
+  defp do_asset_search(type, params) do
+    query = create_query("name", params, type)
     Tirexs.Query.create_resource(query)
   end
 
@@ -116,5 +122,9 @@ defmodule AcqdatApi.ElasticSearch do
 
   defp retry(function) do
     GenRetry.retry(function, retries: 3, delay: 10_000)
+  end
+
+  defp create_query(field, value, index) do
+    [search: [query: [match: ["#{field}": [query: "#{value}", fuzziness: 1]]]], index: "#{index}"]
   end
 end
