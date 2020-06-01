@@ -12,7 +12,7 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     project_assets = fetch_root_assets(project_id)
 
     Enum.reduce(project_assets, [], fn asset, acc ->
-      entities = AsNestedSet.descendants(asset) |> AsNestedSet.execute(Repo)
+      entities = AsNestedSet.children(asset) |> AsNestedSet.execute(Repo)
 
       asset = fetch_child_sensors(nil, entities, asset)
 
