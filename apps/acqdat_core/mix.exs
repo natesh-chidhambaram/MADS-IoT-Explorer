@@ -33,7 +33,7 @@ defmodule AcqdatCore.MixProject do
   def application do
     [
       mod: {AcqdatCore.Application, []},
-      extra_applications: [:logger, :arc_ecto, :scrivener_ecto]
+      extra_applications: [:logger, :arc_ecto, :scrivener_ecto, :virta]
     ]
   end
 
@@ -99,7 +99,10 @@ defmodule AcqdatCore.MixProject do
       {:tirexs, "~> 0.8"},
 
       # csv parsing
-      {:nimble_csv, "~> 0.7"}
+      {:nimble_csv, "~> 0.7"},
+
+      # flow based programming for elixir
+      {:virta, "~> 0.1"}
     ]
   end
 
