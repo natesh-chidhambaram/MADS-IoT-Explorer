@@ -1,4 +1,4 @@
-defmodule AcqdatApi.DataCruncher.Function do
+defmodule AcqdatApi.DataCruncher.Functions.TsuMax do
   @inports [:input]
   @outports [:output]
 
