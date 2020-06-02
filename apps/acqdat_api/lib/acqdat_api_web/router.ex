@@ -58,8 +58,6 @@ defmodule AcqdatApiWeb.Router do
       resources "/settings", RoleManagement.UserSettingController,
         only: [:create, :update],
         as: :settings
-
-      resources "/widgets", Widgets.UserWidgetController, only: [:index, :create], as: :widgets
     end
 
     get "/users/search", RoleManagement.UserController, :search_users
@@ -74,10 +72,13 @@ defmodule AcqdatApiWeb.Router do
     post("/projects/:project_id/entities", EntityManagement.EntityController, :update_hierarchy)
     get("/projects/:project_id/entities", EntityManagement.EntityController, :fetch_hierarchy)
 
-    get "/projects/:project_id/assets/search", EntityManagement.AssetController, :search_assets
-
     scope "/projects/:project_id", EntityManagement do
-      resources "/assets", AssetController, only: [:create, :show, :update, :delete, :index]
+      resources "/asset_types", AssetTypeController, only: [:create, :update, :delete, :index]
+
+      resources "/assets", AssetController,
+        only: [:create, :show, :update, :delete, :index],
+        as: :assets
+
       resources "/sensors", SensorController, only: [:create, :update, :delete, :index, :show]
       resources "/sensor_type", SensorTypeController, only: [:create, :index, :delete, :update]
     end
@@ -86,6 +87,9 @@ defmodule AcqdatApiWeb.Router do
       resources "/settings", UserSettingController, only: [:create, :update], as: :settings
       resources "/widgets", Widgets.UserWidgetController, only: [:index, :create], as: :widgets
     end
+
+    get "/projects/:project_id/assets/search", EntityManagement.AssetController, :search_assets,
+      as: :search_assets
   end
 
   # TODO: Need to remove this scope later, and clean test-cases also

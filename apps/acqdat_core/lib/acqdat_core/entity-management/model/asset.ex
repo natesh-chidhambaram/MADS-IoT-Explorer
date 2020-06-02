@@ -66,6 +66,16 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     |> run_under_transaction(:update_details)
   end
 
+  def fetch_root(org_id, parent_id) do
+    query =
+      from(asset in Asset,
+        where:
+          asset.org_id == ^org_id and is_nil(asset.parent_id) == true and asset.id == ^parent_id
+      )
+
+    Repo.one!(query) |> Repo.preload([:org, :project, :creator, :asset_type])
+  end
+
   def update_asset(asset, %{parent_id: parent_id} = params) when not is_nil(parent_id) do
     {:ok, parent_asset} = get(parent_id)
     params = Map.drop(params, [:parent_id])
@@ -96,11 +106,33 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     AsNestedSet.delete(asset) |> AsNestedSet.execute(Repo)
   end
 
-  def add_as_root(%{name: name, org_id: org_id, org_name: org_name, project_id: project_id}) do
+  def add_as_root(%{
+        name: name,
+        org_id: org_id,
+        org_name: org_name,
+        project_id: project_id,
+        creator_id: creator_id,
+        asset_type_id: asset_type_id,
+        metadata: metadata,
+        mapped_parameters: mapped_parameters,
+        owner_id: owner_id,
+        properties: properties
+      }) do
     # NOTE: function Ecto.Changeset.__as_nested_set_column_name__/1 is undefined or private
     try do
       taxon =
-        asset_struct(%{name: name, org_id: org_id, slug: org_name <> name, project_id: project_id})
+        asset_struct(%{
+          name: name,
+          org_id: org_id,
+          slug: org_name <> name,
+          project_id: project_id,
+          creator_id: creator_id,
+          asset_type_id: asset_type_id,
+          metadata: metadata,
+          mapped_parameters: mapped_parameters,
+          owner_id: owner_id,
+          properties: properties
+        })
         |> create(:root)
         |> AsNestedSet.execute(Repo)
 
@@ -111,6 +143,12 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     end
   end
 
+  @doc """
+  "add_as_child" function is used to create child assets from a given asset.
+  Here parent is the root asset and name and org_id is used
+  for the classification  and position is the position which can be [:child, :left, :right].
+
+  """
   def add_as_child(parent, name, org_id, position) do
     try do
       child =
@@ -118,7 +156,11 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
           name: name,
           org_id: org_id,
           slug: parent.org.name <> parent.name <> name,
-          project_id: parent.project.id
+          project_id: parent.project.id,
+          asset_type_id: parent.asset_type_id,
+          creator_id: parent.creator_id,
+          owner_id: parent.owner_id,
+          properties: parent.properties
         })
 
       taxon =
@@ -133,7 +175,7 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     end
   end
 
-  def add_taxon(%Asset{} = parent, %Asset{} = child, position) do
+  def add_as_child(%Asset{} = parent, %Asset{} = child, position) do
     try do
       taxon =
         %Asset{child | org_id: parent.org.id}
@@ -146,21 +188,6 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
       error in Ecto.InvalidChangesetError ->
         {:error, error.changeset}
     end
-  end
-
-  defp asset_struct(%{name: name, org_id: org_id, slug: slug, project_id: project_id}) do
-    %Asset{
-      name: name,
-      org_id: org_id,
-      project_id: project_id,
-      inserted_at: DateTime.truncate(DateTime.utc_now(), :second),
-      updated_at: DateTime.truncate(DateTime.utc_now(), :second),
-      uuid: UUID.uuid1(:hex),
-      slug: Slugger.slugify(slug),
-      properties: []
-    }
-    |> Repo.preload(:org)
-    |> Repo.preload(:project)
   end
 
   def asset_descendants(asset) do
@@ -195,7 +222,16 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     Map.put_new(asset, :sensors, sensors)
   end
 
-  defp asset_struct(%{name: name, org_id: org_id, slug: slug, project_id: project_id}) do
+  defp asset_struct(%{
+         name: name,
+         org_id: org_id,
+         slug: slug,
+         project_id: project_id,
+         asset_type_id: asset_type_id,
+         creator_id: creator_id,
+         owner_id: owner_id,
+         properties: properties
+       }) do
     %Asset{
       name: name,
       org_id: org_id,
@@ -204,7 +240,10 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
       updated_at: DateTime.truncate(DateTime.utc_now(), :second),
       uuid: UUID.uuid1(:hex),
       slug: Slugger.slugify(slug),
-      properties: []
+      asset_type_id: asset_type_id,
+      creator_id: creator_id,
+      owner_id: owner_id,
+      properties: properties
     }
     |> Repo.preload(:org)
     |> Repo.preload(:project)

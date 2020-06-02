@@ -5,18 +5,18 @@ defmodule AcqdatApiWeb.Validators.EntityManagement.Asset do
     verify_asset(%{
       owner_id: :integer,
       creator_id!: :integer,
-      asset_category_id: :integer,
       org_id!: :integer,
       image_url: :string,
-      mapped_parameters: {:array, :map},
+      mapped_parameters: [field: {:array, :map}, default: []],
       description: :string,
-      metadata: :map,
+      metadata: [field: {:array, :map}, default: []],
       rgt: :integer,
       properties: {:array, :string},
       lft: :integer,
       parent_id: :integer,
       name: :string,
-      project_id!: :integer
+      project_id!: :integer,
+      asset_type_id!: :integer
     })
   )
 

@@ -40,7 +40,21 @@ defmodule AcqdatApiWeb.EntityManagement.AssetView do
       name: asset.name,
       description: asset.description,
       properties: asset.properties,
+      parent_id: asset.parent_id,
+      asset_type_id: asset.asset_type_id,
+      creator_id: asset.creator_id,
+      metadata: render_many(asset.metadata, AssetView, "metadata.json"),
       mapped_parameters: render_many(asset.mapped_parameters, AssetView, "parameters.json")
+    }
+  end
+
+  def render("metadata.json", %{asset: metadata}) do
+    %{
+      id: metadata.id,
+      name: metadata.name,
+      data_type: metadata.data_type,
+      unit: metadata.unit,
+      uuid: metadata.uuid
     }
   end
 

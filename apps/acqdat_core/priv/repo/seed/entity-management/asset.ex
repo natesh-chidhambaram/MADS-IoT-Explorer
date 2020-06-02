@@ -1,5 +1,4 @@
 defmodule AcqdatCore.Seed.EntityManagement.Asset do
-
   alias AcqdatCore.Schema.EntityManagement.{Asset, Organisation, Project}
   import AsNestedSet.Modifiable
   alias AcqdatCore.Repo
@@ -108,7 +107,8 @@ defmodule AcqdatCore.Seed.EntityManagement.Asset do
       name: params.name,
       properties: params.properties,
       slug: params.slug,
-      uuid: params.uuid
+      uuid: params.uuid,
+      project_id: params.project_id
       )
   end
 end

@@ -1,39 +1,37 @@
-defmodule AcqdatCore.Schema.SensorTypeTest do
+defmodule AcqdatCore.Schema.AssetTypeTest do
   use ExUnit.Case, async: true
   use AcqdatCore.DataCase
 
   import AcqdatCore.Support.Factory
 
-  alias AcqdatCore.Schema.EntityManagement.SensorType
+  alias AcqdatCore.Schema.EntityManagement.AssetType
 
   describe "changeset/2" do
     setup do
       organisation = insert(:organisation)
-      project = insert(:project)
-      [organisation: organisation, project: project]
+      [organisation: organisation]
     end
 
     test "returns a valid changeset", context do
-      %{organisation: organisation, project: project} = context
+      %{organisation: organisation} = context
 
       params = %{
-        name: "Sensor Type 8",
-        project_id: project.id,
-        description: "This is sensor type description",
+        name: "Asset Type 8",
+        description: "This is asset type description",
         metadata: [
           %{
             name: "metadata 1",
-            data_type: "Type 1",
+            type: "Type 1",
             unit: "abc"
           },
           %{
             name: "metadata2",
-            data_type: "Type 2",
+            type: "Type 2",
             unit: "def"
           },
           %{
             name: "metadata3",
-            data_type: "Type 3",
+            type: "Type 3",
             unit: "ghi"
           }
         ],
@@ -52,13 +50,12 @@ defmodule AcqdatCore.Schema.SensorTypeTest do
         org_id: organisation.id
       }
 
-      asd = SensorType.changeset(%SensorType{}, params)
-      %{valid?: validity} = SensorType.changeset(%SensorType{}, params)
+      %{valid?: validity} = AssetType.changeset(%AssetType{}, params)
       assert validity
     end
 
     test "returns invalid if params empty" do
-      %{valid?: validity} = changeset = SensorType.changeset(%SensorType{}, %{})
+      %{valid?: validity} = changeset = AssetType.changeset(%AssetType{}, %{})
       refute validity
 
       assert %{
@@ -67,41 +64,34 @@ defmodule AcqdatCore.Schema.SensorTypeTest do
              } = errors_on(changeset)
     end
 
-    test "returns error if assoc constraint not satisfied", context do
-      %{project: project} = context
-
+    test "returns error if assoc constraint not satisfied", _context do
       params = %{
         name: "Temperature",
-        project_id: project.id,
         org_id: -1
       }
 
-      changeset = SensorType.changeset(%SensorType{}, params)
+      changeset = AssetType.changeset(%AssetType{}, params)
 
       {:error, result_changeset} = Repo.insert(changeset)
       assert %{org: ["does not exist"]} == errors_on(result_changeset)
     end
 
-    test "returns error if unique constraint not satisified", context do
-      %{project: project} = context
-
+    test "returns error if unique constraint not satisified", _context do
       params = %{
         name: "Temperature",
-        project_id: project.id,
         org_id: 1
       }
 
-      changeset = SensorType.changeset(%SensorType{}, params)
+      changeset = AssetType.changeset(%AssetType{}, params)
 
       Repo.insert(changeset)
 
       params = %{
         name: "Temperature",
-        project_id: project.id,
         org_id: 1
       }
 
-      new_changeset = SensorType.changeset(%SensorType{}, params)
+      new_changeset = AssetType.changeset(%AssetType{}, params)
       {:error, result_changeset} = Repo.insert(new_changeset)
       assert %{org: ["does not exist"]} == errors_on(result_changeset)
     end

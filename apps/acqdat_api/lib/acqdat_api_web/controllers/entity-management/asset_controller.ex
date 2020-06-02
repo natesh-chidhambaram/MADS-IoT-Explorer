@@ -1,13 +1,14 @@
 defmodule AcqdatApiWeb.EntityManagement.AssetController do
   use AcqdatApiWeb, :controller
   alias AcqdatApi.EntityManagement.Asset
+  alias AcqdatCore.Model.EntityManagement.AssetType, as: ATModel
   alias AcqdatApi.ElasticSearch
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.EntityManagement.Asset
 
   plug AcqdatApiWeb.Plug.LoadProject
   plug :load_asset when action in [:show, :update, :delete]
-  plug :load_org when action in [:search_assets, :create]
+  plug :check_org_and_asset_type when action in [:search_assets, :create]
 
   @spec show(Plug.Conn.t(), any) :: Plug.Conn.t()
   def show(conn, _params) do
@@ -138,7 +139,10 @@ defmodule AcqdatApiWeb.EntityManagement.AssetController do
     end
   end
 
-  defp load_org(%{params: %{"org_id" => org_id, "project_id" => project_id}} = conn, _params) do
+  defp check_org_and_asset_type(
+         %{params: %{"org_id" => org_id, "project_id" => project_id}} = conn,
+         _params
+       ) do
     check_org(conn, org_id, project_id)
   end
 
@@ -148,7 +152,18 @@ defmodule AcqdatApiWeb.EntityManagement.AssetController do
 
     case Asset.get(org_id, project_id) do
       {:ok, org} ->
-        assign(conn, :org, org)
+        check_asset_type(conn, org.id)
+
+      {:error, _message} ->
+        conn
+        |> put_status(404)
+    end
+  end
+
+  defp check_asset_type(%{params: %{"asset_type_id" => asset_type_id}} = conn, _org_id) do
+    case ATModel.get(asset_type_id) do
+      {:ok, asset_type} ->
+        assign(conn, :asset_type, asset_type)
 
       {:error, _message} ->
         conn

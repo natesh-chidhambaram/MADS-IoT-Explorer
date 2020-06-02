@@ -5,7 +5,8 @@ defmodule AcqdatCore.Repo.Migrations.AlterSensorType do
     #sensor type alteration
     drop constraint("acqdat_sensor_types", "acqdat_sensor_types_org_id_fkey")
     alter table("acqdat_sensor_types") do
-      add(:project_id, references("acqdat_projects", on_delete: :restrict), null: false)
+      add(:project_id, references("acqdat_projects", on_delete: :restrict))
+      add(:generated_by, GeneratedBy.type(), default: 0)
       modify(:org_id, references("acqdat_organisation", on_delete: :restrict), null: false)
     end
 
@@ -25,6 +26,7 @@ defmodule AcqdatCore.Repo.Migrations.AlterSensorType do
     create unique_index(:acqdat_sensor_types, [:name, :org_id])
     alter table("acqdat_sensor_types") do
       remove(:project_id)
+      remove(:generated_by)
       modify(:org_id, references("acqdat_organisation", on_delete: :restrict), null: false)
     end
 
