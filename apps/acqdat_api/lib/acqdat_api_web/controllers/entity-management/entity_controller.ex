@@ -4,6 +4,7 @@ defmodule AcqdatApiWeb.EntityManagement.EntityController do
   alias AcqdatCore.Model.EntityManagement.Organisation, as: OrgModel
   import AcqdatApiWeb.Helpers
 
+  plug AcqdatApiWeb.Plug.LoadCurrentUser when action in [:update_hierarchy]
   plug AcqdatApiWeb.Plug.LoadOrg when action in [:update_hierarchy]
   plug AcqdatApiWeb.Plug.LoadProject when action in [:update_hierarchy]
   plug :load_hierarchy_tree when action in [:fetch_hierarchy, :update_hierarchy]
@@ -11,12 +12,18 @@ defmodule AcqdatApiWeb.EntityManagement.EntityController do
   def update_hierarchy(conn, params) do
     case conn.status do
       nil ->
-        with {:parse, {:ok, _data}} <- {:parse, EntityParser.parse(conn.assigns.project, params)} do
+        with {:update, {:ok, _data}} <-
+               {:update,
+                EntityParser.update_project_hierarchy(
+                  conn.assigns.current_user,
+                  conn.assigns.project,
+                  params
+                )} do
           conn
           |> put_status(200)
           |> render("organisation_tree.json", conn.assigns.org)
         else
-          {:parse, {:error, error}} ->
+          {:update, {:error, error}} ->
             send_error(conn, 400, error)
         end
 

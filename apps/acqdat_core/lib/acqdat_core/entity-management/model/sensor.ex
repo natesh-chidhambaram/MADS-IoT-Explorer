@@ -34,10 +34,11 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     end
   end
 
-  def get_by_project(project_id) do
+  def get_all_by_parent_project(project_id) do
     Sensor
     |> where([sensor], sensor.project_id == ^project_id)
     |> where([sensor], sensor.parent_type == "Project")
+    |> preload([:sensor_type])
     |> Repo.all()
   end
 
@@ -87,13 +88,23 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.all(query) |> Repo.preload(preloads)
   end
 
-  def child_sensors(root) do
-    query =
-      from(sensor in Sensor,
-        where: sensor.parent_id == ^root.id
-      )
+  def child_sensors_query(root) when is_list(root) == false do
+    from(sensor in Sensor,
+      preload: [:sensor_type],
+      where: sensor.parent_id == ^root.id and sensor.parent_type == "Asset"
+    )
+  end
 
-    Repo.all(query)
+  def child_sensors_query(asset_ids) when is_list(asset_ids) do
+    from(sensor in Sensor,
+      preload: [:sensor_type],
+      where: sensor.parent_id in ^asset_ids and sensor.parent_type == "Asset"
+    )
+  end
+
+  def child_sensors(root) do
+    child_sensors_query(root)
+    |> Repo.all()
   end
 
   def get_all() do
@@ -101,9 +112,14 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
   end
 
   def delete(id) do
-    Sensor
-    |> Repo.get(id)
-    |> Repo.delete()
+    try do
+      Repo.get_by(Sensor, id: id)
+      |> Repo.delete()
+    rescue
+      _e in Ecto.ConstraintError ->
+        {:error,
+         "It contains time-series data. Please delete sensors data before deleting sensor."}
+    end
   end
 
   def insert_data(sensor, sensor_data) do

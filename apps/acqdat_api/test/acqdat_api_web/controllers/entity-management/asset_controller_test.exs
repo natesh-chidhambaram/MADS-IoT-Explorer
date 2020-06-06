@@ -43,14 +43,12 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
       conn = get(conn, Routes.assets_path(conn, :show, asset.org.id, asset.project.id, asset.id))
       result = conn |> json_response(200)
 
-      assert result == %{
-               "entities" => '',
-               "id" => asset.id,
-               "name" => asset.name,
-               "type" => "Asset",
-               "properties" => [],
-               "parent_id" => -1
-             }
+      refute is_nil(result)
+
+      assert Map.has_key?(result, "id")
+      assert Map.has_key?(result, "name")
+      assert Map.has_key?(result, "creator_id")
+      assert Map.has_key?(result, "asset_type_id")
     end
   end
 
@@ -109,14 +107,16 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
 
       metadata =
         Enum.reduce(asset.metadata, [], fn x, acc ->
-          %{id: id, data_type: data_type, name: name, unit: unit, uuid: uuid} = Map.from_struct(x)
+          %{id: id, data_type: data_type, name: name, unit: unit, uuid: uuid, value: value} =
+            Map.from_struct(x)
 
           changes = %{
             "name" => name,
             "data_type" => data_type,
             "unit" => unit,
             "uuid" => uuid,
-            "id" => id
+            "id" => id,
+            "value" => value
           }
 
           [changes | acc]
@@ -200,7 +200,7 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
     test "fails if required params are missing", %{conn: conn, org: org} do
       asset = insert(:asset)
       project = insert(:project)
-      asset_type = insert(:asset_type)
+      insert(:asset_type)
 
       conn =
         post(conn, Routes.assets_path(conn, :create, org.id, project.id), %{
@@ -253,7 +253,7 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
   describe "index/2" do
     setup :setup_conn
 
-    test "Asset Data", %{conn: conn, org: org} do
+    test "fetch all assets", %{conn: conn, org: org} do
       asset = insert(:asset)
       project = insert(:project)
 
