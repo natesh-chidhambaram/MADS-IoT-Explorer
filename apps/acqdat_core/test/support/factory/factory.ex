@@ -16,16 +16,23 @@ defmodule AcqdatCore.Support.Factory do
 
   alias AcqdatCore.Test.Support.WidgetData
   alias AcqdatCore.Widgets.Schema.{Widget, WidgetType}
+  alias AcqdatCore.Schema.DigitalTwin
 
-  alias AcqdatCore.Schema.{
-    Team,
-    User,
-    UserSetting,
+  alias AcqdatCore.Schema.EntityManagement.{
     Sensor,
-    DigitalTwin,
     Organisation,
+    AssetType,
     Asset,
     Gateway,
+    Project,
+    SensorType,
+    AssetType,
+    SensorsData
+  }
+
+  alias AcqdatCore.Schema.RoleManagement.{
+    User,
+    UserSetting,
     Role,
     App,
     Invitation
@@ -39,12 +46,6 @@ defmodule AcqdatCore.Support.Factory do
     ToolIssue,
     ToolReturn
   }
-
-  def organisation_factory() do
-    %Organisation{
-      name: sequence(:name, &"Org-#{&1}")
-    }
-  end
 
   def user_factory() do
     %User{
@@ -61,7 +62,8 @@ defmodule AcqdatCore.Support.Factory do
     %App{
       name: sequence(:name, &"App_Name-#{&1}"),
       description: "Demo App Testing",
-      uuid: UUID.uuid1(:hex)
+      uuid: UUID.uuid1(:hex),
+      key: sequence(:key, &"Key_Name-#{&1}")
     }
   end
 
@@ -69,17 +71,10 @@ defmodule AcqdatCore.Support.Factory do
     %Invitation{
       email: sequence(:email, &"ceo-#{&1}@stark.com"),
       token: UUID.uuid1(:hex),
+      salt: UUID.uuid1(:hex),
       inviter: build(:user),
       role: build(:role),
       org: build(:organisation)
-    }
-  end
-
-  def team_factory() do
-    %Team{
-      name: sequence(:name, &"Team_Name-#{&1}"),
-      org: build(:organisation),
-      creator: build(:user)
     }
   end
 
@@ -137,12 +132,134 @@ defmodule AcqdatCore.Support.Factory do
     }
   end
 
+  def asset_type_factory() do
+    %AssetType{
+      name: sequence(:asset_type_name, &"AssetType#{&1}"),
+      slug: sequence(:asset_type_name, &"AssetType#{&1}"),
+      uuid: UUID.uuid1(:hex),
+      project: build(:project),
+      org: build(:organisation),
+      parameters: [
+        %{
+          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
+          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
+          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
+        },
+        %{
+          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
+          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
+          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
+        }
+      ],
+      metadata: [
+        %{
+          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
+          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
+          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
+        },
+        %{
+          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
+          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
+          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
+        }
+      ]
+    }
+  end
+
   def sensor_factory() do
     %Sensor{
       uuid: UUID.uuid1(:hex),
       name: sequence(:sensor_name, &"Sensor#{&1}"),
       slug: sequence(:sensor_name, &"Sensor#{&1}"),
-      org: build(:organisation)
+      org: build(:organisation),
+      project: build(:project),
+      sensor_type: build(:sensor_type)
+    }
+  end
+
+  def sensor_type_factory() do
+    %SensorType{
+      name: sequence(:sensor_type_name, &"SensorType#{&1}"),
+      slug: sequence(:sensor_type_name, &"SensorType#{&1}"),
+      uuid: UUID.uuid1(:hex),
+      org: build(:organisation),
+      project: build(:project),
+      parameters: [
+        %{
+          name: sequence(:sensor_type_name, &"SensorTypeParam#{&1}"),
+          data_type: sequence(:sensor_type_name, &"SensorTypeDataType#{&1}"),
+          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}")
+        },
+        %{
+          name: sequence(:sensor_type_name, &"SensorTypeParam#{&1}"),
+          data_type: sequence(:sensor_type_name, &"SensorTypeDataType#{&1}"),
+          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}")
+        }
+      ],
+      metadata: [
+        %{
+          name: sequence(:sensor_type_name, &"SensorTypeParam#{&1}"),
+          data_type: sequence(:sensor_type_name, &"SensorTypeDataType#{&1}"),
+          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}")
+        },
+        %{
+          name: sequence(:sensor_type_name, &"SensorTypeParam#{&1}"),
+          data_type: sequence(:sensor_type_name, &"SensorTypeDataType#{&1}"),
+          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}")
+        }
+      ]
+    }
+  end
+
+  def asset_type_factory() do
+    %AssetType{
+      name: sequence(:asset_type_name, &"AssetType#{&1}"),
+      slug: sequence(:asset_type_name, &"AssetType#{&1}"),
+      uuid: UUID.uuid1(:hex),
+      org: build(:organisation),
+      project: build(:project),
+      parameters: [
+        %{
+          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
+          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
+          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
+        },
+        %{
+          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
+          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
+          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
+        }
+      ],
+      metadata: [
+        %{
+          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
+          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
+          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
+        },
+        %{
+          name: sequence(:sensor_type_name, &"SensorTypeParam#{&1}"),
+          data_type: sequence(:sensor_type_name, &"SensorTypeDataType#{&1}"),
+          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}")
+        }
+      ]
+    }
+  end
+
+  def sensors_data_factory() do
+    %SensorsData{
+      inserted_timestamp: DateTime.truncate(DateTime.utc_now(), :second),
+      parameters: [
+        %{
+          name: sequence(:sensors_data, &"SensorsData#{&1}"),
+          data_type: sequence(:sensors_data, &"SensorsData#{&1}"),
+          value: sequence(:sensors_data, &"SensorsData#{&1}")
+        },
+        %{
+          name: sequence(:sensors_data, &"SensorsData#{&1}"),
+          data_type: sequence(:sensors_data, &"SensorsData#{&1}"),
+          value: sequence(:sensors_data, &"SensorsData#{&1}")
+        }
+      ]
     }
   end
 
@@ -152,7 +269,8 @@ defmodule AcqdatCore.Support.Factory do
       name: sequence(:gateway_name, &"Gateway#{&1}"),
       access_token: sequence(:gateway_name, &"Gateway#{&1}"),
       slug: sequence(:gateway_name, &"Gateway#{&1}"),
-      org: build(:organisation)
+      org: build(:organisation),
+      project: build(:project)
     }
   end
 
@@ -220,13 +338,6 @@ defmodule AcqdatCore.Support.Factory do
 
     changeset = ToolReturn.changeset(%ToolReturn{}, return_params)
     Repo.insert(changeset)
-  end
-
-  def organisation() do
-    %Organisation{
-      uuid: UUID.uuid1(:hex),
-      name: sequence(:organisation_name, &"Organisation#{&1}")
-    }
   end
 
   def setup_conn(%{conn: conn}) do

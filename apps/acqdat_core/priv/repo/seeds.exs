@@ -9,14 +9,18 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-alias AcqdatCore.Seed.{Widget, User, Sensor, Organisation, Asset, Role}
+
+alias AcqdatCore.Seed.RoleManagement.{User, Role, App}
+alias AcqdatCore.Seed.EntityManagement.{Sensor, Organisation, Asset, Project}
+alias AcqdatCore.Seed.Widget
 
 # The order here is important, don't modify it.
 
 Organisation.seed_organisation!()
 Role.seed()
 User.seed_user!()
-Asset.seed_asset!()
-Sensor.seed_sensors()
+Project.seed!()
+#Asset.seed_asset!()
+#Sensor.seed_sensors()
 Widget.seed()
-
+App.seed()

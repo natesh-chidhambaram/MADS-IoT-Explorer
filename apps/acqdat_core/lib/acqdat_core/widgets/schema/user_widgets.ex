@@ -6,8 +6,8 @@ defmodule AcqdatCore.Widgets.Schema.UserWidgets do
   """
 
   use AcqdatCore.Schema
+  alias AcqdatCore.Schema.RoleManagement.User
   alias AcqdatCore.Widgets.Schema.Widget
-  alias AcqdatCore.Schema.User
 
   @typedoc """
   `widget_id`: widget table reference

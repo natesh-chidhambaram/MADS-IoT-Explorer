@@ -22,7 +22,7 @@ defmodule AcqdatApiWeb.Router do
     pipe_through(:api)
 
     post("/sign-in", AuthController, :sign_in)
-    post("/orgs/:org_id/users", UserController, :create)
+    post("/orgs/:org_id/users", RoleManagement.UserController, :create)
   end
 
   scope "/", AcqdatApiWeb do
@@ -30,9 +30,12 @@ defmodule AcqdatApiWeb.Router do
     post "/validate-token", AuthController, :validate_token
     post "/sign-out", AuthController, :sign_out
 
-    resources "/roles", RoleController, only: [:index]
+    resources "/roles", RoleManagement.RoleController, only: [:index]
 
-    resources "/orgs", OrganisationController, only: [:show]
+    resources "/orgs", EntityManagement.OrganisationController, only: [:show]
+    resources "/apps", AppController, only: [:index]
+    get("/orgs/:id/apps", EntityManagement.OrganisationController, :get_apps, as: :org_apps)
+
     # NOTE: Kept widgets resources out of organisation_scope currently
     resources "/widgets", Widgets.WidgetController,
       only: [:create, :update, :delete, :index, :show]
@@ -40,7 +43,7 @@ defmodule AcqdatApiWeb.Router do
     resources "/widget-type", Widgets.WidgetTypeController,
       only: [:create, :update, :delete, :index, :show]
 
-    get "/search_widgets", Widgets.WidgetController, :search_widget
+    get "/widgets/search", Widgets.WidgetController, :search_widget
 
     resources("/digital-twin", DigitalTwinController,
       only: [:create, :update, :delete, :index, :show]
@@ -50,24 +53,43 @@ defmodule AcqdatApiWeb.Router do
   # NOTE: Please add resources here, only if they needs to be scoped by organisation
   scope "/orgs/:org_id", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
-    get "/users/search", UserController, :search_users
+
+    resources "/users", RoleManagement.UserController, only: [:show, :update, :index] do
+      resources "/settings", RoleManagement.UserSettingController,
+        only: [:create, :update],
+        as: :settings
+    end
+
+    get "/users/search", RoleManagement.UserController, :search_users
+
+    scope "/", RoleManagement do
+      put("/users/:id/assets", UserController, :assets, as: :user_assets)
+      put("/users/:id/apps", UserController, :apps, as: :user_apps)
+
+      resources "/invitations", InvitationController, only: [:create, :update, :index, :delete]
+    end
+
+    post("/projects/:project_id/entities", EntityManagement.EntityController, :update_hierarchy)
+    get("/projects/:project_id/entities", EntityManagement.EntityController, :fetch_hierarchy)
+
+    scope "/projects/:project_id", EntityManagement do
+      resources "/asset_types", AssetTypeController, only: [:create, :update, :delete, :index]
+
+      resources "/assets", AssetController,
+        only: [:create, :show, :update, :delete, :index],
+        as: :assets
+
+      resources "/sensors", SensorController, only: [:create, :update, :delete, :index, :show]
+      resources "/sensor_type", SensorTypeController, only: [:create, :index, :delete, :update]
+    end
 
     resources "/users", UserController, only: [:show, :update, :index] do
       resources "/settings", UserSettingController, only: [:create, :update], as: :settings
       resources "/widgets", Widgets.UserWidgetController, only: [:index, :create], as: :widgets
     end
 
-    resources("/teams", TeamController, only: [:create, :index, :update])
-    put("/teams/:id/assets", TeamController, :update_assets, as: :update_team_assets)
-    put("/teams/:id/apps", TeamController, :update_apps, as: :update_team_apps)
-    put("/teams/:id/members", TeamController, :update_members, as: :update_team_members)
-
-    put("/users/:id/assets", UserController, :assets, as: :user_assets)
-    put("/users/:id/apps", UserController, :apps, as: :user_apps)
-    put("/users/:id/teams", UserController, :update_teams, as: :user_teams)
-
-    resources "/invitations", InvitationController, only: [:create]
-    resources "/sensors", SensorController, only: [:create, :update, :delete, :index, :show]
+    get "/projects/:project_id/assets/search", EntityManagement.AssetController, :search_assets,
+      as: :search_assets
   end
 
   # TODO: Need to remove this scope later, and clean test-cases also
