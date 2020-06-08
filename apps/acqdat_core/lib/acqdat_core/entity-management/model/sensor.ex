@@ -55,17 +55,22 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     ModelHelper.paginated_response(sensor_data_with_preloads, paginated_sensor_data)
   end
 
-  def get_all_by_assets(%{
+  def get_all_by_project_n_org(%{
         page_size: page_size,
         page_number: page_number,
         project_id: project_id,
         org_id: org_id
       }) do
-    Sensor
-    |> where([sensor], sensor.project_id == ^project_id)
-    |> where([sensor], sensor.org_id == ^org_id)
-    |> order_by(:id)
-    |> Repo.paginate(page: page_number, page_size: page_size)
+    paginated_sensor_data =
+      Sensor
+      |> where([sensor], sensor.project_id == ^project_id)
+      |> where([sensor], sensor.org_id == ^org_id)
+      |> order_by(:id)
+      |> Repo.paginate(page: page_number, page_size: page_size)
+
+    sensor_data_with_preloads = paginated_sensor_data.entries |> Repo.preload([:sensor_type])
+
+    ModelHelper.paginated_response(sensor_data_with_preloads, paginated_sensor_data)
   end
 
   def get_all_by_device(device_id) do

@@ -1,8 +1,8 @@
 defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
   use AcqdatApiWeb, :controller
-  alias AcqdatApi.EntityManagement.AssetType
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.EntityManagement.AssetType
+  alias AcqdatApi.EntityManagement.AssetType
 
   plug AcqdatApiWeb.Plug.LoadProject
   plug AcqdatApiWeb.Plug.LoadOrg
@@ -11,7 +11,7 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
   def create(conn, params) do
     case conn.status do
       nil ->
-        changeset = verify_asset_params(params)
+        changeset = verify_asset_type_params(params)
 
         with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
              {:create, {:ok, asset_type}} <- {:create, AssetType.create(data)} do

@@ -2,13 +2,13 @@ defmodule AcqdatCore.Model.EntityManagement.SensorTest do
   use ExUnit.Case, async: true
   use AcqdatCore.DataCase
   import AcqdatCore.Support.Factory
-
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SensorModel
 
   describe "get_by_id/1" do
     test "returns a particular sensor" do
       sensor = insert(:sensor)
       {:ok, result} = SensorModel.get(sensor.id)
+
       assert not is_nil(result)
       assert result.id == sensor.id
     end
@@ -64,7 +64,6 @@ defmodule AcqdatCore.Model.EntityManagement.SensorTest do
       }
 
       assert {:error, changeset} = SensorModel.create(params)
-
       assert %{name: ["can't be blank"]} == errors_on(changeset)
     end
 

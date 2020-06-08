@@ -36,7 +36,7 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorTest do
       assert %{
                org_id: ["can't be blank"],
                name: ["can't be blank"],
-               sensor_type_id: ["can't be blank"]
+               project_id: ["can't be blank"]
              } = errors_on(changeset)
     end
 
