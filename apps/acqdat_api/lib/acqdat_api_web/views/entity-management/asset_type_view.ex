@@ -1,7 +1,6 @@
 defmodule AcqdatApiWeb.EntityManagement.AssetTypeView do
   use AcqdatApiWeb, :view
   alias AcqdatApiWeb.EntityManagement.AssetTypeView
-
   # alias AcqdatApiWeb.EntityManagement.OrganisationView
 
   def render("asset_type.json", %{asset_type: asset_type}) do

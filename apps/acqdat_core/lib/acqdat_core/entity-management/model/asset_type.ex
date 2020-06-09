@@ -46,7 +46,6 @@ defmodule AcqdatCore.Model.EntityManagement.AssetType do
       )
 
     paginated_asset_data = query |> Repo.paginate(page: page_number, page_size: page_size)
-
     asset_data_with_preloads = paginated_asset_data.entries |> Repo.preload(preloads)
 
     ModelHelper.paginated_response(asset_data_with_preloads, paginated_asset_data)

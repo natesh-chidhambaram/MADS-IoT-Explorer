@@ -17,9 +17,9 @@ defmodule AcqdatCore.Schema.EntityManagement.AssetType do
   `sensor_type_uuid`: If a sensor type is created then it's uuid will be mapped to this asset type.
   `org`: Contains org_id upon which asset and consequently asset type is attached
   `project`: Inside organisation a project will be there on which asset will be attached.
-  `description`: A description of the asset-type
-  `metadata`: A metadata field which will store all the data related to asset-type and this metadata will be mapped to the asset which will inherit this asset type.
-  `org_id`: A organisation to which the asset and corresponding asset-type is belonged to.
+   `description`: A description of the asset-type
+   `metadata`: A metadata field which will store all the data related to asset-type and this metadata will be mapped to the asset which will inherit this asset type.
+   `org_id`: A organisation to which the asset and corresponding asset-type is belonged to.
   `parameters`: The different parameters of the asset type which will be inherited by sensor type which will be created along with this asset type.
   """
 

@@ -1,16 +1,13 @@
 defmodule AcqdatCore.Schema.EntityManagement.Asset do
   @moduledoc """
   Models an Asset in the system.
-
   A Asset can be any entity in an organisation which will interact with our sensor
   and send data to and forth in our given platform. An `asset` help creates a
   hierarchy for an organization.
-
   In order to deal with hierarchical structure of the assets,  we make use
   of [`as_nested_set`](http://mikehillyer.com/articles/managing-hierarchical-data-in-mysql/).
   The data structure used improves query response time for extracting hierarchical
   data.
-
   As_nested_set has a drawback though that during writes the entire tree is
   readjusted. In order to limit the effects of readjustment we scope the
   tree with `project_id`. This keeps the scope of adjustments limited
@@ -125,12 +122,12 @@ defmodule AcqdatCore.Schema.EntityManagement.Asset do
     )
   end
 
-  defp add_uuid(changeset) do
+  defp add_uuid(%Ecto.Changeset{valid?: true} = changeset) do
     changeset
     |> put_change(:uuid, UUID.uuid1(:hex))
   end
 
-  defp add_slug(changeset) do
+  defp add_slug(%Ecto.Changeset{valid?: true} = changeset) do
     changeset
     |> put_change(:slug, Slugger.slugify(random_string(12)))
   end
