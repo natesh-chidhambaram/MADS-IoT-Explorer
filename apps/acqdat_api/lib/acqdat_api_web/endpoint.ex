@@ -1,5 +1,6 @@
 defmodule AcqdatApiWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :acqdat_api
+  use Sentry.Phoenix.Endpoint
 
   @doc """
   Callback invoked for dynamically configuring the endpoint.

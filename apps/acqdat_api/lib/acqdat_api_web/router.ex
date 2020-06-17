@@ -1,5 +1,6 @@
 defmodule AcqdatApiWeb.Router do
   use AcqdatApiWeb, :router
+  use Plug.ErrorHandler
 
   if Mix.env() == :dev do
     # If using Phoenix

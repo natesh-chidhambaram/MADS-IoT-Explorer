@@ -26,7 +26,18 @@ config :acqdat_api, AcqdatApiWeb.Endpoint,
   server: true
 
 # Do not print debug messages in production
-config :logger, level: :info
+config :logger,
+  backends: [:console, Sentry.LoggerBackend]
+
+config :sentry,
+  dsn: "https://b63b314a89924efaa9fd649b89cd3854@o285155.ingest.sentry.io/1515628",
+  environment_name: :prod,
+  enable_source_code_context: true,
+  root_source_code_path: File.cwd!(),
+  tags: %{
+    env: "production"
+  },
+  included_environments: [:prod]
 
 # ## SSL Support
 #
