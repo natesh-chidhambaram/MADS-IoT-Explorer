@@ -12,7 +12,6 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
 
       org ->
         entities = ProjectModel.hierarchy_data(org.id, project_id)
-
         org = Map.put_new(org, :project_data, entities)
         {:ok, org}
     end

@@ -34,6 +34,13 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     end
   end
 
+  def get_all_by_parent_gateway(gateway_ids) do
+    Sensor
+    |> where([sensor], sensor.gateway_id in ^gateway_ids)
+    |> preload([:sensor_type])
+    |> Repo.all()
+  end
+
   def get_all_by_parent_project(project_id) do
     Sensor
     |> where([sensor], sensor.project_id == ^project_id)

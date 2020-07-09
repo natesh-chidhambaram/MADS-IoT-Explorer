@@ -17,13 +17,13 @@ defmodule AcqdatCore.Support.Factory do
   alias AcqdatCore.Test.Support.WidgetData
   alias AcqdatCore.Widgets.Schema.{Widget, WidgetType}
   alias AcqdatCore.Schema.DigitalTwin
+  alias AcqdatCore.Schema.IotManager.Gateway
 
   alias AcqdatCore.Schema.EntityManagement.{
     Sensor,
     Organisation,
     AssetType,
     Asset,
-    Gateway,
     Project,
     SensorType,
     AssetType,
@@ -264,13 +264,21 @@ defmodule AcqdatCore.Support.Factory do
   end
 
   def gateway_factory() do
+    asset = insert(:asset)
+
     %Gateway{
       uuid: UUID.uuid1(:hex),
       name: sequence(:gateway_name, &"Gateway#{&1}"),
       access_token: sequence(:gateway_name, &"Gateway#{&1}"),
       slug: sequence(:gateway_name, &"Gateway#{&1}"),
       org: build(:organisation),
-      project: build(:project)
+      project: build(:project),
+      parent_id: asset.id,
+      parent_type: "Asset",
+      channel: sequence(:gateway_name, &"Gateway#{&1}"),
+      mapped_parameters: %{},
+      streaming_data: [],
+      static_data: []
     }
   end
 
