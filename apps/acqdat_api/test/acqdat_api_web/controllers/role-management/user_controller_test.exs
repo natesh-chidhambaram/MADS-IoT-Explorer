@@ -225,59 +225,95 @@ defmodule AcqdatApiWeb.RoleManagement.UserControllerTest do
     end
   end
 
-  # describe "search_users/2" do
-  #   setup :setup_conn
+  describe "search_users/2" do
+    setup :setup_conn
 
-  #   test "fails if authorization header not found", %{conn: conn} do
-  #     bad_access_token = "avcbd123489u"
-  #     org = insert(:organisation)
+    test "fails if authorization header not found", %{conn: conn, user: user, org: org} do
+      setup_index(%{user: user, org: org})
+      bad_access_token = "avcbd123489u"
+      org = insert(:organisation)
 
-  #     conn =
-  #       conn
-  #       |> put_req_header("authorization", "Bearer #{bad_access_token}")
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-  #     conn =
-  #       get(conn, Routes.organisation_user_path(conn, :search_users, org.id), %{
-  #         "label" => "Chandu"
-  #       })
+      conn =
+        get(conn, Routes.user_path(conn, :search_users, org.id), %{
+          "label" => "Chandu"
+        })
 
-  #     result = conn |> json_response(403)
-  #     assert result == %{"errors" => %{"message" => "Unauthorized"}}
-  #   end
+      result = conn |> json_response(403)
+      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+    end
 
-  # test "search with valid params", %{conn: conn, user: user} do
-  #   conn =
-  #     get(conn, Routes.organisation_user_path(conn, :search_users, user.org_id), %{
-  #       "label" => "Chandu"
-  #     })
+    test "search with valid params", %{conn: conn, user: user, org: org} do
+      setup_index(%{user: user, org: org})
 
-  #   result = conn |> json_response(200)
-  #   assert result = %{
-  #            "users" => [
-  #              %{
-  #                "email" => "chandu@stack-avenue.com",
-  #                "first_name" => "Chandu",
-  #                "id" => 1,
-  #                "last_name" => "Developer",
-  #                "org_id" => 1
-  #              }
-  #            ]
-  #          }
-  # end
+      conn =
+        get(conn, Routes.user_path(conn, :search_users, user.org_id), %{
+          "label" => "Chandu"
+        })
 
-  #   test "search with no hits ", %{conn: conn} do
-  #     org = insert(:organisation)
+      result = conn |> json_response(200)
 
-  #     conn =
-  #       get(conn, Routes.organisation_user_path(conn, :search_users, org.id), %{
-  #         "label" => "Datakrew"
-  #       })
+      assert result = %{
+               "users" => [
+                 %{
+                   "email" => "chandu@stack-avenue.com",
+                   "first_name" => "Chandu",
+                   "id" => 1,
+                   "last_name" => "Developer",
+                   "org_id" => 1
+                 }
+               ]
+             }
+    end
 
-  #     result = conn |> json_response(200)
+    test "search with no hits ", %{conn: conn, user: user, org: org} do
+      setup_index(%{user: user, org: org})
+      org = insert(:organisation)
 
-  #     assert result = %{
-  #              "users" => []
-  #            }
-  #   end
-  # end
+      conn =
+        get(conn, Routes.user_path(conn, :search_users, org.id), %{
+          "label" => "Datakrew"
+        })
+
+      result = conn |> json_response(200)
+
+      assert result = %{
+               "users" => []
+             }
+    end
+  end
+
+  def setup_index(%{user: user, org: org}) do
+    create_organisation("organisation", org)
+    create_user("organisation", user, org)
+  end
+
+  def create_organisation(type, params) do
+    Tirexs.HTTP.put("/organisation", %{
+      mappings: %{properties: %{join_field: %{type: "join", relations: %{organisation: "user"}}}}
+    })
+
+    Tirexs.HTTP.post("#{type}/_doc/#{params.id}",
+      id: params.id,
+      name: params.name,
+      uuid: params.uuid,
+      join_field: "organisation"
+    )
+  end
+
+  def create_user(type, params, org) do
+    Tirexs.HTTP.post("#{type}/_doc/#{params.id}?routing=#{org.id}",
+      id: params.id,
+      email: params.email,
+      first_name: params.first_name,
+      last_name: params.last_name,
+      org_id: params.org_id,
+      is_invited: params.is_invited,
+      role_id: params.role_id,
+      join_field: %{name: "user", parent: org.id}
+    )
+  end
 end

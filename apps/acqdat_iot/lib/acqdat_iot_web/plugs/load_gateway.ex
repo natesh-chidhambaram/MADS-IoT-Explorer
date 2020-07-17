@@ -1,4 +1,4 @@
-defmodule AcqdatApiWeb.Plug.LoadGateway do
+defmodule AcqdatIoTWeb.Plug.LoadGateway do
   import Plug.Conn
   alias AcqdatCore.Model.IotManager.Gateway, as: GModel
 

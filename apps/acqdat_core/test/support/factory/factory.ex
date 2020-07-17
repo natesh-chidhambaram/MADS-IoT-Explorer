@@ -8,12 +8,6 @@ defmodule AcqdatCore.Support.Factory do
 
   @access_time_hours 5
 
-  # @image %Plug.Upload{
-  #   content_type: "image/png",
-  #   filename: "image.png",
-  #   path: "test/support/image.png"
-  # }
-
   alias AcqdatCore.Test.Support.WidgetData
   alias AcqdatCore.Widgets.Schema.{Widget, WidgetType}
   alias AcqdatCore.Schema.DigitalTwin
@@ -173,7 +167,8 @@ defmodule AcqdatCore.Support.Factory do
       slug: sequence(:sensor_name, &"Sensor#{&1}"),
       org: build(:organisation),
       project: build(:project),
-      sensor_type: build(:sensor_type)
+      sensor_type: build(:sensor_type),
+      gateway: build(:gateway)
     }
   end
 
@@ -252,12 +247,14 @@ defmodule AcqdatCore.Support.Factory do
         %{
           name: sequence(:sensors_data, &"SensorsData#{&1}"),
           data_type: sequence(:sensors_data, &"SensorsData#{&1}"),
-          value: sequence(:sensors_data, &"SensorsData#{&1}")
+          value: sequence(:sensors_data, &"SensorsData#{&1}"),
+          uuid: "771e9f94b49511eabc9998460aa1c6de"
         },
         %{
           name: sequence(:sensors_data, &"SensorsData#{&1}"),
           data_type: sequence(:sensors_data, &"SensorsData#{&1}"),
-          value: sequence(:sensors_data, &"SensorsData#{&1}")
+          value: sequence(:sensors_data, &"SensorsData#{&1}"),
+          uuid: "771e9f94b49511eabc9998460aa1c6de"
         }
       ]
     }
@@ -269,7 +266,7 @@ defmodule AcqdatCore.Support.Factory do
     %Gateway{
       uuid: UUID.uuid1(:hex),
       name: sequence(:gateway_name, &"Gateway#{&1}"),
-      access_token: sequence(:gateway_name, &"Gateway#{&1}"),
+      access_token: random_string(64),
       slug: sequence(:gateway_name, &"Gateway#{&1}"),
       org: build(:organisation),
       project: build(:project),
@@ -280,6 +277,10 @@ defmodule AcqdatCore.Support.Factory do
       streaming_data: [],
       static_data: []
     }
+  end
+
+  defp random_string(length) do
+    :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
   end
 
   def employee_factory() do

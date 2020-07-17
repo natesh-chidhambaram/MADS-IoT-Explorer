@@ -12,6 +12,11 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     Repo.insert(changeset)
   end
 
+  def return_mapped_parameter(gateway_id) do
+    gateway = Repo.get(Gateway, gateway_id)
+    gateway.mapped_parameters
+  end
+
   def get_by_id(id) when is_integer(id) do
     case Repo.get(Gateway, id) do
       nil ->
@@ -23,7 +28,7 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
   end
 
   def update(%Gateway{} = project, params) do
-    changeset = Gateway.update_changeset(project, params)
+    changeset = Gateway.changeset(project, params)
 
     case Repo.update(changeset) do
       {:ok, gateway} ->
