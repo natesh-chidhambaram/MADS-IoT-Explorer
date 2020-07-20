@@ -28,7 +28,7 @@ defmodule AcqdatCore.Schema.IotManager.GatewayTest do
              } == errors_on(changeset)
     end
 
-    test "returns error when duplicate gateway name is used", context do
+    test "returns error when duplicate gateway name is used" do
       gateway = insert(:gateway)
 
       params = %{
@@ -48,7 +48,7 @@ defmodule AcqdatCore.Schema.IotManager.GatewayTest do
       assert %{access_token: ["has already been taken"]} == errors_on(changeset)
     end
 
-    test "returns error when organisation is not valid", %{org: org, project: project} do
+    test "returns error when organisation is not valid", %{project: project} do
       gateway = build(:gateway)
 
       params = %{

@@ -9,11 +9,13 @@ defmodule AcqdatCore.Schema.AssetTypeTest do
   describe "changeset/2" do
     setup do
       organisation = insert(:organisation)
-      [organisation: organisation]
+      project = insert(:project, org: organisation)
+
+      [organisation: organisation, project: project]
     end
 
     test "returns a valid changeset", context do
-      %{organisation: organisation} = context
+      %{organisation: organisation, project: project} = context
 
       params = %{
         name: "Asset Type 8",
@@ -21,17 +23,17 @@ defmodule AcqdatCore.Schema.AssetTypeTest do
         metadata: [
           %{
             name: "metadata 1",
-            type: "Type 1",
+            data_type: "Type 1",
             unit: "abc"
           },
           %{
             name: "metadata2",
-            type: "Type 2",
+            data_type: "Type 2",
             unit: "def"
           },
           %{
             name: "metadata3",
-            type: "Type 3",
+            data_type: "Type 3",
             unit: "ghi"
           }
         ],
@@ -47,7 +49,8 @@ defmodule AcqdatCore.Schema.AssetTypeTest do
             unit: "def"
           }
         ],
-        org_id: organisation.id
+        org_id: organisation.id,
+        project_id: project.id
       }
 
       %{valid?: validity} = AssetType.changeset(%AssetType{}, params)
@@ -60,14 +63,18 @@ defmodule AcqdatCore.Schema.AssetTypeTest do
 
       assert %{
                org_id: ["can't be blank"],
-               name: ["can't be blank"]
+               name: ["can't be blank"],
+               project_id: ["can't be blank"]
              } = errors_on(changeset)
     end
 
-    test "returns error if assoc constraint not satisfied", _context do
+    test "returns error if assoc constraint not satisfied", context do
+      %{project: project} = context
+
       params = %{
         name: "Temperature",
-        org_id: -1
+        org_id: -1,
+        project_id: project.id
       }
 
       changeset = AssetType.changeset(%AssetType{}, params)
@@ -76,10 +83,13 @@ defmodule AcqdatCore.Schema.AssetTypeTest do
       assert %{org: ["does not exist"]} == errors_on(result_changeset)
     end
 
-    test "returns error if unique constraint not satisified", _context do
+    test "returns error if unique constraint not satisified", context do
+      %{project: project, organisation: organisation} = context
+
       params = %{
         name: "Temperature",
-        org_id: 1
+        org_id: organisation.id,
+        project_id: project.id
       }
 
       changeset = AssetType.changeset(%AssetType{}, params)
@@ -88,12 +98,13 @@ defmodule AcqdatCore.Schema.AssetTypeTest do
 
       params = %{
         name: "Temperature",
-        org_id: 1
+        org_id: organisation.id,
+        project_id: project.id
       }
 
       new_changeset = AssetType.changeset(%AssetType{}, params)
       {:error, result_changeset} = Repo.insert(new_changeset)
-      assert %{org: ["does not exist"]} == errors_on(result_changeset)
+      assert %{name: ["asset type already exists"]} == errors_on(result_changeset)
     end
   end
 end

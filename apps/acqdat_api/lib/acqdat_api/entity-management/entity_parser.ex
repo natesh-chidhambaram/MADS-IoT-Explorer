@@ -67,7 +67,7 @@ defmodule AcqdatApi.EntityManagement.EntityParser do
     end
   end
 
-  defp validate_result(result, data) when length(result) == 0 do
+  defp validate_result(result, _data) when length(result) == 0 do
     nil
   end
 
@@ -256,7 +256,7 @@ defmodule AcqdatApi.EntityManagement.EntityParser do
     AssetModel.add_as_child(parent_entity, child, :child)
   end
 
-  defp validate_parent_asset({:error, _}, _asset_name, _org_id) do
+  defp validate_parent_asset({:error, _}, _asset_name, _org_id, _current_user_id) do
     {:error, "Asset not found"}
   end
 
@@ -322,11 +322,15 @@ defmodule AcqdatApi.EntityManagement.EntityParser do
       name: entity["name"],
       sensor_type_id: entity["sensor_type_id"],
       parent_id: parent_id,
-      parent_type: "Asset",
+      parent_type: parent_type,
       org_id: org_id,
       project_id: asset.project_id,
       metadata: parse_metadata(entity["metadata"] || [])
     })
+  end
+
+  defp validate_sensor_asset({:error, _message}, _name, _org_id, _parent_id, _parent_type) do
+    {:error, "Asset not found"}
   end
 
   defp parse_metadata(metadata) do
@@ -334,10 +338,6 @@ defmodule AcqdatApi.EntityManagement.EntityParser do
       x = x |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
       [x | acc]
     end)
-  end
-
-  defp validate_sensor_asset({:error, _message}, _name, _org_id, _parent_id, _parent_type) do
-    {:error, "Asset not found"}
   end
 
   defp sensor_updation(

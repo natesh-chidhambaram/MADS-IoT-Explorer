@@ -24,15 +24,9 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectControllerTest do
       conn = post(conn, Routes.project_path(conn, :create, org.id), data)
       response = conn |> json_response(200)
 
-      assert response = %{
-               "archived" => project.archived,
-               "creator_id" => user.id,
-               "name" => project.name,
-               "org_id" => org.id,
-               "slug" => project.slug,
-               "type" => "Project",
-               "version" => project.version
-             }
+      assert response["name"] == project.name
+      assert response["creator_id"] == user.id
+      assert response["org_id"] == org.id
     end
 
     test "fails if authorization header not found", %{conn: conn, org: org, user: user} do
@@ -51,7 +45,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectControllerTest do
       assert result == %{"errors" => %{"message" => "Unauthorized"}}
     end
 
-    test "fails if sent params are not unique", %{conn: conn, org: org, user: user} do
+    test "fails if sent params are not unique", %{conn: conn} do
       project = insert(:project)
 
       data = %{
@@ -69,7 +63,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectControllerTest do
              }
     end
 
-    test "fails if required params are missing", %{conn: conn, org: org, user: user} do
+    test "fails if required params are missing", %{conn: conn, org: org} do
       conn = post(conn, Routes.project_path(conn, :create, org.id), %{})
       response = conn |> json_response(400)
 
@@ -87,7 +81,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectControllerTest do
   describe "index/2" do
     setup :setup_conn
 
-    test "Project Data", %{conn: conn, org: org} do
+    test "Project Data", %{conn: conn} do
       test_project = insert(:project)
 
       params = %{
@@ -131,8 +125,8 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectControllerTest do
       assert length(response["projects"]) == response["total_entries"]
     end
 
-    test "Pagination", %{conn: conn, org: org} do
-      [project1, project2, project3] = insert_list(3, :project)
+    test "Pagination", %{conn: conn} do
+      [project1, _project2, _project3] = insert_list(3, :project)
 
       params = %{
         "page_size" => 1,
@@ -175,13 +169,8 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectControllerTest do
       conn = put(conn, Routes.project_path(conn, :update, project.org_id, project.id), data)
       response = conn |> json_response(200)
 
-      assert response = %{
-               "creator_id" => project.creator_id,
-               "name" => project.name,
-               "org_id" => project.org_id,
-               "slug" => project.slug,
-               "type" => "Project"
-             }
+      assert response["name"] == data.name
+      assert response["id"] == project.id
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do
@@ -208,15 +197,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectControllerTest do
       conn = delete(conn, Routes.project_path(conn, :delete, project.org_id, project.id))
       response = conn |> json_response(200)
 
-      assert response = %{
-               "archived" => project.archived,
-               "creator_id" => project.creator_id,
-               "name" => project.name,
-               "org_id" => project.org_id,
-               "slug" => project.slug,
-               "type" => "Project",
-               "version" => project.version
-             }
+      assert response["id"] == project.id
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do

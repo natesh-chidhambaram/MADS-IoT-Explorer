@@ -90,21 +90,6 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
           Routes.assets_path(conn, :update, asset.org.id, asset.project.id, asset.id, params)
         )
 
-      mapped_parameters =
-        Enum.reduce(asset.mapped_parameters, [], fn x, acc ->
-          %{name: name, parameter_uuid: parameter_uuid, sensor_uuid: sensor_uuid, uuid: uuid} =
-            Map.from_struct(x)
-
-          changes = %{
-            "name" => name,
-            "parameter_uuid" => parameter_uuid,
-            "sensor_uuid" => sensor_uuid,
-            "uuid" => uuid
-          }
-
-          [changes | acc]
-        end)
-
       metadata =
         Enum.reduce(asset.metadata, [], fn x, acc ->
           %{id: id, data_type: data_type, name: name, unit: unit, uuid: uuid, value: value} =

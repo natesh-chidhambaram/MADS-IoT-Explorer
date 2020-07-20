@@ -26,6 +26,7 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorDataTest do
         ],
         inserted_timestamp: DateTime.utc_now(),
         sensor_id: sensor.id,
+        project_id: sensor.project.id,
         org_id: sensor.org_id
       }
 
@@ -41,6 +42,7 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorDataTest do
       params = %{
         parameters: [%{data_type: "string", name: "Voltage", value: "456"}],
         sensor_id: sensor.id,
+        project_id: sensor.project.id,
         org_id: sensor.org_id
       }
 
@@ -56,7 +58,8 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorDataTest do
       params = %{
         parameters: [%{data_type: "string", name: "Voltage", value: "456"}],
         inserted_timestamp: DateTime.utc_now(),
-        sensor_id: sensor.id
+        sensor_id: sensor.id,
+        project_id: sensor.project.id
       }
 
       %{valid?: validity} = changeset = SensorsData.changeset(%SensorsData{}, params)
@@ -71,7 +74,8 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorDataTest do
       params = %{
         parameters: [%{data_type: "string", name: "Voltage", value: "456"}],
         inserted_timestamp: DateTime.utc_now(),
-        org_id: sensor.org_id
+        org_id: sensor.org_id,
+        project_id: sensor.project.id
       }
 
       %{valid?: validity} = changeset = SensorsData.changeset(%SensorsData{}, params)
