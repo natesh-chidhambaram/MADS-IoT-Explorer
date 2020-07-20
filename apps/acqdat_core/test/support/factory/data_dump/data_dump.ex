@@ -100,7 +100,7 @@ defmodule AcqdatCore.Test.Support.DataDump do
         },
         "y_axis" => 21
       },
-      inserted_timestamp: "2019-08-07T10:10:01Z"
+      inserted_timestamp: DateTime.utc_now()
     }
   end
 

@@ -28,13 +28,14 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorsData do
     end
 
     # associations
-    belongs_to(:sensor, Sensor, on_replace: :raise, primary_key: true)
-    belongs_to(:org, Organisation, on_replace: :raise, primary_key: true)
+    field(:sensor_id, :integer, primary_key: true)
+    field(:org_id, :integer, primary_key: true)
+    field(:project_id, :integer, primary_key: true)
 
     timestamps(type: :utc_datetime, updated_at: false)
   end
 
-  @required_params ~w(inserted_timestamp sensor_id org_id)a
+  @required_params ~w(inserted_timestamp sensor_id org_id project_id)a
   @embedded_required_params ~w(name uuid data_type value)a
 
   @spec changeset(
@@ -46,8 +47,6 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorsData do
     |> cast(params, @required_params)
     |> cast_embed(:parameters, with: &parameters_changeset/2)
     |> validate_required(@required_params)
-    |> assoc_constraint(:sensor)
-    |> assoc_constraint(:org)
   end
 
   def parameters_changeset(schema, params) do

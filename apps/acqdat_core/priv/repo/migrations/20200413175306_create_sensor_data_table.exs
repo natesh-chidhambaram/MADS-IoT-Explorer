@@ -5,22 +5,17 @@ defmodule AcqdatCore.Repo.Migrations.CreateSensorDataTable do
     # Create SensorsData Table to store timeseries related data
     create table(:acqdat_sensors_data, primary_key: false) do
       add(:inserted_timestamp, :timestamptz, null: false, primary_key: true)
-
-      add(:org_id, references("acqdat_organisation", on_delete: :restrict),
-        null: false,
-        primary_key: true
-      )
-
-      add(:sensor_id, references("acqdat_sensors", on_delete: :restrict),
-        null: false,
-        primary_key: true
-      )
+      add(:org_id, :integer, null: false, primary_key: true)
+      add(:sensor_id, :integer, null: false, primary_key: true)
+      add(:project_id, :integer, null: false, primary_key: true)
 
       add(:parameters, {:array, :map})
       timestamps(type: :timestamptz, updated_at: false)
     end
 
-    create(unique_index(:acqdat_sensors_data, [:inserted_timestamp, :org_id, :sensor_id]))
+    create(unique_index(:acqdat_sensors_data,
+      [:inserted_timestamp, :org_id, :sensor_id, :project_id]))
+    create index(:acqdat_sensors_data, [:sensor_id, :project_id])
     flush()
     # Convert above created SensorsData Table to HyperTable to incorporate timeseries data
     # TODO: Need to think, if we can use time_partitioning_func for the chunk partioning, on the basis of (inserted_timestamp + org_id + sensor_id)
@@ -28,7 +23,9 @@ defmodule AcqdatCore.Repo.Migrations.CreateSensorDataTable do
   end
 
   def down do
-    drop(index(:acqdat_sensors_data, [:inserted_timestamp, :org_id, :sensor_id]))
+    drop(index(:acqdat_sensors_data,
+      [:inserted_timestamp, :org_id, :sensor_id, :project_id]))
+    drop(index(:acqdat_sensors_data, [:sensor_id, :project_id]))
     drop(table(:acqdat_sensors_data))
   end
 end

@@ -1,8 +1,9 @@
 defmodule AcqdatCore.Model.EntityManagement.Sensor do
-  alias AcqdatCore.Schema.EntityManagement.{Sensor, SensorData}
+  alias AcqdatCore.Schema.EntityManagement.{Sensor, SensorData, SensorsData}
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Helper, as: ModelHelper
   import Ecto.Query
+  import Ecto.Query.API, only: [coalesce: 2, fragment: 1]
 
   def create(params) do
     changeset = Sensor.changeset(%Sensor{}, params)
@@ -101,7 +102,7 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.all(query) |> Repo.preload(preloads)
   end
 
-  def child_sensors_query(root) when is_list(root) == false do
+  def child_sensors_query(root) when not is_list(root) do
     from(sensor in Sensor,
       preload: [:sensor_type],
       where: sensor.parent_id == ^root.id and sensor.parent_type == "Asset"
@@ -124,15 +125,22 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.all(Sensor)
   end
 
-  def delete(id) do
-    try do
-      Repo.get_by(Sensor, id: id)
-      |> Repo.delete()
-    rescue
-      _e in Ecto.ConstraintError ->
-        {:error,
-         "It contains time-series data. Please delete sensors data before deleting sensor."}
+  def delete(sensor_id) do
+    sensor = Repo.get(Sensor, sensor_id)
+    if has_iot_data?(sensor.id, sensor.project_id) do
+      {:error,
+       "It contains time-series data. Please delete sensors data before deleting sensor."}
+    else
+      Repo.delete(sensor)
     end
+  end
+
+  defp has_iot_data?(sensor_id, project_id) do
+    query = from(
+      data in SensorsData,
+      where: data.sensor_id == ^sensor_id and data.project_id == ^project_id
+    )
+    Repo.exists?(query)
   end
 
   def insert_data(sensor, sensor_data) do

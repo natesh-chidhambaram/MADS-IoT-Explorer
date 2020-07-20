@@ -29,13 +29,14 @@ defmodule AcqdatCore.Schema.EntityManagement.GatewayData do
     end
 
     # associations
-    belongs_to(:gateway, Gateway, on_replace: :raise, primary_key: true)
-    belongs_to(:org, Organisation, on_replace: :raise, primary_key: true)
+    field(:gateway_id, :integer, primary_key: true)
+    field(:org_id, :integer, primary_key: true)
+    field(:project_id, :integer, primary_key: true)
 
     timestamps(type: :utc_datetime, updated_at: false)
   end
 
-  @required_params ~w(inserted_timestamp gateway_id org_id)a
+  @required_params ~w(inserted_timestamp gateway_id org_id project_id)a
   @embedded_required_params ~w(name uuid data_type value)a
 
   def changeset(%__MODULE__{} = gateway_data, params) do
@@ -43,8 +44,6 @@ defmodule AcqdatCore.Schema.EntityManagement.GatewayData do
     |> cast(params, @required_params)
     |> cast_embed(:parameters, with: &parameters_changeset/2)
     |> validate_required(@required_params)
-    |> assoc_constraint(:gateway)
-    |> assoc_constraint(:org)
   end
 
   def parameters_changeset(schema, params) do

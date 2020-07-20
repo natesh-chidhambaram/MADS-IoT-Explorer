@@ -20,23 +20,24 @@ defmodule AcqdatIot.DataParser do
         parse_data(key_mapped_parameters, value, acc)
       end
     end)
-    |> persist_data(data_dump.org_id)
+    |> persist_data(data_dump.org_id, data_dump.project_id)
   end
 
   ######### persist data private helpers #############
 
-  defp persist_data(iot_data, org_id) do
+  defp persist_data(iot_data, org_id, project_id) do
     Enum.map(iot_data, fn {key, data} ->
-      data_manifest(key, data, org_id)
+      data_manifest(key, data, org_id, project_id)
     end)
   end
 
-  defp data_manifest(:gateway_data, data, org_id) do
+  defp data_manifest(:gateway_data, data, org_id, project_id) do
     gateway_data =
       Enum.reduce(data, [], fn {key, parameters}, acc ->
         params = %{
           gateway_id: key,
           org_id: org_id,
+          project_id: project_id,
           parameters: parameters,
           inserted_timestamp: DateTime.truncate(DateTime.utc_now(), :second),
           inserted_at: DateTime.truncate(DateTime.utc_now(), :second)
@@ -50,12 +51,13 @@ defmodule AcqdatIot.DataParser do
     Repo.insert_all(GDSchema, gateway_data)
   end
 
-  defp data_manifest(:sensor_data, data, org_id) do
+  defp data_manifest(:sensor_data, data, org_id, project_id) do
     sensor_data =
       Enum.reduce(data, [], fn {key, parameters}, acc ->
         params = %{
           sensor_id: key,
           org_id: org_id,
+          project_id: project_id,
           parameters: parameters,
           inserted_timestamp: DateTime.truncate(DateTime.utc_now(), :second),
           inserted_at: DateTime.truncate(DateTime.utc_now(), :second)
