@@ -206,60 +206,6 @@ defmodule AcqdatCore.Support.Factory do
     }
   end
 
-  def asset_type_factory() do
-    %AssetType{
-      name: sequence(:asset_type_name, &"AssetType#{&1}"),
-      slug: sequence(:asset_type_name, &"AssetType#{&1}"),
-      uuid: UUID.uuid1(:hex),
-      org: build(:organisation),
-      project: build(:project),
-      parameters: [
-        %{
-          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
-          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
-          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
-        },
-        %{
-          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
-          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
-          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
-        }
-      ],
-      metadata: [
-        %{
-          name: sequence(:asset_type_name, &"AssetTypeParam#{&1}"),
-          data_type: sequence(:asset_type_name, &"AssetTypeDataType#{&1}"),
-          unit: sequence(:asset_type_name, &"AssetTypeUnit#{&1}")
-        },
-        %{
-          name: sequence(:sensor_type_name, &"SensorTypeParam#{&1}"),
-          data_type: sequence(:sensor_type_name, &"SensorTypeDataType#{&1}"),
-          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}")
-        }
-      ]
-    }
-  end
-
-  def sensors_data_factory() do
-    %SensorsData{
-      inserted_timestamp: DateTime.truncate(DateTime.utc_now(), :second),
-      parameters: [
-        %{
-          name: sequence(:sensors_data, &"SensorsData#{&1}"),
-          data_type: sequence(:sensors_data, &"SensorsData#{&1}"),
-          value: sequence(:sensors_data, &"SensorsData#{&1}"),
-          uuid: "771e9f94b49511eabc9998460aa1c6de"
-        },
-        %{
-          name: sequence(:sensors_data, &"SensorsData#{&1}"),
-          data_type: sequence(:sensors_data, &"SensorsData#{&1}"),
-          value: sequence(:sensors_data, &"SensorsData#{&1}"),
-          uuid: "771e9f94b49511eabc9998460aa1c6de"
-        }
-      ]
-    }
-  end
-
   def gateway_factory() do
     asset = insert(:asset)
 
@@ -277,10 +223,6 @@ defmodule AcqdatCore.Support.Factory do
       streaming_data: [],
       static_data: []
     }
-  end
-
-  defp random_string(length) do
-    :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
   end
 
   def employee_factory() do
@@ -349,9 +291,10 @@ defmodule AcqdatCore.Support.Factory do
     Repo.insert(changeset)
   end
 
+  # TODO: This should not be here, it's the responsibility of acqdat_api.
   def setup_conn(%{conn: conn}) do
-    user = insert(:user)
     org = insert(:organisation)
+    user = insert(:user, org: org)
 
     {:ok, access_token, _claims} =
       guardian_create_token(
@@ -369,6 +312,7 @@ defmodule AcqdatCore.Support.Factory do
     [conn: conn, user: user, org: org]
   end
 
+  # Remove this from here. Responsibility of API app.
   defp guardian_create_token(resource, time, token_type) do
     Guardian.encode_and_sign(
       resource,
@@ -376,5 +320,28 @@ defmodule AcqdatCore.Support.Factory do
       token_type: token_type,
       ttl: time
     )
+  end
+
+   def sensors_data_factory() do
+    %SensorsData{
+      inserted_timestamp: DateTime.truncate(DateTime.utc_now(), :second),
+      sensor_id: 1,
+      org_id: 1,
+      project_id: 1,
+      parameters: [
+        %{
+          name: sequence(:sensors_data, &"SensorsData#{&1}"),
+          data_type: sequence(:sensors_data, &"SensorsData#{&1}"),
+          value: sequence(:sensors_data, &"SensorsData#{&1}"),
+          uuid: "771e9f94b49511eabc9998460aa1c6de"
+        },
+        %{
+          name: sequence(:sensors_data, &"SensorsData#{&1}"),
+          data_type: sequence(:sensors_data, &"SensorsData#{&1}"),
+          value: sequence(:sensors_data, &"SensorsData#{&1}"),
+          uuid: "771e9f94b49511eabc9998460aa1c6de"
+        }
+      ]
+    }
   end
 end

@@ -218,7 +218,7 @@ defmodule AcqdatCore.Model.EntityManagement.AssetTest do
       project = insert(:project)
       asset_type = insert(:asset_type)
 
-      [asset: asset, org: org, project: project]
+      [asset: asset, org: org, project: project, asset_type: asset_type]
     end
 
     test "add respective asset as root element in the tree", context do
@@ -405,7 +405,7 @@ defmodule AcqdatCore.Model.EntityManagement.AssetTest do
     }
   end
 
-  defp build_asset_map(name, org_id, org_name, project_id, creator_id, asset_type_id) do
+  defp build_asset_map(name, org_id, _org_name, project_id, creator_id, asset_type_id) do
     %AssetSchema{
       name: name,
       org_id: org_id,

@@ -38,11 +38,11 @@ defmodule AcqdatApiWeb.RoleManagement.UserControllerTest do
 
     setup do
       org = insert(:organisation)
-      project = insert(:project)
-      asset = insert(:asset)
+      project = insert(:project, org: org)
+      asset = insert(:asset, org: org, project: project)
       user = insert(:user)
 
-      [user: user, asset: asset, org: org]
+      [user: user, asset: asset, org: org, project: project]
     end
 
     test "fails if authorization header not found", context do
@@ -251,12 +251,12 @@ defmodule AcqdatApiWeb.RoleManagement.UserControllerTest do
 
       conn =
         get(conn, Routes.user_path(conn, :search_users, user.org_id), %{
-          "label" => "Chandu"
+          "label" => user.first_name
         })
 
       result = conn |> json_response(200)
 
-      assert result = %{
+      assert result == %{
                "users" => [
                  %{
                    "email" => "chandu@stack-avenue.com",
@@ -280,7 +280,7 @@ defmodule AcqdatApiWeb.RoleManagement.UserControllerTest do
 
       result = conn |> json_response(200)
 
-      assert result = %{
+      assert result == %{
                "users" => []
              }
     end

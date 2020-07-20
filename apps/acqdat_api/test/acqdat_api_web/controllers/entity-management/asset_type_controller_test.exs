@@ -53,11 +53,10 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeControllerTest do
       }
 
       conn = post(conn, Routes.asset_type_path(conn, :create, org.id, project.id), data)
-      response = conn |> json_response(200)
       conn = post(conn, Routes.asset_type_path(conn, :create, org.id, project.id), data)
       response = conn |> json_response(400)
 
-      assert response = %{
+      assert response == %{
                "errors" => %{
                  "message" => %{"error" => %{"name" => ["asset type already exists"]}}
                }
@@ -65,11 +64,8 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeControllerTest do
     end
 
     test "fails if required params are missing", %{conn: conn, org: org} do
-      asset_type = insert(:asset_type)
       project = insert(:project)
-
       conn = post(conn, Routes.asset_type_path(conn, :create, org.id, project.id), %{})
-
       response = conn |> json_response(400)
 
       assert response == %{
@@ -249,7 +245,7 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeControllerTest do
     setup :setup_conn
 
     test "Asset Data", %{conn: conn, org: org} do
-      test_asset = insert(:asset_type)
+      test_asset = insert(:asset_type, org: org)
 
       params = %{
         "page_size" => 100,
@@ -296,8 +292,7 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeControllerTest do
     end
 
     test "Pagination", %{conn: conn, org: org} do
-      [asset_type] = insert_list(1, :asset_type)
-      project = insert(:project)
+      [asset_type] = insert_list(1, :asset_type, org: org)
 
       params = %{
         "page_size" => 1,
@@ -319,7 +314,7 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeControllerTest do
 
     test "fails if invalid token in authorization header", %{conn: conn, org: org} do
       bad_access_token = "qwerty1234567qwerty12"
-      project = insert(:project)
+      project = insert(:project, org: org)
 
       conn =
         conn

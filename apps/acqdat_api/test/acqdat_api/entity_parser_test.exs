@@ -12,8 +12,8 @@ defmodule AcqdatApi.EntityParserTest do
     setup do
       project = insert(:project)
       current_user = insert(:user)
-      asset_type = insert(:asset_type)
-      sensor_type = insert(:sensor_type)
+      asset_type = insert(:asset_type, project: project)
+      sensor_type = insert(:sensor_type, project: project)
 
       [
         project: project,
@@ -130,11 +130,13 @@ defmodule AcqdatApi.EntityParserTest do
       current_user: current_user
     } do
       sensor_manifest =
-        build(:sensor, parent_id: project.id, parent_type: "Project", has_timesrs_data: true)
+        build(:sensor, parent_id: project.id, parent_type: "Project",
+          has_timesrs_data: true, project: project)
 
       {:ok, sensor} = Repo.insert(sensor_manifest)
 
-      sensor_data = build(:sensors_data, sensor_id: sensor.id, org_id: sensor.org_id)
+      sensor_data = build(:sensors_data, sensor_id: sensor.id, org_id: sensor.org_id,
+        project_id: project.id)
 
       {:ok, _sensors_data} = Repo.insert(sensor_data)
 
@@ -167,7 +169,8 @@ defmodule AcqdatApi.EntityParserTest do
       assert {:error, message} =
                EntityParser.update_project_hierarchy(current_user, project, params)
 
-      assert message == "Something went wrong. Please verify your hirerachy tree."
+      assert message ==
+        ["It contains time-series data. Please delete sensors data before deleting sensor."]
     end
 
     test "successfully deletes respective leaf asset", %{

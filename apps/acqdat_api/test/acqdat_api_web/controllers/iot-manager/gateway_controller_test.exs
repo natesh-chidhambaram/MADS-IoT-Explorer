@@ -62,7 +62,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayControllerTest do
       [asset: asset, gateway: gateway]
     end
 
-    test "update gateway name", %{conn: conn, gateway: gateway, asset: asset} do
+    test "update gateway name", %{conn: conn, gateway: gateway} do
       data = Map.put(%{}, :name, "Water Plant")
 
       conn =
@@ -110,15 +110,12 @@ defmodule AcqdatApiWeb.IotManager.GatewayControllerTest do
 
     test "fails if invalid token in authorization header", %{
       conn: conn,
-      gateway: gateway,
-      asset: asset
+      gateway: gateway
     } do
       bad_access_token = "qwerty12345678qwer"
-
       conn =
         conn
         |> put_req_header("authorization", "Bearer #{bad_access_token}")
-
       data = Map.put(%{}, :name, "Water Plant")
 
       conn =
@@ -142,7 +139,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayControllerTest do
       [asset: asset, gateway: gateway]
     end
 
-    test "gateway delete", %{conn: conn, gateway: gateway, asset: asset} do
+    test "gateway delete", %{conn: conn, gateway: gateway} do
       conn =
         delete(
           conn,
@@ -158,8 +155,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayControllerTest do
 
     test "fails if invalid token in authorization header", %{
       conn: conn,
-      gateway: gateway,
-      asset: asset
+      gateway: gateway
     } do
       bad_access_token = "qwerty1234567qwerty"
 
