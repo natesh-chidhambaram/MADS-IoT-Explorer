@@ -10,7 +10,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
 
   plug AcqdatApiWeb.Plug.LoadOrg
   plug AcqdatApiWeb.Plug.LoadProject
-  plug AcqdatApiWeb.Plug.LoadGateway when action in [:update, :delete, :show]
+  plug AcqdatApiWeb.Plug.LoadGateway when action in [:update, :delete, :show, :store_commands]
   plug :load_hierarchy_tree when action in [:hierarchy]
 
   def index(conn, params) do
@@ -118,6 +118,22 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
             conn
             |> send_error(400, error)
         end
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+    end
+  end
+
+  def store_commands(conn, params) do
+    case conn.status do
+      nil ->
+        channel = conn.assigns.gateway.channel
+        Gateway.setup_command(channel, params)
+
+        conn
+        |> put_status(200)
+        |> json(%{"command_set" => true})
 
       404 ->
         conn
