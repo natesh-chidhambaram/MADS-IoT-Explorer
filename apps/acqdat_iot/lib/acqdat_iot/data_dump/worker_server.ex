@@ -1,9 +1,10 @@
 defmodule AcqdatIot.DataDump.Worker.Server do
   use GenServer
   alias AcqdatIot.DataDump.Worker.Manager
+  require Logger
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, name: __MODULE__)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   def create(params) do

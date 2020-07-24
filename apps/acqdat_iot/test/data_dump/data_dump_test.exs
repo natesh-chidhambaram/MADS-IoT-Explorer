@@ -1,29 +1,30 @@
 defmodule AcqdatIotWeb.DataDump do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
   use AcqdatCore.DataCase
   use AcqdatIotWeb.ConnCase
   import Plug.Conn
-  import AcqdatCore.Support.Factory
+  alias AcqdatCore.Test.Support.DataDump
 
   describe "create/2" do
+    setup %{} do
+      # Setting the shared mode so the internal processes share the same db
+      # conneciton.
+      Ecto.Adapters.SQL.Sandbox.mode(Repo, {:shared, self()})
+    end
+
     setup :setup_gateway
 
-    test "data dump create", %{conn: conn, org: org, gateway: gateway} do
-      project = insert(:project)
-
-      params = %{
-        data: %{
-          axis_object: %{
-            x_axis: 20,
-            y_axis: 21
-          }
-        },
-        inserted_timestamp: "2019-08-07T10:10:01Z"
-      }
+    test "data dump create", %{conn: conn, org: org, gateway: gateway, data_dump: data_dump} do
+      project = gateway.project
+      params = data_dump
 
       conn =
         post(conn, Routes.data_dump_path(conn, :create, org.id, project.id, gateway.id), params)
 
+      # TODO: have added a small time out so worker processes release db
+      # connection, else the test exits and db connection is removed.
+      # Need to add a clean way to handle this.
+      :timer.sleep(50)
       result = conn |> json_response(202)
       assert result == %{"data inserted" => true}
     end
@@ -50,7 +51,7 @@ defmodule AcqdatIotWeb.DataDump do
   end
 
   def setup_gateway(%{conn: conn}) do
-    gateway = insert(:gateway)
+    [data_dump, _sensor1, _sensor2, gateway] = DataDump.setup_gateway()
 
     conn =
       conn
@@ -58,6 +59,6 @@ defmodule AcqdatIotWeb.DataDump do
       |> put_req_header("content-type", "application/json")
       |> put_req_header("authorization", "Bearer #{gateway.access_token}")
 
-    [conn: conn, org: gateway.org, gateway: gateway]
+    [conn: conn, org: gateway.org, gateway: gateway, data_dump: data_dump]
   end
 end
