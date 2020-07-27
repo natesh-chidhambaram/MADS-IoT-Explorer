@@ -8,6 +8,9 @@ db_user = System.fetch_env!("DB_USER")
 db_password = System.fetch_env!("DB_PASSWORD")
 db_host = System.fetch_env!("DB_HOST")
 elastic_search_host = System.fetch_env!("ELASTIC_SEARCH_HOST")
+db_port = System.fetch_env!("DB_PORT")
+mqtt_host = System.fetch_env!("MQTT_HOST")
+mqtt_port = System.fetch_env!("MQTT_PORT")
 
 config :acqdat_iot, AcqdatIotWeb.Endpoint, server: true
 
@@ -41,6 +44,7 @@ config :acqdat_core, AcqdatCore.Repo,
   password: db_password,
   database: "acqdat_core_dev",
   hostname: db_host,
+  port: db_port,
   pool_size: 40
 
 config :tirexs, :uri, elastic_search_host
@@ -64,3 +68,7 @@ config :google_maps,
 config :acqdat_core, AcqdatCore.Mailer,
   adapter: Bamboo.SendGridAdapter,
   api_key: System.get_env("SENDGRID_KEY")
+
+config :acqdat_core, :mqtt_broker,
+  host: mqtt_host,
+  port: mqtt_port

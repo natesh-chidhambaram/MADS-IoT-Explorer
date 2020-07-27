@@ -1,5 +1,6 @@
 defmodule AcqdatApiWeb.Router do
   use AcqdatApiWeb, :router
+  use Plug.ErrorHandler
 
   if Mix.env() == :dev do
     # If using Phoenix
@@ -62,7 +63,7 @@ defmodule AcqdatApiWeb.Router do
       resources "/widgets", Widgets.UserWidgetController, only: [:index, :create], as: :widgets
     end
 
-    get "/users/search", RoleManagement.UserController, :search_users
+    get "/search_users", RoleManagement.UserController, :search_users
 
     scope "/", RoleManagement do
       put("/users/:id/assets", UserController, :assets, as: :user_assets)
@@ -76,6 +77,13 @@ defmodule AcqdatApiWeb.Router do
 
     resources "/projects", EntityManagement.ProjectController,
       only: [:index, :create, :update, :delete, :show]
+
+    scope "/projects/:project_id", IotManager do
+      resources "/gateways", GatewayController, except: [:new, :edit]
+      post "/gateways/:gateway_id/store_commands", GatewayController, :store_commands
+      get("/hierarchy", GatewayController, :hierarchy)
+      get "/gateways/:gateway_id/data_dump_index", GatewayController, :data_dump_index
+    end
 
     scope "/projects/:project_id", EntityManagement do
       resources "/asset_types", AssetTypeController, only: [:create, :update, :delete, :index]

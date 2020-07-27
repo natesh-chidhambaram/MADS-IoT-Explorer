@@ -54,7 +54,11 @@ defmodule AcqdatApi.MixProject do
       {:corsica, "~> 1.0"},
 
       # google places
-      {:google_maps, "~> 0.11"}
+      {:google_maps, "~> 0.11"},
+
+      # sentry logging
+      {:sentry, "~> 7.0"},
+      {:hackney, "~> 1.8"}
     ]
   end
 end

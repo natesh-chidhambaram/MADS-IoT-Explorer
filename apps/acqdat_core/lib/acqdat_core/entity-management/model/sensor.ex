@@ -1,5 +1,5 @@
 defmodule AcqdatCore.Model.EntityManagement.Sensor do
-  alias AcqdatCore.Schema.EntityManagement.{Sensor, SensorData}
+  alias AcqdatCore.Schema.EntityManagement.{Sensor, SensorsData}
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Helper, as: ModelHelper
   import Ecto.Query
@@ -20,6 +20,7 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
         {:error, "not found"}
 
       sensor ->
+        sensor = Repo.preload(sensor, [:sensor_type])
         {:ok, sensor}
     end
   end
@@ -32,6 +33,13 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
       sensor ->
         {:ok, sensor}
     end
+  end
+
+  def get_all_by_parent_gateway(gateway_ids) do
+    Sensor
+    |> where([sensor], sensor.gateway_id in ^gateway_ids)
+    |> preload([:sensor_type])
+    |> Repo.all()
   end
 
   def get_all_by_parent_project(project_id) do
@@ -93,7 +101,7 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.all(query) |> Repo.preload(preloads)
   end
 
-  def child_sensors_query(root) when is_list(root) == false do
+  def child_sensors_query(root) when not is_list(root) do
     from(sensor in Sensor,
       preload: [:sensor_type],
       where: sensor.parent_id == ^root.id and sensor.parent_type == "Asset"
@@ -116,48 +124,23 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.all(Sensor)
   end
 
-  def delete(id) do
-    try do
-      Repo.get_by(Sensor, id: id)
-      |> Repo.delete()
-    rescue
-      _e in Ecto.ConstraintError ->
-        {:error,
-         "It contains time-series data. Please delete sensors data before deleting sensor."}
+  def delete(sensor_id) do
+    sensor = Repo.get(Sensor, sensor_id)
+
+    if has_iot_data?(sensor.id, sensor.project_id) do
+      {:error, "It contains time-series data. Please delete sensors data before deleting sensor."}
+    else
+      Repo.delete(sensor)
     end
   end
 
-  def insert_data(sensor, sensor_data) do
-    params = %{
-      sensor_id: sensor.id,
-      datapoint: sensor_data,
-      inserted_timestamp: DateTime.utc_now()
-    }
-
-    changeset = SensorData.changeset(%SensorData{}, params)
-
-    Repo.insert(changeset)
-  end
-
-  def sensor_data(sensor_id, identifier) do
+  defp has_iot_data?(sensor_id, project_id) do
     query =
       from(
-        data in SensorData,
-        where: data.sensor_id == ^sensor_id,
-        order_by: data.inserted_timestamp,
-        select: [data.inserted_timestamp, fragment("? ->> ?", data.datapoint, ^identifier)]
+        data in SensorsData,
+        where: data.sensor_id == ^sensor_id and data.project_id == ^project_id
       )
 
-    stream = Repo.stream(query)
-
-    {:ok, result} =
-      Repo.transaction(fn ->
-        Enum.map(stream, fn [date, value] ->
-          {value, _} = Float.parse(value)
-          [DateTime.to_unix(date, :millisecond), value]
-        end)
-      end)
-
-    result
+    Repo.exists?(query)
   end
 end

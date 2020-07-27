@@ -2,6 +2,7 @@ defmodule AcqdatCore.Seed.EntityManagement.Organisation do
 
   alias AcqdatCore.Schema.EntityManagement.Organisation
   alias AcqdatCore.Repo
+  import Tirexs.HTTP
 
   def seed_organisation!() do
     params = %{
@@ -11,6 +12,18 @@ defmodule AcqdatCore.Seed.EntityManagement.Organisation do
       updated_at: DateTime.truncate(DateTime.utc_now(), :second)
     }
     organisation = Organisation.changeset(%Organisation{}, params)
-    Repo.insert!(organisation, on_conflict: :nothing)
+    org = Repo.insert!(organisation, on_conflict: :nothing)
+    create("organisation", org)
   end
+
+  def create(type, params) do
+    put("/organisation",%{mappings: %{properties: %{join_field: %{type: "join", relations: %{organisation: "user"}}}}})
+    post("#{type}/_doc/#{params.id}",
+      id: params.id,
+      name: params.name,
+      uuid: params.uuid,
+      "join_field": "organisation"
+      )
+  end
+
 end

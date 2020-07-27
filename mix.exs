@@ -44,11 +44,13 @@ defmodule AcqdatUmbrella.MixProject do
       {:phoenix_html, "~> 2.13.2"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
-      {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
 
       # cors
       {:corsica, "~> 1.0"},
+
+      # worker pool
+      {:poolboy, "~> 1.5.1"},
 
       # http client
       {:httpoison, "~> 1.4"},

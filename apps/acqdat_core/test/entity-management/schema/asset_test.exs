@@ -125,14 +125,14 @@ defmodule AcqdatCore.Schema.EntityManagement.AssetTest do
     end
 
     # TODO: complete the test
-    test "returns error if no parent but asset with same name under same org", %{
-      organisation: organisation
-    } do
-      child_asset_1 = insert(:asset, org: organisation)
-    end
+    # test "returns error if no parent but asset with same name under same org", %{
+    #   organisation: organisation
+    # } do
+    #   child_asset_1 = insert(:asset, org: organisation)
+    # end
 
     # TODO: complete the test
-    test "allows insertion of asset with same name under different parents" do
-    end
+    # test "allows insertion of asset with same name under different parents" do
+    # end
   end
 end

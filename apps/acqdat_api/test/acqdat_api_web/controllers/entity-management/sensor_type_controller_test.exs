@@ -64,11 +64,9 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeControllerTest do
     end
 
     test "fails if required params are missing", %{conn: conn, org: org} do
-      sensor_type = insert(:sensor_type)
       project = insert(:project)
 
       conn = post(conn, Routes.sensor_type_path(conn, :create, org.id, project.id), %{})
-
       response = conn |> json_response(400)
 
       assert response == %{

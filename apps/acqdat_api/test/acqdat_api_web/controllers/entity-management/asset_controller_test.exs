@@ -90,21 +90,6 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
           Routes.assets_path(conn, :update, asset.org.id, asset.project.id, asset.id, params)
         )
 
-      mapped_parameters =
-        Enum.reduce(asset.mapped_parameters, [], fn x, acc ->
-          %{name: name, parameter_uuid: parameter_uuid, sensor_uuid: sensor_uuid, uuid: uuid} =
-            Map.from_struct(x)
-
-          changes = %{
-            "name" => name,
-            "parameter_uuid" => parameter_uuid,
-            "sensor_uuid" => sensor_uuid,
-            "uuid" => uuid
-          }
-
-          [changes | acc]
-        end)
-
       metadata =
         Enum.reduce(asset.metadata, [], fn x, acc ->
           %{id: id, data_type: data_type, name: name, unit: unit, uuid: uuid, value: value} =
@@ -127,7 +112,6 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
       assert result == %{
                "description" => asset.description,
                "id" => asset.id,
-               "mapped_parameters" => Enum.reverse(mapped_parameters),
                "name" => asset.name,
                "properties" => asset.properties,
                "metadata" => Enum.reverse(metadata),
@@ -160,7 +144,6 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
       response = conn |> json_response(200)
       assert Map.has_key?(response, "name")
       assert Map.has_key?(response, "id")
-      assert Map.has_key?(response, "mapped_parameters")
     end
 
     test "fails if authorization header not found", %{conn: conn, org: org} do
@@ -230,7 +213,6 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
 
       assert Map.has_key?(response, "name")
       assert Map.has_key?(response, "id")
-      assert Map.has_key?(response, "mapped_parameters")
       assert Map.has_key?(response, "properties")
     end
 

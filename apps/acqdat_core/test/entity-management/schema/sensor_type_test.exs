@@ -52,7 +52,6 @@ defmodule AcqdatCore.Schema.SensorTypeTest do
         org_id: organisation.id
       }
 
-      asd = SensorType.changeset(%SensorType{}, params)
       %{valid?: validity} = SensorType.changeset(%SensorType{}, params)
       assert validity
     end

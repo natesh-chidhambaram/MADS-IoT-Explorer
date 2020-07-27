@@ -51,10 +51,10 @@ defmodule AcqdatCore.Model.EntityManagement.AssetType do
     ModelHelper.paginated_response(asset_data_with_preloads, paginated_asset_data)
   end
 
-  @spec update(
-          AcqdatCore.Schema.EntityManagement.AssetType.t(),
-          :invalid | %{optional(:__struct__) => none, optional(atom | binary) => any}
-        ) :: any
+  @spec update(AssetType.t(), map) ::
+          {:ok, AssetType.t()}
+          | {:error, Ecto.Changeset.t()}
+          | {:error, String.t()}
   def update(asset_type, params) do
     case is_nil(asset_present?(asset_type)) do
       true ->
@@ -70,7 +70,6 @@ defmodule AcqdatCore.Model.EntityManagement.AssetType do
     end
   end
 
-  @spec delete(%{__struct__: atom | %{__changeset__: any}}) :: any
   def delete(asset_type) do
     case is_nil(asset_present?(asset_type)) do
       true ->
