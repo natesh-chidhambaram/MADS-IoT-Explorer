@@ -1,6 +1,6 @@
-defmodule AcqdatIot.DataDump.Worker.Server do
+defmodule AcqdatCore.IotManager.DataDump.Worker.Server do
   use GenServer
-  alias AcqdatIot.DataDump.Worker.Manager
+  alias AcqdatCore.IotManager.DataDump.Worker.Manager
   require Logger
 
   def start_link(args) do
@@ -8,13 +8,7 @@ defmodule AcqdatIot.DataDump.Worker.Server do
   end
 
   def create(params) do
-    params = params_extraction(params)
     GenServer.cast(__MODULE__, {:data_dump, params})
-  end
-
-  defp params_extraction(params) do
-    Map.from_struct(params)
-    |> Map.drop([:_id, :__meta__])
   end
 
   def init(params) do

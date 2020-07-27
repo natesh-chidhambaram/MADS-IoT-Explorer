@@ -6,12 +6,17 @@ defmodule AcqdatApi.IotManager.Gateway do
 
   defdelegate get_all(data, preloads), to: Gateway
   defdelegate delete(gateway), to: Gateway
-  defdelegate update(gateway, params), to: Gateway
 
   def create(params) do
     params = params_extraction(params)
     Gateway.create(params) |> verify_gateway()
   end
+
+  def update(gateway, params) do
+    gateway |> Gateway.update(params) |> verify_gateway()
+  end
+
+  ############################# private functions ###############3
 
   defp verify_gateway({:ok, gateway}) do
     gateway = gateway |> Repo.preload([:org, :project])
@@ -27,13 +32,13 @@ defmodule AcqdatApi.IotManager.Gateway do
     |> Map.drop([:_id, :__meta__])
   end
 
-  def setup_command(_channel = "http", params) do
-    %{"gateway_id" => gateway_id, "commands" => command} = params
-    HTTPCommandHandler.put(String.to_integer(gateway_id), command)
+  def setup_command(gateway, _channel = "http", params) do
+    %{"commands" => command} = params
+    HTTPCommandHandler.put(String.to_integer(gateway.id), command)
   end
 
-  def setup_command(_channel = "mqtt", params) do
-    require IEx
-    IEx.pry()
+  def setup_command(gateway, _channel = "mqtt", params) do
+    %{"commands" => command} = params
+    Gateway.send_mqtt_command(gateway, command)
   end
 end

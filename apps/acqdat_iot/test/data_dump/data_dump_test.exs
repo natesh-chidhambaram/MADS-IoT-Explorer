@@ -14,12 +14,15 @@ defmodule AcqdatIotWeb.DataDump do
 
     setup :setup_gateway
 
-    test "data dump create", %{conn: conn, org: org, gateway: gateway, data_dump: data_dump} do
-      project = gateway.project
+    test "data dump create", %{conn: conn, gateway: gateway, data_dump: data_dump} do
       params = data_dump
 
       conn =
-        post(conn, Routes.data_dump_path(conn, :create, org.id, project.id, gateway.id), params)
+        post(
+          conn,
+          Routes.data_dump_path(conn, :create, gateway.org_id, gateway.project_id, gateway.id),
+          params
+        )
 
       # TODO: have added a small time out so worker processes release db
       # connection, else the test exits and db connection is removed.
@@ -29,7 +32,7 @@ defmodule AcqdatIotWeb.DataDump do
       assert result == %{"data inserted" => true}
     end
 
-    test "fails if authorization header not found", %{conn: conn, org: org, gateway: gateway} do
+    test "fails if authorization header not found", %{conn: conn, gateway: gateway} do
       bad_access_token = "qwerty1234567uiop"
 
       conn =
@@ -41,7 +44,7 @@ defmodule AcqdatIotWeb.DataDump do
       conn =
         post(
           conn,
-          Routes.data_dump_path(conn, :create, org.id, gateway.project.id, gateway.id),
+          Routes.data_dump_path(conn, :create, gateway.org_id, gateway.project_id, gateway.id),
           data
         )
 
@@ -59,6 +62,6 @@ defmodule AcqdatIotWeb.DataDump do
       |> put_req_header("content-type", "application/json")
       |> put_req_header("authorization", "Bearer #{gateway.access_token}")
 
-    [conn: conn, org: gateway.org, gateway: gateway, data_dump: data_dump]
+    [conn: conn, gateway: gateway, data_dump: data_dump]
   end
 end
