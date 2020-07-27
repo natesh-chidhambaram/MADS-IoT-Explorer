@@ -102,3 +102,6 @@ services:
 volumes: 
   esdata:
   pgdata:
+  vernemqdata:
+  vernemqlogs:
+  vernemqetc:
