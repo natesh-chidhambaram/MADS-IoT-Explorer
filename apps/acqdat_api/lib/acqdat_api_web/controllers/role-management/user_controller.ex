@@ -78,7 +78,7 @@ defmodule AcqdatApiWeb.RoleManagement.UserController do
             |> json(%{
               "success" => false,
               "error" => true,
-              "message:" => message
+              "message" => message
             })
         end
 
@@ -140,8 +140,7 @@ defmodule AcqdatApiWeb.RoleManagement.UserController do
     end
   end
 
-  # TODO
-  # INDEX API FOR USER CONTROLLER should be done from elastic search hits.
+  # TODO: INDEX API FOR USER CONTROLLER should be done from elastic search hits.
   # def index(conn, %{"page_size" => page_size}) do
   #   case conn.status do
   #     nil ->
@@ -154,7 +153,7 @@ defmodule AcqdatApiWeb.RoleManagement.UserController do
   #           |> json(%{
   #             "success" => false,
   #             "error" => true,
-  #             "message:" => "elasticsearch is not running"
+  #             "message" => "elasticsearch is not running"
   #           })
   #       end
 
