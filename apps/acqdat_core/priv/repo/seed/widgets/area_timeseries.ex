@@ -1,4 +1,4 @@
-defmodule AcqdatCore.Seed.Widgets.Area do
+defmodule AcqdatCore.Seed.Widgets.AreaTimeseries do
   @moduledoc """
   Holds seeds for Area widgets.
   """
@@ -14,6 +14,7 @@ defmodule AcqdatCore.Seed.Widgets.Area do
         caption: [text: %{}, align: %{}],
         subtitle: [text: %{}, align: %{}],
         yAxis: [title: [text: %{}]],
+        xAxis: [type: %{value: "datetime"}, title: [text: %{value: "Date"}]],
         credits: [enabled: %{value: false}],
       },
       data: %{
@@ -100,6 +101,7 @@ defmodule AcqdatCore.Seed.Widgets.Area do
     end)
     |> Enum.each(fn data ->
       Repo.insert!(data)
+      WidgetHelpers.create("widgets", data)
     end)
   end
 

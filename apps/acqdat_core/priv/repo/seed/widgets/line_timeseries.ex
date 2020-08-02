@@ -1,4 +1,4 @@
-defmodule AcqdatCore.Seed.Widgets.Line do
+defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
   @moduledoc """
   Holds seeds for Line widgets.
   """
@@ -14,6 +14,7 @@ defmodule AcqdatCore.Seed.Widgets.Line do
         caption: [text: %{}, align: %{}],
         subtitle: [text: %{}, align: %{}],
         yAxis: [title: [text: %{}]],
+        xAxis: [type: %{value: "datetime"}, title: [text: %{value: "Date"}]],
         credits: [enabled: %{value: false}],
       },
       data: %{
@@ -92,6 +93,7 @@ defmodule AcqdatCore.Seed.Widgets.Line do
     end)
     |> Enum.each(fn data ->
       Repo.insert!(data)
+      WidgetHelpers.create("widgets", data)
     end)
   end
 

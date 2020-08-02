@@ -1,4 +1,6 @@
 defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
+  alias AcqdatCore.Model.EntityManagement.SensorData
+
   @moduledoc """
     Embedded Schema of the settings of the widget with it keys and subkeys
   """
@@ -16,8 +18,8 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
                 },
                 borderColor: %{data_type: :color, default_value: "#335cad", user_controlled: true},
                 plotBackgroundColor: %{
-                  data_type: :string,
-                  default_value: "",
+                  data_type: :color,
+                  default_value: "#ffffff",
                   user_controlled: true
                 },
                 height: %{data_type: :string, default_value: "", user_controlled: false},
@@ -90,7 +92,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
                   data_type: :list,
                   properties: %{
                     backgroundColor: %{
-                      data_type: :string,
+                      data_type: :color,
                       default_value:
                         "{ linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, #ffffff], [1, #e6e6e6]]}",
                       user_controlled: false
@@ -158,7 +160,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
               data_type: :object,
               user_controlled: false,
               properties: %{
-                backgroundColor: %{data_type: :string, default_value: "", user_controlled: true},
+                backgroundColor: %{data_type: :color, default_value: "", user_controlled: true},
                 valuePrefix: %{data_type: :string, default_value: "", user_controlled: true},
                 valueSuffix: %{data_type: :string, default_value: "", user_controlled: true},
                 pointFormat: %{
@@ -286,9 +288,172 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
   for different widgets. A detailed information can be found
   [here](https://api.highcharts.com/highcharts/series)
   """
-  # TODO: Data handling to be implmented.
-  @spec arrange_series_structure(map, list) :: map
-  def arrange_series_structure(axes, series) do
-    %{}
+
+  # @spec arrange_series_structure(map, list) :: map
+  # def arrange_series_structure(axes, series) do
+  #   %{}
+  # end
+
+  # this function will return series data in this format:
+  # [
+  #   %{
+  #     data: [
+  #       %{"x" => ~U[2020-06-15 08:08:52Z], "y" => "10"},
+  #       %{"x" => ~U[2020-06-15 09:55:32Z], "y" => "10"},
+  #       %{"x" => ~U[2020-06-15 10:02:12Z], "y" => "10"},
+  #       %{"x" => ~U[2020-06-15 12:42:12Z], "y" => "10"},
+  #       %{"x" => ~U[2020-06-16 08:08:52Z], "y" => "10"},
+  #       %{"x" => ~U[2020-06-16 10:55:32Z], "y" => "10"},
+  #       %{"x" => ~U[2020-06-24 10:35:32Z], "y" => "10"}
+  #     ],
+  #     name: "jane"
+  #   },
+  #   %{
+  #     data: [
+  #       %{"x" => ~U[2020-06-15 08:08:52Z], "y" => "16"},
+  #       %{"x" => ~U[2020-06-15 09:55:32Z], "y" => "16"},
+  #       %{"x" => ~U[2020-06-15 10:03:52Z], "y" => "16"},
+  #       %{"x" => ~U[2020-06-15 12:42:12Z], "y" => "16"},
+  #       %{"x" => ~U[2020-06-16 02:18:52Z], "y" => "16"},
+  #       %{"x" => ~U[2020-06-16 08:08:52Z], "y" => "16"},
+  #       %{"x" => ~U[2020-06-17 11:55:32Z], "y" => "16"}
+  #     ],
+  #     name: "jone"
+  #   }
+  # ]
+
+  def fetch_highchart_details(widget, filter_month \\ "1", start_date \\ "", end_date \\ "") do
+    series_data =
+      widget.series_data |> arrange_series_structure(filter_month, start_date, end_date)
+
+    Map.put(widget, :series, series_data)
+  end
+
+  def parse_properties(properties) do
+    Enum.reduce(properties, %{}, fn setting, acc ->
+      if setting.properties != [] do
+        value = parse_properties(setting.properties)
+        Map.put(acc, setting.key, value)
+      else
+        Map.put(acc, setting.key, setting.value["data"])
+      end
+    end)
+  end
+
+  ############################# private functions ###########################
+
+  def arrange_series_structure(series_data, filter_month, start_date, end_date) do
+    Enum.reduce(series_data, [], fn series, acc_data ->
+      metadata = fetch_axes_specific_data(series.axes, filter_month, start_date, end_date)
+
+      uniq_keys = metadata |> fetch_uniq_keys |> Stream.uniq()
+
+      parsed_data = uniq_keys |> parse_series_data(metadata)
+
+      acc_data ++ [%{name: series.name, color: series.color, data: parsed_data}]
+    end)
+  end
+
+  defp fetch_axes_specific_data(axes, filter_month, start_date, end_date) do
+    Enum.reduce(axes, %{}, fn axis, acc ->
+      res = axis |> validate_data_source(filter_month, start_date, end_date)
+      # NOTE: {a: unix_timestamp, b: converted string to integer}
+      q =
+        (res || [])
+        |> Enum.map(fn [a, b] -> {DateTime.to_unix(a) * 1000, String.to_integer(b)} end)
+        |> Map.new()
+
+      Map.put(acc, axis.name, q)
+    end)
+  end
+
+  defp validate_data_source(
+         %{
+           source_type: source_type,
+           source_metadata: %{
+             "parameter" => parameter,
+             "entity_id" => entity_id,
+             "entity_type" => entity_type
+           }
+         },
+         filter_month,
+         start_date,
+         end_date
+       )
+       when source_type == "pds" and parameter != "inserted_timestamp" do
+    fetch_from_data_source(entity_id, entity_type, parameter, filter_month, start_date, end_date)
+  end
+
+  defp validate_data_source(
+         %{
+           source_type: source_type,
+           source_metadata: %{"parameter" => parameter}
+         },
+         _filter_month,
+         _start_date,
+         _end_date
+       )
+       when source_type == "pds" and parameter == "inserted_timestamp" do
+  end
+
+  defp fetch_from_data_source(
+         entity_id,
+         entity_type,
+         parameter,
+         filter_month,
+         start_date,
+         end_date
+       )
+       when entity_type == "sensor" do
+    {filter_month, _} = Integer.parse(filter_month)
+    date_to = end_date |> validate_and_parse_end_date
+    date_from = start_date |> validate_and_parse_start_date(filter_month)
+
+    SensorData.get_all_by_parameters(entity_id, parameter, date_from, date_to)
+  end
+
+  defp validate_and_parse_end_date(date) do
+    if is_nil(date) || date == "" do
+      Timex.now() |> DateTime.truncate(:second)
+    else
+      parse_date(date)
+    end
+  end
+
+  defp validate_and_parse_start_date(date, filter_month) do
+    if is_nil(date) || date == "" do
+      Timex.shift(Timex.now(), months: -filter_month) |> DateTime.truncate(:second)
+    else
+      parse_date(date)
+    end
+  end
+
+  defp fetch_uniq_keys(metadata) do
+    Enum.reduce(Map.keys(metadata), [], fn x, acc ->
+      acc ++ Map.keys(metadata[x])
+    end)
+  end
+
+  defp parse_series_data(uniq_keys, metadata) do
+    Stream.map(uniq_keys, fn key ->
+      Enum.reduce(Map.keys(metadata), %{}, fn x, acc ->
+        value = metadata[x] |> axes_params_value(key)
+        Map.put(acc, x, value)
+      end)
+    end)
+    |> Enum.into([])
+  end
+
+  defp axes_params_value(axes, key) when axes == %{} do
+    key
+  end
+
+  defp axes_params_value(axes, key) when axes != %{} do
+    axes[key] || "0"
+  end
+
+  defp parse_date(date) do
+    date
+    |> Timex.parse!("{YYYY}-{0M}-{0D}")
   end
 end
