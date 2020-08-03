@@ -11,7 +11,17 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
 
   plug AcqdatApiWeb.Plug.LoadOrg
   plug AcqdatApiWeb.Plug.LoadProject
-  plug AcqdatApiWeb.Plug.LoadGateway when action in [:update, :delete, :show, :store_commands]
+
+  plug AcqdatApiWeb.Plug.LoadGateway
+       when action in [
+              :update,
+              :delete,
+              :show,
+              :store_commands,
+              :associate_sensors,
+              :data_dump_index
+            ]
+
   plug :load_hierarchy_tree when action in [:hierarchy]
 
   def index(conn, params) do
@@ -20,7 +30,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
     case conn.status do
       nil ->
         {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
-        {:list, gateway} = {:list, Gateway.get_all(data, [:org, :project])}
+        {:list, gateway} = {:list, Gateway.get_all(data, [:org, :project, :sensors])}
 
         conn
         |> put_status(200)
@@ -146,9 +156,9 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
   def store_commands(conn, params) do
     case conn.status do
       nil ->
-        gateway = conn.asssigns.gateway
+        gateway = conn.assigns.gateway
         channel = conn.assigns.gateway.channel
-        Gateway.setup_command(gateway, channel, params)
+        Gateway.setup_config(gateway, channel, params)
 
         conn
         |> put_status(200)
@@ -159,6 +169,32 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
         |> send_error(404, "Resource Not Found")
     end
   end
+
+  def associate_sensors(conn, %{"sensor_ids" => sensor_ids}) do
+    case conn.status do
+      nil ->
+        gateway = Gateway.preload_sensor(conn.assigns.gateway)
+
+        case Gateway.associate_sensors(gateway, sensor_ids) do
+          {:ok, _message} ->
+            gateway = Gateway.load_associations(conn.assigns.gateway)
+
+            conn
+            |> put_status(200)
+            |> render("show.json", %{gateway: gateway})
+
+          {:error, message} ->
+            conn
+            |> send_error(400, message)
+        end
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+    end
+  end
+
+  ############################### private functions #########################
 
   defp add_image_to_params(conn, params) do
     params = Map.put(params, "image_url", "")
@@ -219,6 +255,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
     case conn.status do
       nil ->
         {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        data = add_meta(conn, data)
         {:list, data_dump} = {:list, GatewayDataDump.get_all(data, [:org, :project])}
 
         conn
@@ -229,5 +266,12 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
         conn
         |> send_error(403, "Unauthorized")
     end
+  end
+
+  defp add_meta(conn, data) do
+    data
+    |> Map.put(:org_uuid, conn.assigns.org.uuid)
+    |> Map.put(:project_uuid, conn.assigns.project.uuid)
+    |> Map.put(:gateway_uuid, conn.assigns.gateway.uuid)
   end
 end

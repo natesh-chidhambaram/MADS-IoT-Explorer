@@ -287,9 +287,12 @@ defmodule AcqdatApiWeb.IotManager.GatewayControllerTest do
                          "x_axis" => 20,
                          "z_axis" => [22, 23]
                        },
-                       "y_axis" => 21
+                       "y_axis" => 21,
+                       "project_id" => 1,
+                       "timestamp" => 1_596_115_581,
+                       "xyz" => %{}
                      },
-                     "gateway_id" => gateway.id,
+                     "gateway_uuid" => gateway.uuid,
                      "inserted_timestamp" => data_dump["inserted_timestamp"]
                    }
                  ],

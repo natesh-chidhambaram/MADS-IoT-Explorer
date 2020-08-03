@@ -7,7 +7,7 @@ defmodule AcqdatCore.Schema.IotManager.Gateway do
   """
   use AcqdatCore.Schema
 
-  alias AcqdatCore.Schema.EntityManagement.{Organisation, Project}
+  alias AcqdatCore.Schema.EntityManagement.{Organisation, Project, Sensor}
 
   @typedoc """
   `uuid`: A universally unique id to identify the gateway.
@@ -45,16 +45,18 @@ defmodule AcqdatCore.Schema.IotManager.Gateway do
     end
 
     field(:mapped_parameters, :map)
+    field(:timestamp_mapping, :string)
 
     # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:project, Project, on_replace: :delete)
+    has_many(:sensors, Sensor)
 
     timestamps(type: :utc_datetime)
   end
 
   @required_params ~w(name access_token slug uuid org_id project_id channel parent_id parent_type)a
-  @optional_params ~w(description serializer current_location image_url static_data mapped_parameters)a
+  @optional_params ~w(description serializer current_location image_url static_data mapped_parameters timestamp_mapping)a
   @embedded_required_params ~w(name uuid data_type)a
   @embedded_optional_params ~w(unit)a
   @permitted_embedded @embedded_optional_params ++ @embedded_required_params

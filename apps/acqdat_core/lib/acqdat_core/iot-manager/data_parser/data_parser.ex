@@ -8,8 +8,10 @@ defmodule AcqdatCore.IotManager.DataParser do
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SModel
 
   def start_parsing(data_dump) do
-    %{gateway_id: gateway_id, data: iot_data} = data_dump
-    mapped_parameters = fetch_mapped_parameters(gateway_id)
+    %{gateway_uuid: gateway_uuid, data: iot_data} = data_dump
+    {:ok, gateway} = GModel.get(%{uuid: gateway_uuid})
+
+    mapped_parameters = fetch_mapped_parameters(gateway.id)
 
     iot_data
     |> Enum.reduce(%{}, fn {key, value}, acc ->
@@ -20,7 +22,7 @@ defmodule AcqdatCore.IotManager.DataParser do
         parse_data(key_mapped_parameters, value, acc)
       end
     end)
-    |> persist_data(data_dump.org_id, data_dump.project_id)
+    |> persist_data(gateway.org.id, gateway.project.id)
   end
 
   ######### persist data private helpers #############
@@ -91,6 +93,8 @@ defmodule AcqdatCore.IotManager.DataParser do
   defp fetch_mapped_parameters(gateway_id) do
     GModel.return_mapped_parameter(gateway_id)
   end
+
+  defp parse_data(nil, _value, acc), do: acc
 
   defp parse_data(mapped_parameters, value, acc) when is_list(value) do
     mapped_parameters

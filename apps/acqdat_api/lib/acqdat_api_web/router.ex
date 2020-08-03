@@ -38,13 +38,13 @@ defmodule AcqdatApiWeb.Router do
     get("/orgs/:id/apps", EntityManagement.OrganisationController, :get_apps, as: :org_apps)
 
     # NOTE: Kept widgets resources out of organisation_scope currently
+    get "/widgets/search", Widgets.WidgetController, :search_widget
+
     resources "/widgets", Widgets.WidgetController,
       only: [:create, :update, :delete, :index, :show]
 
     resources "/widget-type", Widgets.WidgetTypeController,
       only: [:create, :update, :delete, :index, :show]
-
-    get "/widgets/search", Widgets.WidgetController, :search_widget
 
     resources("/digital-twin", DigitalTwinController,
       only: [:create, :update, :delete, :index, :show]
@@ -79,6 +79,7 @@ defmodule AcqdatApiWeb.Router do
       only: [:index, :create, :update, :delete, :show]
 
     scope "/projects/:project_id", IotManager do
+      put "/gateways/:gateway_id/associate-sensors", GatewayController, :associate_sensors
       resources "/gateways", GatewayController, except: [:new, :edit]
       post "/gateways/:gateway_id/store_commands", GatewayController, :store_commands
       get("/hierarchy", GatewayController, :hierarchy)
@@ -92,9 +93,33 @@ defmodule AcqdatApiWeb.Router do
         only: [:create, :show, :update, :delete, :index],
         as: :assets
 
-      resources "/sensors", SensorController, only: [:create, :update, :delete, :index, :show]
+      resources "/sensors", SensorController, except: [:new, :edit]
       resources "/sensor_type", SensorTypeController, only: [:create, :index, :delete, :update]
     end
+
+    scope "/projects/:project_id", DashboardManagement do
+      resources "/dashboards", DashboardController, except: [:new, :edit]
+    end
+
+    post "/dashboards/:dashboard_id/widgets/:widget_id/widget_instances",
+         DashboardManagement.WidgetInstanceController,
+         :create,
+         as: :create_widget_instances
+
+    get "/dashboards/:dashboard_id/widgets/:widget_id/widget_instances/:id",
+        DashboardManagement.WidgetInstanceController,
+        :show,
+        as: :show_widget_instances
+
+    delete "/dashboards/:dashboard_id/widgets/:widget_id/widget_instances/:id",
+           DashboardManagement.WidgetInstanceController,
+           :delete,
+           as: :delete_widget_instances
+
+    put "/dashboards/:dashboard_id/widgets/:widget_id/widget_instances/:id",
+        DashboardManagement.WidgetInstanceController,
+        :update,
+        as: :update_widget_instances
 
     get "/projects/:project_id/assets/search", EntityManagement.AssetController, :search_assets,
       as: :search_assets

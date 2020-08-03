@@ -90,9 +90,13 @@ defmodule AcqdatApiWeb.RoleManagement.UserView do
     }
   end
 
-  def render("index_hits.json", %{hits: hits}) do
+  def render("index_hits.json", user) do
     %{
-      users: render_many(hits.hits, UserView, "source.json")
+      users: render_many(user.entries, UserView, "source.json"),
+      page_number: user.page_number,
+      page_size: user.page_size,
+      total_entries: user.total_entries,
+      total_pages: user.total_pages
     }
   end
 

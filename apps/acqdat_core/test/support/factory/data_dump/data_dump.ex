@@ -98,19 +98,24 @@ defmodule AcqdatCore.Test.Support.DataDump do
 
   def dump_iot_data(gateway) do
     %{
-      gateway_id: gateway.id,
-      org_id: gateway.org_id,
-      project_id: gateway.project_id,
+      gateway_uuid: gateway.uuid,
+      org_uuid: gateway.org.uuid,
+      project_uuid: gateway.project.uuid,
       data: %{
         "axis_object" => %{
           "x_axis" => 20,
           "z_axis" => [22, 23],
           "lambda" => %{"alpha" => 24, "beta" => 25}
         },
-        "y_axis" => 21
+        "y_axis" => 21,
+        # To test presence of arbitrary entries which are not mapped to anything.
+        "project_id" => 1,
+        "xyz" => %{},
+        # timestamp so it would be picked from here
+        "timestamp" => 1_596_115_581
       },
       inserted_at: DateTime.truncate(DateTime.utc_now(), :second),
-      inserted_timestamp: DateTime.truncate(DateTime.utc_now(), :second)
+      inserted_timestamp: DateTime.truncate(DateTime.utc_now(), :second) |> DateTime.to_unix()
     }
   end
 
@@ -178,7 +183,14 @@ defmodule AcqdatCore.Test.Support.DataDump do
       }
     }
 
-    {:ok, gateway} = GModel.update(gateway, %{mapped_parameters: mapped_parameters})
-    gateway
+    timestamp_mapping = "timestamp"
+
+    {:ok, gateway} =
+      GModel.update(gateway, %{
+        mapped_parameters: mapped_parameters,
+        timestamp_mapping: timestamp_mapping
+      })
+
+    gateway |> Repo.preload([:org, :project])
   end
 end

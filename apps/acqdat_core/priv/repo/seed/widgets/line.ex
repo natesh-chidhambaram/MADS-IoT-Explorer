@@ -14,26 +14,25 @@ defmodule AcqdatCore.Seed.Widgets.Line do
         caption: [text: %{}, align: %{}],
         subtitle: [text: %{}, align: %{}],
         yAxis: [title: [text: %{}]],
+        credits: [enabled: %{value: false}],
       },
       data: %{
         series: %{
-          data_type: :list,
+          data_type: :object,
           value: %{},
           properties: %{
             name: %{data_type: :string, value: %{}, properties: %{}},
-            color: %{data_type: :string, value: %{}, properties: %{}},
+            color: %{data_type: :color, value: %{data: "#000000"}, properties: %{}},
+            multiple: %{data_type: :boolean, value: %{data: true}, properties: %{}}
           }
         },
         axes: %{
           data_type: :object,
           value: %{},
           properties: %{
-            x: %{data_type: :list, value: %{},
-              properties: %{multiple: %{data_type: :boolean, value: %{data: false}, properties: %{}}}
-            },
-            y: %{data_type: :list, value: %{},
-              properties: %{multiple: %{data_type: :boolean, value: %{data: true}, properties: %{}}}
-            }
+            multiple: %{data_type: :boolean, value: %{data: true}, properties: %{}},
+            x: %{data_type: :list, value: %{}, properties: %{}},
+            y: %{data_type: :list, value: %{}, properties: %{}}
           }
         }
       }
@@ -93,7 +92,6 @@ defmodule AcqdatCore.Seed.Widgets.Line do
     end)
     |> Enum.each(fn data ->
       Repo.insert!(data)
-      WidgetHelpers.create("widgets", data)
     end)
   end
 

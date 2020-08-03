@@ -64,6 +64,26 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     end
   end
 
+  def get(id) when is_integer(id) do
+    case Repo.get(Gateway, id) do
+      nil ->
+        {:error, "Gateway not found"}
+
+      gateway ->
+        {:ok, gateway}
+    end
+  end
+
+  def get(data) when is_map(data) do
+    case Repo.get_by(Gateway, data) do
+      nil ->
+        {:error, "Gateway not found"}
+
+      gateway ->
+        {:ok, Repo.preload(gateway, [:org, :project])}
+    end
+  end
+
   def update(%Gateway{} = gateway, params) do
     gateway_channel = gateway.channel
 
@@ -187,15 +207,63 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     Map.put(gateway, :childs, child_sensors)
   end
 
+  def send_mqtt_config(gateway, payload) do
+    time = DateTime.utc_now() |> DateTime.to_unix()
+    payload = Map.put(payload, :current_timestamp, time)
+    gateway = Repo.preload(gateway, project: :org)
+    project = gateway.project
+    org = gateway.project.org
+    topic = "org/#{org.uuid}/project/#{project.uuid}/gateway/#{gateway.uuid}/config"
+
+    MQTTBroker.publish(project.uuid, topic, Jason.encode!(payload))
+  end
+
   def send_mqtt_command(gateway, payload) do
     gateway = Repo.preload(gateway, project: :org)
     project = gateway.project
     org = gateway.project.org
-    topic = "/org/#{org.uuid}/project/#{project.uuid}/gateway/#{gateway.uuid}/config"
+    topic = "org/#{org.uuid}/project/#{project.uuid}/gateway/#{gateway.uuid}/command"
     MQTTBroker.publish(project.uuid, topic, Jason.encode!(payload))
   end
 
+  @doc """
+  Attaching right sensors and updating sensor
+  """
+  def associate_sensors(gateway, sensor_ids) do
+    attached_sensors = MapSet.new(extract_sensor_ids(gateway.sensors))
+    requested_sensors = MapSet.new(sensor_ids)
+    transaction(gateway, attached_sensors, requested_sensors)
+  end
+
   ##################### private functions #####################
+
+  defp transaction(gateway, attached_sensors, requested_sensors) do
+    result =
+      Repo.transaction(fn ->
+        SModel.remove_sensor(
+          MapSet.to_list(MapSet.difference(attached_sensors, requested_sensors))
+        )
+
+        SModel.add_sensor(
+          MapSet.to_list(MapSet.difference(requested_sensors, attached_sensors)),
+          gateway
+        )
+      end)
+
+    case result do
+      {:ok, _message} ->
+        {:ok, "Gateway Sensor List updated"}
+
+      {:error, _message} ->
+        {:error, "Some error occurred while updating list"}
+    end
+  end
+
+  defp extract_sensor_ids(sensors) do
+    Enum.reduce(sensors, [], fn sensor, acc ->
+      acc ++ [sensor.id]
+    end)
+  end
 
   def start_broker_if_needed(gateway) do
     initiation_for_channel(gateway, gateway.channel)
@@ -259,7 +327,8 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
 
   defp start_project_client(_gateway = %{channel: "mqtt"}, project, credentials) do
     topics = [
-      {"/org/#{project.org.uuid}/project/#{project.uuid}/gateway/+", 0}
+      {"org/#{project.org.uuid}/project/#{project.uuid}/gateway/+", 0},
+      {"org/#{project.org.uuid}/project/#{project.uuid}/gateway/+/request-config", 0}
     ]
 
     MQTTBroker.start_project_client(

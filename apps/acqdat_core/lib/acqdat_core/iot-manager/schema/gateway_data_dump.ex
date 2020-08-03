@@ -10,6 +10,7 @@ defmodule AcqdatCore.Schema.IotManager.GatewayDataDump do
   use AcqdatCore.Schema
   alias AcqdatCore.Schema.EntityManagement.{Organisation, Project}
   alias AcqdatCore.Schema.IotManager.Gateway
+  alias AcqdatCore.Schema.IotManager.EctoType.UnixTimestamp
 
   @typedoc """
   `inserted_timestamp`: The timestamp sent by device sending the gateway data.
@@ -19,19 +20,39 @@ defmodule AcqdatCore.Schema.IotManager.GatewayDataDump do
 
   @primary_key false
   schema("acqdat_gateway_data_dump") do
-    field(:inserted_timestamp, :utc_datetime, primary_key: true)
+    field(:inserted_timestamp, UnixTimestamp, primary_key: true)
 
     field(:data, :map, null: false)
 
     # associations
-    belongs_to(:gateway, Gateway, on_replace: :raise, primary_key: true)
-    belongs_to(:org, Organisation, on_replace: :raise, primary_key: true)
-    belongs_to(:project, Project, on_replace: :raise, primary_key: true)
+    belongs_to(:gateway, Gateway,
+      on_replace: :raise,
+      primary_key: true,
+      foreign_key: :gateway_uuid,
+      references: :uuid,
+      type: :string
+    )
+
+    belongs_to(:org, Organisation,
+      on_replace: :raise,
+      primary_key: true,
+      references: :uuid,
+      foreign_key: :org_uuid,
+      type: :string
+    )
+
+    belongs_to(:project, Project,
+      on_replace: :raise,
+      primary_key: true,
+      references: :uuid,
+      foreign_key: :project_uuid,
+      type: :string
+    )
 
     timestamps(type: :utc_datetime, updated_at: false)
   end
 
-  @required_params ~w(inserted_timestamp gateway_id org_id project_id data)a
+  @required_params ~w(inserted_timestamp gateway_uuid org_uuid project_uuid data)a
 
   @spec changeset(
           __MODULE__.t(),
