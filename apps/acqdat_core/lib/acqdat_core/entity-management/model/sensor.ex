@@ -25,6 +25,24 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     end
   end
 
+  def remove_sensor(sensor_ids) do
+    query =
+      from(sensor in Sensor,
+        where: sensor.id in ^sensor_ids
+      )
+
+    Repo.update_all(query, set: [gateway_id: nil])
+  end
+
+  def add_sensor(sensor_ids, gateway) do
+    query =
+      from(sensor in Sensor,
+        where: sensor.id in ^sensor_ids
+      )
+
+    Repo.update_all(query, set: [gateway_id: gateway.id])
+  end
+
   def get(query) when is_map(query) do
     case Repo.get_by(Sensor, query) do
       nil ->

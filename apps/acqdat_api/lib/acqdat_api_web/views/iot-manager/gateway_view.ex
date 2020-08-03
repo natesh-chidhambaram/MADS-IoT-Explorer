@@ -46,7 +46,8 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
       org_id: gateway.org_id,
       image_url: gateway.image_url,
       org: render_one(gateway.org, OrganisationView, "org.json"),
-      project: render_one(gateway.project, ProjectView, "project_gateway.json")
+      project: render_one(gateway.project, ProjectView, "project_gateway.json"),
+      sensors: render_many(gateway.sensors, SensorView, "sensor.json")
     }
   end
 
@@ -79,7 +80,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
   end
 
   def render("gateway.json", %{gateway: gateway}) do
-    gateway = Repo.preload(gateway, [:org, :project])
+    gateway = Repo.preload(gateway, [:org, :project, :sensors])
 
     %{
       type: "Gateway",
@@ -102,7 +103,8 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
       org: render_one(gateway.org, OrganisationView, "org.json"),
       project: render_one(gateway.project, ProjectView, "project_gateway.json"),
       parent: render_one(gateway.parent, GatewayView, "parent.json"),
-      childs: render_many(gateway.childs, SensorView, "sensor.json")
+      childs: render_many(gateway.childs, SensorView, "sensor.json"),
+      sensors: render_many(gateway.sensors, SensorView, "sensor.json")
     }
   end
 

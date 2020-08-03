@@ -13,7 +13,14 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
   plug AcqdatApiWeb.Plug.LoadProject
 
   plug AcqdatApiWeb.Plug.LoadGateway
-       when action in [:update, :delete, :show, :store_commands, :data_dump_index]
+       when action in [
+              :update,
+              :delete,
+              :show,
+              :store_commands,
+              :associate_sensors,
+              :data_dump_index
+            ]
 
   plug :load_hierarchy_tree when action in [:hierarchy]
 
@@ -23,7 +30,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
     case conn.status do
       nil ->
         {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
-        {:list, gateway} = {:list, Gateway.get_all(data, [:org, :project])}
+        {:list, gateway} = {:list, Gateway.get_all(data, [:org, :project, :sensors])}
 
         conn
         |> put_status(200)
@@ -162,6 +169,32 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
         |> send_error(404, "Resource Not Found")
     end
   end
+
+  def associate_sensors(conn, %{"sensor_ids" => sensor_ids}) do
+    case conn.status do
+      nil ->
+        gateway = Gateway.preload_sensor(conn.assigns.gateway)
+
+        case Gateway.associate_sensors(gateway, sensor_ids) do
+          {:ok, _message} ->
+            gateway = Gateway.load_associations(conn.assigns.gateway)
+
+            conn
+            |> put_status(200)
+            |> render("show.json", %{gateway: gateway})
+
+          {:error, message} ->
+            conn
+            |> send_error(400, message)
+        end
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+    end
+  end
+
+  ############################### private functions #########################
 
   defp add_image_to_params(conn, params) do
     params = Map.put(params, "image_url", "")

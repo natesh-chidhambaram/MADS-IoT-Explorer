@@ -3,7 +3,8 @@ defmodule AcqdatCore.Model.IotManager.GatewayTest do
   use AcqdatCore.DataCase
   import AcqdatCore.Support.Factory
   alias AcqdatCore.Model.IotManager.Gateway
-  alias AcqdatCore.Schema.IotManager.BrokerCredentials
+  alias AcqdatCore.Schema.EntityManagement.Sensor
+  alias AcqdatCore.Repo
 
   describe "create/1" do
     setup %{} do
@@ -111,10 +112,64 @@ defmodule AcqdatCore.Model.IotManager.GatewayTest do
       assert result.uuid == gateway.uuid
     end
 
-    test "not found if invalid uuid", context do
-      %{gateway: gateway} = context
+    test "not found if invalid uuid", _context do
       {:error, result} = Gateway.get(%{uuid: "x"})
       assert result == "Gateway not found"
+    end
+  end
+
+  describe "associate_sensors/1 " do
+    setup do
+      org = insert(:organisation)
+      project = insert(:project, org: org)
+      gateway = insert(:gateway, org: org, project: project)
+      sensors = insert_list(4, :sensor, org: org, project: project)
+      [sensors: sensors, gateway: gateway]
+    end
+
+    test "associates sensors, provided sensor list are unique to gateway", context do
+      %{sensors: [sensor1, sensor2, sensor3, sensor4], gateway: gateway} = context
+      gateway = gateway |> Repo.preload([:sensors])
+      Gateway.associate_sensors(gateway, [sensor1.id, sensor2.id, sensor3.id, sensor4.id])
+      sensor1 = Repo.get!(Sensor, sensor1.id)
+      sensor2 = Repo.get!(Sensor, sensor2.id)
+      sensor3 = Repo.get!(Sensor, sensor3.id)
+      sensor4 = Repo.get!(Sensor, sensor4.id)
+
+      assert sensor1.gateway_id == gateway.id
+      assert sensor2.gateway_id == gateway.id
+      assert sensor3.gateway_id == gateway.id
+      assert sensor4.gateway_id == gateway.id
+    end
+
+    test "associates, while removing sensors not provided in the list", context do
+      %{sensors: [sensor1, sensor2, sensor3, sensor4], gateway: gateway} = context
+      sensor1 = Repo.update!(Sensor.changeset(sensor1, %{gateway_id: gateway.id}))
+      gateway = gateway |> Repo.preload([:sensors])
+      Gateway.associate_sensors(gateway, [sensor2.id, sensor3.id, sensor4.id])
+      sensor1 = Repo.get!(Sensor, sensor1.id)
+      sensor2 = Repo.get!(Sensor, sensor2.id)
+      sensor3 = Repo.get!(Sensor, sensor3.id)
+      sensor4 = Repo.get!(Sensor, sensor4.id)
+      assert sensor1.gateway_id != gateway.id
+      assert sensor2.gateway_id == gateway.id
+      assert sensor3.gateway_id == gateway.id
+      assert sensor4.gateway_id == gateway.id
+    end
+
+    test "associates sensors in the list including previously associated", context do
+      %{sensors: [sensor1, sensor2, sensor3, sensor4], gateway: gateway} = context
+      sensor1 = Repo.update!(Sensor.changeset(sensor1, %{gateway_id: gateway.id}))
+      gateway = gateway |> Repo.preload([:sensors])
+      Gateway.associate_sensors(gateway, [sensor1.id, sensor2.id, sensor3.id, sensor4.id])
+      sensor1 = Repo.get!(Sensor, sensor1.id)
+      sensor2 = Repo.get!(Sensor, sensor2.id)
+      sensor3 = Repo.get!(Sensor, sensor3.id)
+      sensor4 = Repo.get!(Sensor, sensor4.id)
+      assert sensor1.gateway_id == gateway.id
+      assert sensor2.gateway_id == gateway.id
+      assert sensor3.gateway_id == gateway.id
+      assert sensor4.gateway_id == gateway.id
     end
   end
 end

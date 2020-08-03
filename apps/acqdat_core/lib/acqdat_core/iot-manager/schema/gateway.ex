@@ -7,7 +7,7 @@ defmodule AcqdatCore.Schema.IotManager.Gateway do
   """
   use AcqdatCore.Schema
 
-  alias AcqdatCore.Schema.EntityManagement.{Organisation, Project}
+  alias AcqdatCore.Schema.EntityManagement.{Organisation, Project, Sensor}
 
   @typedoc """
   `uuid`: A universally unique id to identify the gateway.
@@ -50,6 +50,7 @@ defmodule AcqdatCore.Schema.IotManager.Gateway do
     # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:project, Project, on_replace: :delete)
+    has_many(:sensors, Sensor)
 
     timestamps(type: :utc_datetime)
   end

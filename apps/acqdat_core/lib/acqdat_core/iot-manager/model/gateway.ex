@@ -226,7 +226,44 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     MQTTBroker.publish(project.uuid, topic, Jason.encode!(payload))
   end
 
+  @doc """
+  Attaching right sensors and updating sensor
+  """
+  def associate_sensors(gateway, sensor_ids) do
+    attached_sensors = MapSet.new(extract_sensor_ids(gateway.sensors))
+    requested_sensors = MapSet.new(sensor_ids)
+    transaction(gateway, attached_sensors, requested_sensors)
+  end
+
   ##################### private functions #####################
+
+  defp transaction(gateway, attached_sensors, requested_sensors) do
+    result =
+      Repo.transaction(fn ->
+        SModel.remove_sensor(
+          MapSet.to_list(MapSet.difference(attached_sensors, requested_sensors))
+        )
+
+        SModel.add_sensor(
+          MapSet.to_list(MapSet.difference(requested_sensors, attached_sensors)),
+          gateway
+        )
+      end)
+
+    case result do
+      {:ok, _message} ->
+        {:ok, "Gateway Sensor List updated"}
+
+      {:error, _message} ->
+        {:error, "Some error occurred while updating list"}
+    end
+  end
+
+  defp extract_sensor_ids(sensors) do
+    Enum.reduce(sensors, [], fn sensor, acc ->
+      acc ++ [sensor.id]
+    end)
+  end
 
   def start_broker_if_needed(gateway) do
     initiation_for_channel(gateway, gateway.channel)
