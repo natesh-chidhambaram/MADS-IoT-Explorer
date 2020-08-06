@@ -47,7 +47,8 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
       image_url: gateway.image_url,
       org: render_one(gateway.org, OrganisationView, "org.json"),
       project: render_one(gateway.project, ProjectView, "project_gateway.json"),
-      sensors: render_many(gateway.sensors, SensorView, "sensor.json")
+      sensors: render_many(gateway.sensors, SensorView, "sensor.json"),
+      timestamp_mapping: gateway.timestamp_mapping
     }
   end
 
@@ -69,7 +70,8 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
       current_location: gateway.current_location,
       mapped_parameters: gateway.mapped_parameters,
       org_id: gateway.org_id,
-      image_url: gateway.image_url
+      image_url: gateway.image_url,
+      timestamp_mapping: gateway.timestamp_mapping
     }
   end
 
