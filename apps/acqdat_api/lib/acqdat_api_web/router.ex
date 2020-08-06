@@ -40,6 +40,8 @@ defmodule AcqdatApiWeb.Router do
     # NOTE: Kept widgets resources out of organisation_scope currently
     get "/widgets/search", Widgets.WidgetController, :search_widget
 
+    get "/widgets/filtered", Widgets.WidgetController, :fetch_all
+
     resources "/widgets", Widgets.WidgetController,
       only: [:create, :update, :delete, :index, :show]
 
@@ -74,6 +76,8 @@ defmodule AcqdatApiWeb.Router do
 
     post("/projects/:project_id/entities", EntityManagement.EntityController, :update_hierarchy)
     get("/projects/:project_id/entities", EntityManagement.EntityController, :fetch_hierarchy)
+
+    get("/projects/:project_id/users", EntityManagement.ProjectController, :fetch_project_users)
 
     resources "/projects", EntityManagement.ProjectController,
       only: [:index, :create, :update, :delete, :show]

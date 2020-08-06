@@ -87,9 +87,11 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
               data_type: :object,
               user_controlled: false,
               properties: %{
+                center: %{data_type: :list, default_value: [], user_controlled: true},
                 size: %{data_type: :string, default_value: "85%", user_controlled: false},
                 background: %{
                   data_type: :list,
+                  user_controlled: false,
                   properties: %{
                     backgroundColor: %{
                       data_type: :color,
@@ -103,7 +105,8 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
                       user_controlled: false
                     },
                     innerRadius: %{data_type: :string, default_value: "0", user_controlled: false},
-                    outerRadius: %{data_type: :string, default_value: "", user_controlled: false}
+                    outerRadius: %{data_type: :string, default_value: "", user_controlled: false},
+                    shape: %{data_type: :string, default_value: "", user_controlled: false}
                   }
                 },
                 startAngle: %{data_type: :integer, default_value: 0, user_controlled: true},
@@ -208,20 +211,53 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
                   default_value: %{},
                   user_controlled: false
                 },
-                labels: %{data_type: :object, default_value: %{}, user_controlled: false},
+                labels: %{
+                  data_type: :object,
+                  user_controlled: false,
+                  properties: %{
+                    step: %{data_type: :integer, default_value: 2, user_controlled: true},
+                    rotation: %{data_type: :string, default_value: "auto", user_controlled: true}
+                  }
+                },
                 title: %{
                   data_type: :object,
                   default_value: %{},
                   user_controlled: false,
                   properties: %{
-                    text: %{data_type: :string, default_value: "", user_controlled: true}
+                    text: %{data_type: :string, default_value: "", user_controlled: true},
+                    y: %{data_type: :integer, default_value: 2, user_controlled: true}
                   }
                 },
                 visible: %{data_type: :boolean, default_value: true, user_controlled: false},
                 type: %{data_type: :string, default_value: true, user_controlled: true},
-                min: %{data_type: :integer, default_value: "null", user_controlled: true},
-                max: %{data_type: :integer, default_value: "null", user_controlled: true},
-                plotBands: %{data_type: :list, default_value: %{}, user_controlled: true}
+                min: %{data_type: :integer, default_value: 0, user_controlled: true},
+                max: %{data_type: :integer, default_value: 200, user_controlled: true},
+                tickPixelInterval: %{
+                  data_type: :integer,
+                  default_value: 30,
+                  user_controlled: true
+                },
+                plotBands: %{
+                  data_type: :list,
+                  user_controlled: true,
+                  properties: %{
+                    color: %{
+                      data_type: :color,
+                      default_value: "#cccccc",
+                      user_controlled: false
+                    },
+                    from: %{
+                      data_type: :integer,
+                      default_value: 0,
+                      user_controlled: false
+                    },
+                    to: %{
+                      data_type: :integer,
+                      default_value: 100,
+                      user_controlled: false
+                    }
+                  }
+                }
               }
             },
             zAxis: %{
@@ -322,11 +358,12 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
   #   }
   # ]
 
-  def fetch_highchart_details(widget, filter_month \\ "1", start_date \\ "", end_date \\ "") do
+  def fetch_highchart_details(widget_inst, filter_month \\ "1", start_date \\ "", end_date \\ "") do
     series_data =
-      widget.series_data |> arrange_series_structure(filter_month, start_date, end_date)
+      widget_inst.series_data
+      |> arrange_series_structure(widget_inst.widget, filter_month, start_date, end_date)
 
-    Map.put(widget, :series, series_data)
+    Map.put(widget_inst, :series, series_data)
   end
 
   def parse_properties(properties) do
@@ -342,7 +379,29 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
 
   ############################# private functions ###########################
 
-  def arrange_series_structure(series_data, filter_month, start_date, end_date) do
+  def arrange_series_structure(
+        series_data,
+        %{classification: classification},
+        filter_month,
+        start_date,
+        end_date
+      )
+      when classification == "latest" do
+    Enum.reduce(series_data, [], fn series, acc_data ->
+      metadata = fetch_latest_axes_spec_data(series.axes, filter_month, start_date, end_date)
+
+      acc_data ++ [%{name: series.name, color: series.color, data: [metadata]}]
+    end)
+  end
+
+  def arrange_series_structure(
+        series_data,
+        %{classification: classification},
+        filter_month,
+        start_date,
+        end_date
+      )
+      when classification != "latest" do
     Enum.reduce(series_data, [], fn series, acc_data ->
       metadata = fetch_axes_specific_data(series.axes, filter_month, start_date, end_date)
 
@@ -354,13 +413,31 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
     end)
   end
 
+  defp fetch_latest_axes_spec_data(axes, filter_month, start_date, end_date) do
+    Enum.reduce(axes, %{}, fn axis, acc ->
+      res = axis |> validate_data_source(filter_month, start_date, end_date)
+      res = (res || [[]]) |> List.last() |> List.last()
+
+      res =
+        if is_nil(res) do
+          0
+        else
+          Float.parse(res) |> elem(0)
+        end
+
+      Map.put(acc, axis.name, res)
+    end)
+  end
+
   defp fetch_axes_specific_data(axes, filter_month, start_date, end_date) do
     Enum.reduce(axes, %{}, fn axis, acc ->
       res = axis |> validate_data_source(filter_month, start_date, end_date)
       # NOTE: {a: unix_timestamp, b: converted string to integer}
       q =
         (res || [])
-        |> Enum.map(fn [a, b] -> {DateTime.to_unix(a) * 1000, String.to_integer(b)} end)
+        |> Enum.map(fn [a, b] ->
+          {DateTime.to_unix(a) * 1000, Float.parse(b) |> elem(0)}
+        end)
         |> Map.new()
 
       Map.put(acc, axis.name, q)
