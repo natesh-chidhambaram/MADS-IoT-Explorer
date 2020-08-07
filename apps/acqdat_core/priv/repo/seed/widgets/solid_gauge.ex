@@ -1,21 +1,30 @@
-defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
+defmodule AcqdatCore.Seed.Widgets.SolidGauge do
   @moduledoc """
-  Holds seeds for Line widgets.
+  Holds seeds for gauge-series widgets.
   """
   alias AcqdatCore.Repo
   alias AcqdatCore.Seed.Helpers.WidgetHelpers
   alias AcqdatCore.Widgets.Schema.Widget, as: WidgetSchema
 
   @highchart_key_widget_settings %{
-    line: %{
+    solidgauge: %{
       visual: %{
-        chart: [type: %{value: "line"}, backgroundColor: %{}, plotBackgroundColor: %{}],
+        chart: [type: %{value: "solidgauge"}, backgroundColor: %{}, plotBackgroundColor: %{}],
         title: [text: %{}, align: %{}],
-        caption: [text: %{}, align: %{}],
-        subtitle: [text: %{}, align: %{}],
-        yAxis: [title: [text: %{}]],
-        xAxis: [type: %{value: "datetime"}, title: [text: %{value: "Date"}]],
+        yAxis: [title: [text: %{},  y: %{data_type: :integer, value: -70, properties: %{}}], min: %{data_type: :integer, value: 0, properties: %{}},
+                max: %{data_type: :integer, value: 200, properties: %{}}],
         credits: [enabled: %{value: false}],
+        pane: [startAngle: %{data_type: :integer, value: -90, properties: %{}},
+               endAngle: %{data_type: :integer, value: 90, properties: %{}},
+               size: %{data_type: :string, value: "140%", properties: %{}},
+               center: %{data_type: :list, value: ["50%", "85%"], properties: %{}},
+               background: [
+                backgroundColor: %{data_type: :color, value: "#EEE", properties: %{}},
+                innerRadius: %{data_type: :string, value: "60%", properties: %{}},
+                outerRadius: %{data_type: :string, value: "100%", properties: %{}},
+                shape: %{data_type: :string, value: "arc", properties: %{}}
+              ]
+             ]
       },
       data: %{
         series: %{
@@ -32,7 +41,6 @@ defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
           value: %{},
           properties: %{
             multiple: %{data_type: :boolean, value: %{data: true}, properties: %{}},
-            x: %{data_type: :list, value: %{}, properties: %{}},
             y: %{data_type: :list, value: %{}, properties: %{}}
           }
         }
@@ -41,39 +49,34 @@ defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
   }
 
   @high_chart_value_settings %{
-    line: %{
+    solidgauge: %{
       visual_setting_values: %{
-        title: %{text: "Solar Employment growth by year"},
-        caption: %{
-           text: "A brief description of the data being stored by
-                the chart here."
-        },
-        subtitle: %{
-          text: "Source: thesolarfoundation.com"
-        },
         yAxis: %{
           title: %{
-            text: "Number of Employees"
-          }
+            text: "RPM",
+            y: -70,
+          },
+          min: 0,
+          max: 5
+        },
+        pane: %{
+        center: ["50%", "85%"],
+        size: "140%",
+        startAngle: -90,
+        endAngle: 90,
+        background: [%{
+            backgroundColor: "#EEE",
+            outerRadius: "100%",
+            innerRadius: "60%",
+            shape: "arc"
+          }]
         }
       },
       data_settings_values: %{
         series: [
           %{
-            name: "Installation",
-            data: [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
-          }, %{
-            name: "Manufacturing",
-            data: [24916, 24064, 29742, 29851, 32490, 30282, 38121, 40434]
-          }, %{
-            name: "Sales & Distribution",
-            data: [11744, 17722, 16005, 19771, 20185, 24377, 32147, 39387]
-          }, %{
-            name: "Project Development",
-            data: ["null", "null", 7988, 12169, 15112, 22452, 34400, 34227]
-          }, %{
-            name: "Other",
-            data: [12908, 5948, 8105, 11248, 8989, 11816, 18274, 18111]
+            name: "RPM",
+            data: [%{y: 2}]
           }
         ]
      }
@@ -93,17 +96,17 @@ defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
     end)
     |> Enum.each(fn data ->
       Repo.insert!(data)
-      WidgetHelpers.create("widgets", data)
     end)
   end
 
   def set_widget_data(key, widget_settings, data, widget_type) do
     %WidgetSchema{
-      label: "Line Timeseries",
+      label: to_string(key),
       properties: %{},
       uuid: UUID.uuid1(:hex),
-      image_url: "https://assets.highcharts.com/images/demo-thumbnails/highcharts/line-time-series-default.png",
-      category: ["chart", "line"],
+      classification: "latest",
+      image_url: "https://assets.highcharts.com/images/demo-thumbnails/highcharts/gauge-solid-default.png",
+      category: ["chart", "solid gauge"],
       policies: %{},
       widget_type_id: widget_type.id,
       visual_settings: WidgetHelpers.do_settings(widget_settings, :visual),
