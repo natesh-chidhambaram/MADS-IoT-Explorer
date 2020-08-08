@@ -76,6 +76,7 @@ defmodule AcqdatApiWeb.Router do
 
     post("/projects/:project_id/entities", EntityManagement.EntityController, :update_hierarchy)
     get("/projects/:project_id/entities", EntityManagement.EntityController, :fetch_hierarchy)
+    get("/entities", EntityManagement.EntityController, :fetch_all_hierarchy)
 
     get("/projects/:project_id/users", EntityManagement.ProjectController, :fetch_project_users)
 
@@ -101,9 +102,7 @@ defmodule AcqdatApiWeb.Router do
       resources "/sensor_type", SensorTypeController, only: [:create, :index, :delete, :update]
     end
 
-    scope "/projects/:project_id", DashboardManagement do
-      resources "/dashboards", DashboardController, except: [:new, :edit]
-    end
+    resources "/dashboards", DashboardManagement.DashboardController, except: [:new, :edit]
 
     post "/dashboards/:dashboard_id/widgets/:widget_id/widget_instances",
          DashboardManagement.WidgetInstanceController,
