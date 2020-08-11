@@ -91,6 +91,8 @@ defmodule AcqdatApiWeb.Router do
       get "/gateways/:gateway_id/data_dump_index", GatewayController, :data_dump_index
     end
 
+    get "/gateways/", IotManager.GatewayController, :all_gateways
+
     scope "/projects/:project_id", EntityManagement do
       resources "/asset_types", AssetTypeController, only: [:create, :update, :delete, :index]
 
