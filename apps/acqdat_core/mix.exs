@@ -33,7 +33,7 @@ defmodule AcqdatCore.MixProject do
   def application do
     [
       mod: {AcqdatCore.Application, []},
-      extra_applications: [:logger, :arc_ecto, :scrivener_ecto]
+      extra_applications: [:logger, :arc_ecto, :scrivener_ecto, :virta]
     ]
   end
 
@@ -76,7 +76,6 @@ defmodule AcqdatCore.MixProject do
       {:ex_aws, "~> 2.0"},
       {:ex_aws_s3, "~> 2.0"},
       {:hackney, "~> 1.6"},
-      {:poison, "~> 3.1"},
       {:sweet_xml, "~> 0.6"},
 
       # slugger
@@ -98,7 +97,10 @@ defmodule AcqdatCore.MixProject do
       {:nimble_csv, "~> 0.7"},
 
       # MQTT
-      {:tortoise, "~> 0.9"}
+      {:tortoise, "~> 0.9"},
+
+      # flow based programming
+      {:virta, in_umbrella: true}
     ]
   end
 
