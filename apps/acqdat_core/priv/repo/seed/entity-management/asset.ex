@@ -1,10 +1,10 @@
 defmodule AcqdatCore.Seed.EntityManagement.Asset do
+  import AsNestedSet.Modifiable
+  import Tirexs.HTTP
   alias AcqdatCore.Schema.EntityManagement.{Asset, Organisation, Project, AssetType}
   alias AcqdatCore.Schema.RoleManagement.User
   alias AcqdatApiWeb.Helpers
-  import AsNestedSet.Modifiable
   alias AcqdatCore.Repo
-  import Tirexs.HTTP
 
   @asset_manifest [
     {
@@ -37,6 +37,7 @@ defmodule AcqdatCore.Seed.EntityManagement.Asset do
 
   def create_taxonomy({parent, children, properties}, asset_type, org, project) do
     [user] = Repo.all(User)
+
     asset =
       Repo.preload(
         %Asset{
@@ -54,7 +55,7 @@ defmodule AcqdatCore.Seed.EntityManagement.Asset do
         :org
       )
 
-     root = add_root(asset)
+      root = add_root(asset)
      insert_asset("assets", root)
      for taxon <- children do
        create_taxon(taxon, root, asset_type, user)
@@ -84,9 +85,7 @@ defmodule AcqdatCore.Seed.EntityManagement.Asset do
           creator_id: user.id
           },
           [:org])
-
     {:ok, root} = add_taxon(root, child, :child)
-
     for taxon <- children do
       create_taxon(taxon, root, asset_type, user)
     end
@@ -135,4 +134,3 @@ defmodule AcqdatCore.Seed.EntityManagement.Asset do
      end
   end
 end
-
