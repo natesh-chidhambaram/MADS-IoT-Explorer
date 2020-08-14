@@ -14,7 +14,9 @@ mqtt_port = System.fetch_env!("MQTT_PORT")
 
 config :acqdat_iot, AcqdatIotWeb.Endpoint, server: true
 
-config :acqdat_api, AcqdatApiWeb.Endpoint, server: true
+config :acqdat_api, AcqdatApiWeb.Endpoint,
+  server: true,
+  check_origin: ["https://mads.netlify.app","https://mads.netlify.com"]
 
 # Configure Guardian
 config :acqdat_api, AcqdatApiWeb.Guardian,
