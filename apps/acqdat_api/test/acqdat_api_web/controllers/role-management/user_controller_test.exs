@@ -300,7 +300,7 @@ defmodule AcqdatApiWeb.RoleManagement.UserControllerTest do
   def setup_index(%{user: user, org: org}) do
     create_organisation("organisation", org)
     create_user("organisation", user, org)
-    :timer.sleep(1000)
+    :timer.sleep(1500)
   end
 
   def create_organisation(type, params) do

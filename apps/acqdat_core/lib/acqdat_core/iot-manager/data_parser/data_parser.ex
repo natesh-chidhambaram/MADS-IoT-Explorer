@@ -1,6 +1,7 @@
 defmodule AcqdatCore.IotManager.DataParser do
   alias AcqdatCore.Model.IotManager.Gateway, as: GModel
   alias AcqdatCore.Repo
+  alias AcqdatCore.Alerts.AlertCreation
   alias AcqdatCore.Schema.EntityManagement.GatewayData, as: GDSchema
   alias AcqdatCore.Schema.EntityManagement.SensorsData, as: SDSchema
   alias AcqdatCore.Schema.EntityManagement.GatewayData.Parameters, as: GParam
@@ -53,6 +54,7 @@ defmodule AcqdatCore.IotManager.DataParser do
       end)
 
     Repo.insert_all(GDSchema, gateway_data)
+    AlertCreation.gateway_alert(data)
   end
 
   # TODO: inserted_timestamp needs to come from data dump it's being set here.
@@ -74,6 +76,7 @@ defmodule AcqdatCore.IotManager.DataParser do
       end)
 
     Repo.insert_all(SDSchema, sensor_data)
+    AlertCreation.sensor_alert(data)
   end
 
   ##################### parsing data private helpers ###################
