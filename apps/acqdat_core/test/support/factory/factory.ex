@@ -2,6 +2,7 @@ defmodule AcqdatCore.Support.Factory do
   use ExMachina.Ecto, repo: AcqdatCore.Repo
   use AcqdatCore.Schema
   use AcqdatCore.Factory.Hierarchy
+  use AcqdatCore.Factory.Alerts
 
   alias AcqdatApiWeb.Guardian
   import Plug.Conn
@@ -253,12 +254,14 @@ defmodule AcqdatCore.Support.Factory do
         %{
           name: sequence(:sensor_type_name, &"SensorTypeParam#{&1}"),
           data_type: sequence(:sensor_type_name, &"SensorTypeDataType#{&1}"),
-          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}")
+          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}"),
+          uuid: UUID.uuid1(:hex)
         },
         %{
           name: sequence(:sensor_type_name, &"SensorTypeParam#{&1}"),
           data_type: sequence(:sensor_type_name, &"SensorTypeDataType#{&1}"),
-          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}")
+          unit: sequence(:sensor_type_name, &"SensorTypeUnit#{&1}"),
+          uuid: UUID.uuid1(:hex)
         }
       ],
       metadata: [

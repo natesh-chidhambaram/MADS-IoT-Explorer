@@ -5,8 +5,6 @@ defmodule AcqdatCore.Test.Support.DataDump do
   alias AcqdatCore.Schema.IotManager.GatewayDataDump
   alias AcqdatCore.Test.Support.DataDump
   alias AcqdatCore.Repo
-  # alias AcqdatCore.Schema.IotManager.GatewayDataDump, as: GDD
-  # alias AcqdatCore.Model.IotManager.GatewayDataDump
   import AcqdatCore.Support.Factory
 
   @parameter_list1 [

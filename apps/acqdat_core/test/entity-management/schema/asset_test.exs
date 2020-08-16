@@ -82,8 +82,7 @@ defmodule AcqdatCore.Schema.EntityManagement.AssetTest do
       assert %{
                project_id: ["can't be blank"],
                creator_id: ["can't be blank"]
-             } ==
-               errors_on(result_changeset)
+             } == errors_on(result_changeset)
     end
 
     test "returns error if asset with same name exists under a parent", %{

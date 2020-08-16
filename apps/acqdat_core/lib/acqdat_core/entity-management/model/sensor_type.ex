@@ -51,18 +51,33 @@ defmodule AcqdatCore.Model.EntityManagement.SensorType do
   end
 
   def update(sensor_type, params) do
-    case is_nil(check_sensor_relation(sensor_type)) do
+    case check_for_parameters_and_metadata(params) do
       true ->
+        case is_nil(check_sensor_relation(sensor_type)) do
+          true ->
+            changeset = SensorType.update_changeset(sensor_type, params)
+
+            case Repo.update(changeset) do
+              {:ok, sensor_type} -> {:ok, sensor_type |> Repo.preload(:org)}
+              {:error, error} -> {:error, error}
+            end
+
+          false ->
+            {:error, "Sensor is Associated to this Sensor Type"}
+        end
+
+      false ->
         changeset = SensorType.update_changeset(sensor_type, params)
 
         case Repo.update(changeset) do
           {:ok, sensor_type} -> {:ok, sensor_type |> Repo.preload(:org)}
           {:error, error} -> {:error, error}
         end
-
-      false ->
-        {:error, "Sensor is Associated to this Sensor Type"}
     end
+  end
+
+  defp check_for_parameters_and_metadata(params) do
+    Map.has_key?(params, "parameters") or Map.has_key?(params, "metadata")
   end
 
   def check_sensor_relation(sensor_type) do

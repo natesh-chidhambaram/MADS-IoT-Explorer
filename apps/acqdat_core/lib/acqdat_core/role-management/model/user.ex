@@ -136,4 +136,17 @@ defmodule AcqdatCore.Model.RoleManagement.User do
 
     ModelHelper.paginated_response(user_data_with_preloads, paginated_user_data)
   end
+
+  @doc """
+  Extract out the email of given user
+  """
+  def extract_email(user_id) when is_integer(user_id) do
+    query =
+      from(user in User,
+        where: user.id == ^user_id,
+        select: user
+      )
+
+    Repo.one!(query) |> Repo.preload(:org)
+  end
 end
