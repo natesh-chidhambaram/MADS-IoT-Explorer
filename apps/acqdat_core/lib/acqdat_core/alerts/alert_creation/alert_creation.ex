@@ -44,7 +44,10 @@ defmodule AcqdatCore.Alerts.AlertCreation do
   def traverse_ids(data, "sensor") do
     Enum.each(data, fn {key, parameters} ->
       check_alert_rule(key, "sensor")
-      |> check_parameter(parameters)
+      |> case do
+        nil -> :no_reply
+        alert_rule -> check_parameter(alert_rule, parameters)
+      end
     end)
   end
 
@@ -52,7 +55,10 @@ defmodule AcqdatCore.Alerts.AlertCreation do
   def traverse_ids(data, "gateway") do
     Enum.each(data, fn {key, parameters} ->
       check_alert_rule(key, "gateway")
-      |> check_parameter(parameters)
+      |> case do
+        nil -> :no_reply
+        alert_rule -> check_parameter(alert_rule, parameters)
+      end
     end)
   end
 
