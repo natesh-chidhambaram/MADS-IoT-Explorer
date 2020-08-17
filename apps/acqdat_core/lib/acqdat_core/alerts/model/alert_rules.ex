@@ -52,7 +52,7 @@ defmodule AcqdatCore.Alerts.Model.AlertRules do
         where: rule.entity == ^entity and rule.entity_id == ^entity_id and rule.status == ^:enable
       )
 
-    Repo.one!(query)
+    List.first(Repo.all(query))
   end
 
   def get_all(%{page_size: page_size, page_number: page_number}) do
