@@ -16,6 +16,7 @@ defmodule AcqdatCore.Support.Factory do
 
   alias AcqdatCore.DashboardManagement.Schema.{
     Dashboard,
+    Panel,
     WidgetInstance,
     CommandWidget
   }
@@ -111,6 +112,16 @@ defmodule AcqdatCore.Support.Factory do
     }
   end
 
+  def panel_factory() do
+    %Panel{
+      uuid: UUID.uuid1(:hex),
+      name: sequence(:dashboard_name, &"Panel#{&1}"),
+      slug: sequence(:dashboard_name, &"Panel#{&1}"),
+      dashboard: build(:dashboard),
+      org: build(:organisation)
+    }
+  end
+
   def command_widget_factory() do
     %CommandWidget{
       uuid: UUID.uuid1(:hex),
@@ -119,7 +130,7 @@ defmodule AcqdatCore.Support.Factory do
       module: "Elixir.AcqdatCore.DashboardManagement.Schema.CommandWidget.LEDControl",
       command_widget_type: "html",
       gateway: build(:gateway),
-      dashboard: build(:dashboard),
+      panel: build(:panel),
       data_settings: %{},
       visual_settings: %{}
     }
@@ -130,7 +141,7 @@ defmodule AcqdatCore.Support.Factory do
       uuid: UUID.uuid1(:hex),
       label: sequence(:widget_inst_name, &"WidgetInstance#{&1}"),
       slug: sequence(:widget_inst_name, &"WidgetInstance#{&1}"),
-      dashboard: build(:dashboard),
+      panel: build(:panel),
       widget: build(:widget)
     }
   end
@@ -138,7 +149,7 @@ defmodule AcqdatCore.Support.Factory do
   def widget_type_factory() do
     %WidgetType{
       name: sequence(:name, &"Widget_Type-#{&1}"),
-      vendor: "Highcharts",
+      vendor: "HighCharts",
       module: "Elixir.AcqdatCore.Widgets.Schema.Vendors.HighCharts",
       vendor_metadata: %{}
     }
