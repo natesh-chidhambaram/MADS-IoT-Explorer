@@ -26,6 +26,7 @@ defmodule AcqdatCore.Alerts.AlertCreation do
   alias AcqdatCore.Mailer
   alias AcqdatCore.Model.RoleManagement.User
   alias AcqdatCore.Alerts.Server
+  alias Notifications
 
   @doc """
   For calling server for starting out alert creation
@@ -89,7 +90,7 @@ defmodule AcqdatCore.Alerts.AlertCreation do
 
       false ->
         data_manifest(alert_rule, parameter)
-        |> create_alert()
+        |> create_alert(alert_rule)
     end
   end
 
@@ -130,7 +131,7 @@ defmodule AcqdatCore.Alerts.AlertCreation do
     }
   end
 
-  def create_alert(params) do
+  def create_alert(params, alert_rule) do
     Task.start_link(fn ->
       case Alert.create(params) do
         {:ok, alert} ->
@@ -145,21 +146,10 @@ defmodule AcqdatCore.Alerts.AlertCreation do
             |> String.trim_trailing(" ")
 
           alert = Map.put_new(alert, :alert_app_name, app)
-          send_alert(alert)
+          Notifications.send_notifications(alert, alert_rule)
 
         {:error, _error} ->
           {:error, :noreply}
-      end
-    end)
-  end
-
-  defp send_alert(alert) do
-    Enum.each(alert.recepient_ids, fn recipient ->
-      if recipient != 0 do
-        user = User.extract_email(recipient)
-
-        AlertNotification.email(user.email, alert, user)
-        |> Mailer.deliver_now()
       end
     end)
   end
