@@ -103,7 +103,12 @@ defmodule AcqdatCore.MixProject do
       {:virta, in_umbrella: true},
 
       # redis
-      {:redix, ">= 0.0.0"}
+      {:redix, ">= 0.0.0"},
+
+      #stream processing and communications with kafka
+      {:kafka_ex, "~> 0.11"},
+      # if using snappy compression
+      {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif"}
     ]
   end
 
