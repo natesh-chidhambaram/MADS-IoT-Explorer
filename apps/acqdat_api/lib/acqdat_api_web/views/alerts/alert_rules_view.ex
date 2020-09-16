@@ -15,6 +15,7 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesView do
       communication_medium: alert_rules.communication_medium,
       creator_id: alert_rules.creator_id,
       phone_numbers: alert_rules.phone_numbers,
+      rate_limit: alert_rules.rate_limit,
       description: alert_rules.description,
       entity: alert_rules.entity,
       entity_id: alert_rules.entity_id,

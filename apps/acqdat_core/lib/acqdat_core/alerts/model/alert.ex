@@ -41,4 +41,15 @@ defmodule AcqdatCore.Alerts.Model.Alert do
       {:error, gateway} -> {:error, gateway}
     end
   end
+
+  def get_similar_alert(parameter) do
+    query =
+      from(alert in Alert,
+        where:
+          alert.policy_name == ^parameter.policy_name and alert.entity_id == ^parameter.entity_id and
+            alert.entity_name == ^parameter.entity_name
+      )
+
+    Repo.all(query)
+  end
 end

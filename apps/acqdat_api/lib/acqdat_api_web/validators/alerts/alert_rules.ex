@@ -18,6 +18,7 @@ defmodule AcqdatApiWeb.Validators.Alerts.AlertRules do
       severity!: :string,
       phone_numbers: {:array, :string},
       status!: :string,
+      rate_limit: :integer,
       app!: :string,
       project_id: :integer,
       creator_id!: :integer,

@@ -146,11 +146,43 @@ defmodule AcqdatCore.Alerts.AlertCreation do
             |> String.trim_trailing(" ")
 
           alert = Map.put_new(alert, :alert_app_name, app)
-          Notifications.send_notifications(alert, alert_rule)
+
+          case check_rate_limit(
+                 alert.inserted_at,
+                 alert_rule.rate_limit,
+                 alert_rule.rate_limit_time,
+                 alert
+               ) do
+            true -> Notifications.send_notifications(alert, alert_rule)
+            false -> {:ok, :noreply}
+          end
 
         {:error, _error} ->
           {:error, :noreply}
       end
     end)
+  end
+
+  defp check_rate_limit(_alert_generated_time, nil, nil, _alert) do
+    true
+  end
+
+  defp check_rate_limit(alert_generate_time, rate, rate_time, alert) do
+    # converting into minutes
+    current_time_diff = div(DateTime.diff(alert_generate_time, rate_time), 60)
+
+    case rem(current_time_diff, rate) do
+      0 -> true
+      _apart_from_0 -> check_for_first_time(alert)
+    end
+  end
+
+  defp check_for_first_time(alert) do
+    alerts = Alert.get_similar_alert(alert)
+
+    case length(alerts) do
+      1 -> true
+      _greater_then_1 -> false
+    end
   end
 end

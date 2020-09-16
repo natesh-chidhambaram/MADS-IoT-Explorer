@@ -18,6 +18,8 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
   `assignee_ids`: The generated alert will be assigned to the assigniee ids
   `severity`: The severity of that alert
   `status`: The status wheather that alert is resolved or not.
+  `rate_limit`: The limit after which alert will be sent using this alert rule
+  `rate_limit`: Will be used once user reset the rate limit
   """
 
   schema "acqdat_alert_rules" do
@@ -39,6 +41,8 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
     field(:rule_parameters, :map, null: false)
     field(:recepient_ids, {:array, :integer})
     field(:phone_numbers, {:array, :string})
+    field(:rate_limit, :integer)
+    field(:rate_limit_time, :utc_datetime)
     field(:assignee_ids, {:array, :integer})
     field(:policy_type, {:array, :string})
     field(:severity, AlertSeverityEnum)
@@ -56,7 +60,7 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
   end
 
   @required_params ~w(rule_name entity entity_id app communication_medium recepient_ids status policy_name uuid slug rule_parameters creator_id org_id severity)a
-  @optional_params ~w(policy_type phone_numbers description project_id assignee_ids)a
+  @optional_params ~w(policy_type rate_limit rate_limit_time phone_numbers description project_id assignee_ids)a
   @embedded_required_params ~w(name uuid data_type)a
   @embedded_optional_params ~w(unit)a
   @permitted_embedded @embedded_optional_params ++ @embedded_required_params
@@ -64,13 +68,20 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
   @permitted_params @required_params ++ @optional_params
 
   def changeset(%__MODULE__{} = alert_rule, params) do
-    alert_rule
-    |> cast(params, @permitted_params)
-    |> cast_embed(:entity_parameters, with: &parameters_changeset/2)
-    |> add_uuid()
-    |> add_slug()
-    |> validate_required(@required_params)
-    |> common_changeset()
+    alert_rule =
+      alert_rule
+      |> cast(params, @permitted_params)
+      |> cast_embed(:entity_parameters, with: &parameters_changeset/2)
+      |> add_uuid()
+      |> add_slug()
+      |> validate_required(@required_params)
+      |> common_changeset()
+
+    alert_rule =
+      case Map.has_key?(params, "rate_limit") do
+        true -> put_rate_limit_time(alert_rule)
+        false -> alert_rule
+      end
   end
 
   def common_changeset(changeset) do
@@ -97,5 +108,10 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
     schema
     |> cast(params, @permitted_embedded)
     |> validate_required(@embedded_required_params)
+  end
+
+  defp put_rate_limit_time(alert_rule) do
+    rate_limit_time = DateTime.truncate(DateTime.utc_now(), :second)
+    Ecto.Changeset.put_change(alert_rule, :rate_limit_time, rate_limit_time)
   end
 end
