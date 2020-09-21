@@ -19,6 +19,23 @@ defmodule AcqdatApiWeb.Router do
     plug(:accepts, ["json", "json-api"])
   end
 
+  pipeline :export_auth do
+    plug(AcqdatApiWeb.DashboardExportAuth)
+  end
+
+  scope "/", AcqdatApiWeb do
+    pipe_through(:export_auth)
+    get("/dashboards/:dashboard_uuid", DashboardExport.DashboardExportController, :export)
+
+    get(
+      "/dashboards/:dashboard_uuid/verify",
+      DashboardManagement.DashboardController,
+      :exported_dashboard
+    )
+
+    get("/details/:dashboard_uuid/panels/:id", DashboardExport.DashboardExportController, :show)
+  end
+
   scope "/", AcqdatApiWeb do
     pipe_through(:api)
 
@@ -56,7 +73,7 @@ defmodule AcqdatApiWeb.Router do
   # NOTE: Please add resources here, only if they needs to be scoped by organisation
   scope "/orgs/:org_id", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
-
+    post("/dashboards/:dashboard_id/export", DashboardExport.DashboardExportController, :create)
     resources "/components", DataCruncher.ComponentsController, only: [:index]
     post "/export/:dashboard_id", DashboardExport.DashboardExportController, :create
 
