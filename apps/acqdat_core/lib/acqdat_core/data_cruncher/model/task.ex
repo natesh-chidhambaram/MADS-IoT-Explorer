@@ -1,4 +1,4 @@
-defmodule AcqdatCore.DataCrunche.Model.Task do
+defmodule AcqdatCore.DataCruncher.Model.Task do
   import Ecto.Query
   alias AcqdatCore.Repo
   alias AcqdatCore.DataCruncher.Schema.Tasks
@@ -9,8 +9,12 @@ defmodule AcqdatCore.DataCrunche.Model.Task do
     Repo.insert(changeset)
   end
 
+  def delete(task) do
+    Repo.delete(task)
+  end
+
   def get(id) when is_integer(id) do
-    case Repo.get(Tasks, id) |> Repo.preload([:workflows]) do
+    case Repo.get(Tasks, id) |> Repo.preload(workflows: :temp_output) do
       nil ->
         {:error, "task not found"}
 

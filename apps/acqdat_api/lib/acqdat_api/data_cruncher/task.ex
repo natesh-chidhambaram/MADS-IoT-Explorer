@@ -1,12 +1,13 @@
 defmodule AcqdatApi.DataCruncher.Task do
   alias Ecto.Multi
   alias AcqdatCore.Repo
-  alias AcqdatCore.DataCrunche.Model.Task, as: TaskModel
+  alias AcqdatCore.DataCruncher.Model.Task, as: TaskModel
   alias AcqdatCore.DataCruncher.Domain.Task
   alias AcqdatApi.DataCruncher.TaskExecuteWorker
 
   defdelegate get_all(data), to: TaskModel
   defdelegate get(id), to: TaskModel
+  defdelegate delete(task), to: TaskModel
 
   def create(%{"id" => id, "action" => action} = params)
       when action == "execute" or action == "register" do
