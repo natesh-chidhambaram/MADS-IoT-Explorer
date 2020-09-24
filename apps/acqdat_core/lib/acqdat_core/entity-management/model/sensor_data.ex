@@ -3,8 +3,11 @@ defmodule AcqdatCore.Model.EntityManagement.SensorData do
   The Module exposes helper functions to interact with sensor
   data.
   """
+
   import Ecto.Query
+  alias AcqdatCore.Schema.EntityManagement.Sensor
   alias AcqdatCore.Schema.EntityManagement.SensorsData
+  alias AcqdatCore.Domain.EntityManagement.SensorData, as: SensorDataDomain
   alias AcqdatCore.Repo
 
   @doc """
@@ -39,50 +42,74 @@ defmodule AcqdatCore.Model.EntityManagement.SensorData do
   end
 
   # TODO: Needs to refactor code so that it will query on dynamic axes
-  def get_all_by_parameters(entity_id, param_uuid, date_from, date_to) do
-    subquery =
-      from(
-        data in SensorsData,
-        where:
-          data.sensor_id == ^entity_id and data.inserted_timestamp >= ^date_from and
-            data.inserted_timestamp <= ^date_to,
-        order_by: [asc: data.inserted_timestamp]
-      )
+  # NOTE: group_interval supported formats: second, minute, hour, day, week
+  def get_all_by_parameters(entity_id, param_uuid, %{
+        from_date: date_from,
+        to_date: date_to,
+        aggregate_func: aggregate_func,
+        group_interval: group_interval,
+        group_interval_type: group_interval_type
+      }) do
+    subquery = SensorDataDomain.filter_by_date_query(entity_id, date_from, date_to)
 
     query =
-      from(
-        data in subquery,
-        cross_join: c in fragment("unnest(?)", data.parameters),
-        where: fragment("?->>'uuid'=?", c, ^param_uuid),
-        select: [
-          fragment("EXTRACT(EPOCH FROM ?)*1000", data.inserted_timestamp),
-          fragment("CAST(ROUND(CAST (?->>'value' AS NUMERIC), 2) AS FLOAT)", c)
-        ]
+      SensorDataDomain.group_by_date_query(
+        subquery,
+        param_uuid,
+        aggregate_func,
+        group_interval,
+        group_interval_type
       )
 
     Repo.all(query)
   end
 
-  def get_latest_by_parameters(entity_id, param_uuid, date_from, date_to) do
-    subquery =
-      from(
-        data in SensorsData,
-        where:
-          data.sensor_id == ^entity_id and data.inserted_timestamp >= ^date_from and
-            data.inserted_timestamp <= ^date_to,
-        order_by: [desc: data.inserted_timestamp],
-        limit: 1
-      )
+  def get_latest_by_parameters(entity_id, param_uuid, %{
+        from_date: date_from,
+        to_date: date_to,
+        aggregate_func: aggregate_func,
+        group_interval: group_interval,
+        group_interval_type: group_interval_type
+      }) do
+    subquery = SensorDataDomain.filter_by_date_query(entity_id, date_from, date_to)
 
     query =
-      from(
-        data in subquery,
-        cross_join: c in fragment("unnest(?)", data.parameters),
-        where: fragment("?->>'uuid'=?", c, ^param_uuid),
-        select: %{
-          y: fragment("CAST(ROUND(CAST (?->>'value' AS NUMERIC), 2) AS FLOAT)", c)
-        }
+      SensorDataDomain.latest_group_by_date_query(
+        subquery,
+        param_uuid,
+        aggregate_func,
+        group_interval,
+        group_interval_type
       )
+
+    Repo.one(query)
+  end
+
+  def get_latest_by_multi_parameters(entity_ids, param_uuids, limit_elem, %{
+        from_date: date_from,
+        to_date: date_to,
+        aggregate_func: aggregate_func,
+        group_interval: group_interval,
+        group_interval_type: group_interval_type
+      }) do
+    subquery = SensorDataDomain.filter_by_date_query(entity_ids, date_from, date_to)
+
+    query =
+      SensorDataDomain.latest_group_by_date_query(
+        subquery,
+        param_uuids,
+        aggregate_func,
+        group_interval,
+        group_interval_type,
+        limit_elem
+      )
+
+    Repo.all(query)
+  end
+
+  def fetch_sensor_details(entity_ids) do
+    query =
+      from(data in Sensor, where: data.id in ^entity_ids, select: %{id: data.id, name: data.name})
 
     Repo.all(query)
   end

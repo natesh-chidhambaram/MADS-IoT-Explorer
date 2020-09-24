@@ -11,6 +11,7 @@ defmodule AcqdatCore.DashboardManagement.Schema.Panel do
   use AcqdatCore.Schema
   alias AcqdatCore.Schema.EntityManagement.Organisation
   alias AcqdatCore.DashboardManagement.Schema.{Dashboard, WidgetInstance, CommandWidget}
+  alias AcqdatCore.DashboardManagement.Schema.Panel.FilterMetadata
 
   @typedoc """
   `name`: Name of the panel, which will be unique with respective to dashboard.
@@ -31,6 +32,9 @@ defmodule AcqdatCore.DashboardManagement.Schema.Panel do
     belongs_to(:dashboard, Dashboard, on_replace: :delete)
     has_many(:widget_instances, WidgetInstance, on_replace: :delete)
     has_many(:command_widgets, CommandWidget)
+
+    # embedded associations
+    embeds_one(:filter_metadata, FilterMetadata, on_replace: :delete)
 
     timestamps(type: :utc_datetime)
   end
@@ -58,6 +62,7 @@ defmodule AcqdatCore.DashboardManagement.Schema.Panel do
   @spec common_changeset(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def common_changeset(changeset) do
     changeset
+    |> cast_embed(:filter_metadata, with: &FilterMetadata.changeset/2)
     |> assoc_constraint(:org)
     |> assoc_constraint(:dashboard)
     |> unique_constraint(:name,
@@ -79,5 +84,30 @@ defmodule AcqdatCore.DashboardManagement.Schema.Panel do
 
   defp random_string(length) do
     :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
+  end
+end
+
+defmodule AcqdatCore.DashboardManagement.Schema.Panel.FilterMetadata do
+  @moduledoc """
+  Embed schema for filter_metadata related to panel.
+  """
+
+  use AcqdatCore.Schema
+
+  embedded_schema do
+    field(:from_date, :integer, default: DateTime.to_unix(DateTime.utc_now(), :millisecond))
+    field(:to_date, :integer, default: DateTime.to_unix(DateTime.utc_now(), :millisecond))
+    field(:aggregate_func, :string, default: "max")
+    field(:group_interval, :integer, default: 1)
+    field(:group_interval_type, :string, default: "hour")
+    field(:last, :string, default: "30_day")
+    field(:type, :string, default: "historical")
+  end
+
+  @permitted ~w(from_date to_date aggregate_func group_interval group_interval_type type last)a
+
+  def changeset(%__MODULE__{} = settings, params) do
+    settings
+    |> cast(params, @permitted)
   end
 end

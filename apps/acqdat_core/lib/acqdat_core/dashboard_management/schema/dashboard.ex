@@ -11,6 +11,7 @@ defmodule AcqdatCore.DashboardManagement.Schema.Dashboard do
   use AcqdatCore.Schema
   alias AcqdatCore.Schema.EntityManagement.Organisation
   alias AcqdatCore.DashboardManagement.Schema.Panel
+  alias AcqdatCore.DashboardExport.Schema.DashboardExport
   alias AcqdatCore.DashboardManagement.Schema.Dashboard.Settings
 
   @typedoc """
@@ -32,6 +33,7 @@ defmodule AcqdatCore.DashboardManagement.Schema.Dashboard do
 
     # embedded associations
     embeds_one(:settings, Settings, on_replace: :delete)
+    has_one(:dashboard_export, DashboardExport)
 
     timestamps(type: :utc_datetime)
   end
@@ -91,8 +93,8 @@ defmodule AcqdatCore.DashboardManagement.Schema.Dashboard.Settings do
   use AcqdatCore.Schema
 
   embedded_schema do
-    field(:background_color, :string, default: "#FFFFFF")
-    field(:sidebar_color, :string, default: "#000000")
+    field(:background_color, :string, default: "#f2f2f2")
+    field(:sidebar_color, :string, default: "#1e3664")
     field(:client_name, :string)
   end
 

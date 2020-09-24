@@ -19,6 +19,23 @@ defmodule AcqdatApiWeb.Router do
     plug(:accepts, ["json", "json-api"])
   end
 
+  pipeline :export_auth do
+    plug(AcqdatApiWeb.DashboardExportAuth)
+  end
+
+  scope "/", AcqdatApiWeb do
+    pipe_through(:export_auth)
+    get("/dashboards/:dashboard_uuid", DashboardExport.DashboardExportController, :export)
+
+    get(
+      "/dashboards/:dashboard_uuid/verify",
+      DashboardManagement.DashboardController,
+      :exported_dashboard
+    )
+
+    get("/details/:dashboard_uuid/panels/:id", DashboardExport.DashboardExportController, :show)
+  end
+
   scope "/", AcqdatApiWeb do
     pipe_through(:api)
 
@@ -56,11 +73,12 @@ defmodule AcqdatApiWeb.Router do
   # NOTE: Please add resources here, only if they needs to be scoped by organisation
   scope "/orgs/:org_id", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
-
+    post("/dashboards/:dashboard_id/export", DashboardExport.DashboardExportController, :create)
     resources "/components", DataCruncher.ComponentsController, only: [:index]
+    post "/export/:dashboard_id", DashboardExport.DashboardExportController, :create
 
-    resources "/users", RoleManagement.UserController, only: [:show, :update, :index] do
-      resources "/tasks", DataCruncher.TasksController, only: [:create, :index, :show]
+    resources "/users", RoleManagement.UserController, only: [:show, :update, :index, :delete] do
+      resources "/tasks", DataCruncher.TasksController, only: [:create, :index, :show, :delete]
 
       resources "/settings", RoleManagement.UserSettingController,
         only: [:create, :update],
@@ -117,8 +135,7 @@ defmodule AcqdatApiWeb.Router do
     resources "/dashboards", DashboardManagement.DashboardController, except: [:new, :edit]
 
     scope "/dashboards/:dashboard_id", DashboardManagement do
-      resources "/panels", PanelController, except: [:new, :edit, :delete]
-      delete "/panels", PanelController, :delete, as: :panel
+      resources "/panels", PanelController, except: [:new, :edit]
     end
 
     scope "/panels/:panel_id", DashboardManagement do

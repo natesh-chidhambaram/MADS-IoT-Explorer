@@ -122,7 +122,33 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
             },
             plotOptions: %{
               data_type: :object,
-              user_controlled: false
+              user_controlled: false,
+              properties: %{
+                column: %{
+                  data_type: :object,
+                  user_controlled: false,
+                  default_value: %{},
+                  properties: %{
+                    stacking: %{
+                      data_type: :string,
+                      default_value: "normal",
+                      user_controlled: true
+                    },
+                    dataLabels: %{
+                      data_type: :object,
+                      default_value: %{},
+                      user_controlled: false,
+                      properties: %{
+                        enabled: %{
+                          data_type: :boolean,
+                          default_value: false,
+                          user_controlled: true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             },
             responsive: %{
               user_controlled: false,
@@ -233,6 +259,14 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
                   properties: %{
                     text: %{data_type: :string, default_value: "", user_controlled: true},
                     y: %{data_type: :integer, default_value: 2, user_controlled: true}
+                  }
+                },
+                stackLabels: %{
+                  data_type: :object,
+                  default_value: %{},
+                  user_controlled: false,
+                  properties: %{
+                    enabled: %{data_type: :boolean, default_value: false, user_controlled: true}
                   }
                 },
                 visible: %{data_type: :boolean, default_value: true, user_controlled: false},
@@ -365,68 +399,96 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
   #   }
   # ]
 
-  def fetch_highchart_details(widget_inst, filter_month \\ "1", start_date \\ "", end_date \\ "") do
-    series_data =
-      widget_inst.series_data
-      |> arrange_series_structure(widget_inst.widget, filter_month, start_date, end_date)
-
-    Map.put(widget_inst, :series, series_data)
+  def fetch_highchart_details(widget_inst, filter_params) do
+    widget_inst |> gen_series_data(filter_params)
   end
 
   def parse_properties(properties) do
     Enum.reduce(properties, %{}, fn setting, acc ->
-      if setting.properties != [] do
+      if (Map.has_key?(setting, :value) && setting.value != %{}) || setting.properties == [] do
+        Map.put(acc, setting.key, setting.value["data"])
+      else
         value = parse_properties(setting.properties)
         Map.put(acc, setting.key, value)
-      else
-        Map.put(acc, setting.key, setting.value["data"])
       end
     end)
   end
 
   ############################# private functions ###########################
 
-  def arrange_series_structure(
-        series_data,
-        %{classification: classification},
-        filter_month,
-        start_date,
-        end_date
-      )
-      when classification == "latest" do
+  defp gen_series_data(widget_inst, filter_metadata) do
+    series_data =
+      widget_inst.series_data
+      |> arrange_series_structure(widget_inst.widget, filter_metadata)
+
+    Map.put(widget_inst, :series, series_data)
+  end
+
+  defp arrange_series_structure(
+         series_data,
+         %{classification: classification, label: label},
+         filter_metadata
+       )
+       when classification == "latest" and label == "pie" do
+    series = List.first(series_data)
+
+    axes =
+      Enum.reduce(series_data, [], fn series, acc_data ->
+        acc_data ++ series.axes
+      end)
+
+    filter_axes = axes |> Enum.filter(fn axis -> axis.name == "y" end)
+    axes_len = length(filter_axes)
+
+    entity_ids = filter_axes |> fetch_ids_from_axes("entity_id")
+    param_ids = filter_axes |> fetch_ids_from_axes("parameter")
+
+    sen_dets = entity_ids |> fetch_sensor_data()
+
+    res =
+      SensorData.get_latest_by_multi_parameters(entity_ids, param_ids, axes_len, filter_metadata)
+
+    metadata = map_sensor_data(res, sen_dets)
+    [%{name: series.name, color: series.color, data: metadata}]
+  end
+
+  defp arrange_series_structure(
+         series_data,
+         %{classification: classification},
+         filter_metadata
+       )
+       when classification == "latest" do
     Enum.reduce(series_data, [], fn series, acc_data ->
-      metadata = fetch_latest_axes_spec_data(series.axes, filter_month, start_date, end_date)
+      nil
+      metadata = fetch_latest_axes_spec_data(series.axes, filter_metadata)
 
       acc_data ++ [%{name: series.name, color: series.color, data: metadata}]
     end)
   end
 
-  def arrange_series_structure(
-        series_data,
-        %{classification: classification},
-        filter_month,
-        start_date,
-        end_date
-      )
-      when classification != "latest" do
+  defp arrange_series_structure(
+         series_data,
+         %{classification: classification},
+         filter_metadata
+       )
+       when classification != "latest" do
     Enum.reduce(series_data, [], fn series, acc_data ->
-      metadata = fetch_axes_specific_data(series.axes, filter_month, start_date, end_date)
-
+      metadata = fetch_axes_specific_data(series.axes, filter_metadata)
       acc_data ++ [%{name: series.name, color: series.color, data: metadata}]
     end)
   end
 
-  defp fetch_latest_axes_spec_data(axes, filter_month, start_date, end_date) do
-    Enum.reduce(axes, %{}, fn axis, acc ->
-      axis |> validate_data_source(filter_month, start_date, end_date, "latest")
+  defp fetch_latest_axes_spec_data(axes, filter_metadata) do
+    Enum.reduce(axes, [], fn axis, acc ->
+      res = axis |> validate_data_source(filter_metadata, "latest")
+      acc ++ (res || [])
     end)
   end
 
-  defp fetch_axes_specific_data(axes, filter_month, start_date, end_date) do
-    Enum.reduce(axes, %{}, fn axis, acc ->
-      if axis.source_metadata["parameter"] != "inserted_timestamp" do
-        axis |> validate_data_source(filter_month, start_date, end_date, "timseries")
-      end
+  defp fetch_axes_specific_data(axes, filter_metadata) do
+    Enum.reduce(axes, [], fn axis, acc ->
+      res = axis |> validate_data_source(filter_metadata, "timseries")
+      acc ++ (res || [])
     end)
   end
 
@@ -439,9 +501,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
              "entity_type" => entity_type
            }
          },
-         filter_month,
-         start_date,
-         end_date,
+         filter_metadata,
          type
        )
        when source_type == "pds" and parameter != "inserted_timestamp" do
@@ -449,9 +509,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
       entity_id,
       entity_type,
       parameter,
-      filter_month,
-      start_date,
-      end_date,
+      filter_metadata,
       type
     )
   end
@@ -461,9 +519,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
            source_type: source_type,
            source_metadata: %{"parameter" => parameter}
          },
-         _filter_month,
-         _start_date,
-         _end_date,
+         _filter_metadata,
          _
        )
        when source_type == "pds" and parameter == "inserted_timestamp" do
@@ -473,78 +529,47 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
          entity_id,
          entity_type,
          parameter,
-         filter_month,
-         start_date,
-         end_date,
+         filter_metadata,
          type
        )
        when entity_type == "sensor" and type == "timseries" do
-    {filter_month, _} = Integer.parse(filter_month)
-    date_to = end_date |> validate_and_parse_end_date
-    date_from = start_date |> validate_and_parse_start_date(filter_month)
-
-    SensorData.get_all_by_parameters(entity_id, parameter, date_from, date_to)
+    SensorData.get_all_by_parameters(entity_id, parameter, filter_metadata)
   end
 
   defp fetch_from_data_source(
          entity_id,
          entity_type,
          parameter,
-         filter_month,
-         start_date,
-         end_date,
+         filter_metadata,
          type
        )
        when entity_type == "sensor" and type == "latest" do
-    {filter_month, _} = Integer.parse(filter_month)
-    date_to = end_date |> validate_and_parse_end_date
-    date_from = start_date |> validate_and_parse_start_date(filter_month)
+    data = SensorData.get_latest_by_parameters(entity_id, parameter, filter_metadata)
 
-    SensorData.get_latest_by_parameters(entity_id, parameter, date_from, date_to)
+    data = (data || %{}) |> Map.delete(:x)
+    [data]
   end
 
-  defp validate_and_parse_end_date(date) do
-    if is_nil(date) || date == "" do
-      Timex.now() |> DateTime.truncate(:second)
-    else
-      parse_date(date)
-    end
-  end
-
-  defp validate_and_parse_start_date(date, filter_month) do
-    if is_nil(date) || date == "" do
-      Timex.shift(Timex.now(), months: -filter_month) |> DateTime.truncate(:second)
-    else
-      parse_date(date)
-    end
-  end
-
-  defp fetch_uniq_keys(metadata) do
-    Enum.reduce(Map.keys(metadata), [], fn x, acc ->
-      acc ++ Map.keys(metadata[x])
+  defp map_sensor_data(res, sen_data) do
+    Enum.reduce(res || [], [], fn data, acc ->
+      name = sen_data[data.id]
+      acc ++ [[name, data.value]]
     end)
   end
 
-  defp parse_series_data(uniq_keys, metadata) do
-    Stream.map(uniq_keys, fn key ->
-      Enum.reduce(Map.keys(metadata), %{}, fn x, acc ->
-        value = metadata[x] |> axes_params_value(key)
-        Map.put(acc, x, value)
-      end)
+  defp fetch_ids_from_axes(filter_axes, type) do
+    Enum.map(filter_axes, fn axis ->
+      if axis.name == "y" do
+        axis.source_metadata["#{type}"]
+      end
     end)
-    |> Enum.into([])
   end
 
-  defp axes_params_value(axes, key) when axes == %{} do
-    key
-  end
+  defp fetch_sensor_data(entity_ids) do
+    sen_dets = SensorData.fetch_sensor_details(entity_ids)
 
-  defp axes_params_value(axes, key) when axes != %{} do
-    axes[key] || "0"
-  end
-
-  defp parse_date(date) do
-    date
-    |> Timex.parse!("{YYYY}-{0M}-{0D}")
+    sen_dets
+    |> Enum.map(fn data -> {data.id, data.name} end)
+    |> Map.new()
   end
 end
