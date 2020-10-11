@@ -11,6 +11,7 @@ elastic_search_host = System.fetch_env!("ELASTIC_SEARCH_HOST")
 db_port = System.fetch_env!("DB_PORT")
 mqtt_host = System.fetch_env!("MQTT_HOST")
 mqtt_port = System.fetch_env!("MQTT_PORT")
+dashboard_url = System.fetch_env!("DASHBOARD_URL")
 
 config :acqdat_iot, AcqdatIotWeb.Endpoint, server: true
 
@@ -86,3 +87,7 @@ config :acqdat_core, AcqdatCore.Mailer,
 config :acqdat_core, :mqtt_broker,
   host: mqtt_host,
   port: mqtt_port
+
+config :acqdat_api,
+  :frontend_url,
+  dashboard_url
