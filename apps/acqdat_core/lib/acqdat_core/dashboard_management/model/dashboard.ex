@@ -40,7 +40,8 @@ defmodule AcqdatCore.Model.DashboardManagement.Dashboard do
         {:error, "dashboard with this uuid not found"}
 
       dashboard ->
-        {:ok, dashboard |> Repo.preload([:panels, :dashboard_export])}
+        dashboard = dashboard |> Repo.preload([:panels, :dashboard_export])
+        {:ok, dashboard |> reorder_panels}
     end
   end
 
@@ -50,7 +51,7 @@ defmodule AcqdatCore.Model.DashboardManagement.Dashboard do
         {:error, "dashboard with this id not found"}
 
       dashboard ->
-        {:ok, dashboard}
+        {:ok, dashboard |> reorder_panels}
     end
   end
 
@@ -66,5 +67,17 @@ defmodule AcqdatCore.Model.DashboardManagement.Dashboard do
       )
 
     query |> Repo.paginate(page: page_number, page_size: page_size)
+  end
+
+  def reorder_panels(dashboard) do
+    panels_order = dashboard.settings && dashboard.settings.panels_order
+
+    updated_data =
+      if panels_order do
+        panels = Enum.sort_by(dashboard.panels, fn panel -> panels_order["#{panel.id}"] end)
+        %{dashboard | panels: panels}
+      end
+
+    updated_data || dashboard
   end
 end

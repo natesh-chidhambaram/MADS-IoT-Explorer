@@ -32,6 +32,28 @@ defmodule AcqdatCore.Model.DashboardManagement.DashboardTest do
       assert not is_nil(length(result.panels))
     end
 
+    test "returns dashboard panels list as the order specified in dashboard settings" do
+      dashboard = insert(:dashboard)
+      panels = insert_list(2, :panel, dashboard: dashboard)
+      [panel1, panel2] = panels
+      panel_orders = %{"#{panel1.id}" => 2, "#{panel2.id}" => 1}
+
+      params = %{
+        "settings" => %{
+          "panels_order" => panel_orders
+        }
+      }
+
+      dashboard = dashboard |> Repo.preload([:panels, :dashboard_export])
+      {:ok, dashboard} = DashboardModel.update(dashboard, params)
+
+      {:ok, result} = DashboardModel.get_with_panels(dashboard.id)
+      [panel1, panel2] = result.panels
+
+      assert panel_orders["#{panel1.id}"] == 1
+      assert panel_orders["#{panel2.id}"] == 2
+    end
+
     test "returns error not found, if dashboard is not present" do
       {:error, result} = DashboardModel.get_with_panels(-1)
       assert result == "dashboard with this id not found"

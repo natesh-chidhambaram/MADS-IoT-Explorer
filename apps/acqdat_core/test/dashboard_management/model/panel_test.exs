@@ -38,23 +38,6 @@ defmodule AcqdatCore.Model.DashboardManagement.PanelTest do
     end
   end
 
-  describe "get_all/1" do
-    test "returns all panels" do
-      panel = insert(:panel)
-
-      result =
-        PanelModel.get_all(%{
-          page_size: 10,
-          page_number: 1,
-          org_id: panel.org_id,
-          dashboard_id: panel.dashboard_id
-        })
-
-      assert not is_nil(result)
-      assert length(result.entries) == 1
-    end
-  end
-
   describe "create/1" do
     setup do
       organisation = insert(:organisation)

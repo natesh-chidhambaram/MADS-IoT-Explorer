@@ -60,7 +60,9 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardView do
       background_color: settings.background_color,
       client_name: settings.client_name,
       sidebar_color: settings.sidebar_color,
-      thumbnail_url: settings.thumbnail_url
+      thumbnail_url: settings.thumbnail_url,
+      panels_order: settings.panels_order,
+      timezone: settings.timezone
     }
   end
 end

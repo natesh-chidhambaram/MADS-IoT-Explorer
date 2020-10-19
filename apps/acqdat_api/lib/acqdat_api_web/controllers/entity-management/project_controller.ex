@@ -42,6 +42,24 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
     end
   end
 
+  def archived(conn, params) do
+    changeset = verify_index_params(params)
+
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        {:list, project} = {:list, Project.get_all_archived(data, [:leads, :users])}
+
+        conn
+        |> put_status(200)
+        |> render("index.json", project)
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+    end
+  end
+
   def update(conn, params) do
     case conn.status do
       nil ->

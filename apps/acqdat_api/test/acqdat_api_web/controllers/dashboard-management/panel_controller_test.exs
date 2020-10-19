@@ -273,28 +273,7 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelControllerTest do
         )
 
       response = conn |> json_response(200)
-      assert response["total_pages"] == 1
-      assert length(response["panels"]) == response["total_entries"]
-    end
-
-    test "Pagination", %{conn: conn} do
-      panel = insert(:panel)
-
-      params = %{
-        "page_size" => 2,
-        "page_number" => 1
-      }
-
-      conn =
-        get(
-          conn,
-          Routes.panel_path(conn, :index, panel.org_id, panel.dashboard_id, params)
-        )
-
-      page1_response = conn |> json_response(200)
-      assert page1_response["page_number"] == params["page_number"]
-      assert page1_response["page_size"] == params["page_size"]
-      assert page1_response["total_pages"] == 1
+      assert length(response["panels"]) == 1
     end
 
     test "fails if invalid token in authorization header", %{conn: conn} do
