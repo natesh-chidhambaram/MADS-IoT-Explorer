@@ -4,6 +4,7 @@ defmodule AcqdatApi.EntityManagement.Project do
   import AcqdatApiWeb.Helpers
 
   defdelegate get_all(data, preloads), to: ProjectModel
+  defdelegate get_all_archived(data, preloads), to: ProjectModel
   defdelegate delete(project), to: ProjectModel
 
   def update(project, params) do

@@ -60,8 +60,24 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
   def get_all(%{page_size: page_size, page_number: page_number, org_id: org_id}, preloads) do
     query =
       from(project in Project,
-        join: org in Organisation,
-        on: project.org_id == ^org_id and org.id == ^org_id
+        where: project.org_id == ^org_id and project.archived == false
+      )
+
+    paginated_project_data =
+      query |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+
+    project_data_with_preloads = paginated_project_data.entries |> Repo.preload(preloads)
+
+    ModelHelper.paginated_response(project_data_with_preloads, paginated_project_data)
+  end
+
+  def get_all_archived(
+        %{page_size: page_size, page_number: page_number, org_id: org_id},
+        preloads
+      ) do
+    query =
+      from(project in Project,
+        where: project.org_id == ^org_id and project.archived == true
       )
 
     paginated_project_data =

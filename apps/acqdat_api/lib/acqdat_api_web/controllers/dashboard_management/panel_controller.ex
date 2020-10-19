@@ -17,7 +17,7 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelController do
 
         conn
         |> put_status(200)
-        |> render("index.json", panels)
+        |> render("index.json", %{panels: panels})
 
       404 ->
         conn

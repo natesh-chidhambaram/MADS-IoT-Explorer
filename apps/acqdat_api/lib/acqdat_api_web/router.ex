@@ -104,6 +104,10 @@ defmodule AcqdatApiWeb.Router do
 
     get("/projects/:project_id/users", EntityManagement.ProjectController, :fetch_project_users)
 
+    get("/archived_projects", EntityManagement.ProjectController, :archived,
+      as: :archived_projects
+    )
+
     resources "/projects", EntityManagement.ProjectController,
       only: [:index, :create, :update, :delete, :show]
 

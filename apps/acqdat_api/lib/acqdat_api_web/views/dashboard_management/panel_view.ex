@@ -25,13 +25,9 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelView do
     }
   end
 
-  def render("index.json", panels) do
+  def render("index.json", %{panels: panels}) do
     %{
-      panels: render_many(panels.entries, PanelView, "panel.json"),
-      page_number: panels.page_number,
-      page_size: panels.page_size,
-      total_entries: panels.total_entries,
-      total_pages: panels.total_pages
+      panels: render_many(panels, PanelView, "panel.json")
     }
   end
 

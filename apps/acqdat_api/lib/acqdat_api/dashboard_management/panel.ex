@@ -1,11 +1,16 @@
 defmodule AcqdatApi.DashboardManagement.Panel do
   alias AcqdatCore.Model.DashboardManagement.Panel, as: PanelModel
+  alias AcqdatCore.Model.DashboardManagement.Dashboard, as: DashboardModel
   import AcqdatApiWeb.Helpers
 
-  defdelegate get_all(data), to: PanelModel
   defdelegate delete(panel), to: PanelModel
   defdelegate get_with_widgets(panel_id), to: PanelModel
   defdelegate update(panel, data), to: PanelModel
+
+  def get_all(%{dashboard_id: dashboard_id}) do
+    {:ok, dashboard} = DashboardModel.get_with_panels(dashboard_id)
+    dashboard.panels
+  end
 
   def create(attrs) do
     %{
