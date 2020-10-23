@@ -27,12 +27,55 @@ defmodule AcqdatCore.Alerts.Model.Alert do
     end
   end
 
-  def get_all(%{page_size: page_size, page_number: page_number, filters: _filters}) do
-    Alert |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+  def get_all(%{page_size: page_size, page_number: page_number, org_id: org_id}, params) do
+    query =
+      Alert
+      |> where([alert], alert.org_id == ^org_id)
+      |> where(^filter_where(params))
+
+    query |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
   end
 
   def get_all(%{page_size: page_size, page_number: page_number}) do
     Alert |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+  end
+
+  defp filter_where(params) do
+    Enum.reduce(params, dynamic(true), fn
+      {"name", name}, dynamic_query ->
+        dynamic(
+          [alert],
+          ^dynamic_query and alert.name == ^name
+        )
+
+      {"app", app}, dynamic_query ->
+        app = String.to_atom(app)
+
+        dynamic(
+          [alert],
+          ^dynamic_query and alert.app == ^app
+        )
+
+      {"status", status}, dynamic_query ->
+        status = String.to_atom(status)
+
+        dynamic(
+          [alert],
+          ^dynamic_query and alert.status == ^status
+        )
+
+      {"start_date", start_date}, dynamic_query ->
+        end_date = params["end_date"]
+
+        dynamic(
+          [alert],
+          ^dynamic_query and
+            fragment("?::date BETWEEN ? AND ?", alert.inserted_at, ^start_date, ^end_date)
+        )
+
+      {_, _}, dynamic_query ->
+        dynamic_query
+    end)
   end
 
   def delete(alert) do

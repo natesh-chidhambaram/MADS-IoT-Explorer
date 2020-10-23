@@ -125,6 +125,9 @@ defmodule AcqdatApiWeb.Router do
       resources "/policies", PolicyController, only: [:index]
       resources "/alert-rules", AlertRulesController, except: [:new, :edit]
       resources "/alert", AlertController, except: [:new, :edit, :create]
+      get "/alert_rule_listing", AlertFilterListingController, :alert_rule_listing
+      get "/alert_apps", AlertFilterListingController, :alert_app_listing
+      get "/alert_status", AlertFilterListingController, :alert_status_listing
     end
 
     scope "/projects/:project_id", EntityManagement do

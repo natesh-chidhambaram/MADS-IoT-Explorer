@@ -64,7 +64,7 @@ defmodule AcqdatApiWeb.Alerts.AlertController do
     case conn.status do
       nil ->
         {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
-        {:list, alert} = {:list, Alert.get_all(data)}
+        {:list, alert} = {:list, Alert.get_all(data, params)}
 
         conn
         |> put_status(200)

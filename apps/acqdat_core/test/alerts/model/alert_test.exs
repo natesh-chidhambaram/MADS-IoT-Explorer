@@ -40,12 +40,12 @@ defmodule AcqdatCore.Alerts.Model.AlertTest do
     test "with valid params" do
       valid_params = @valid_params
 
-      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0, filters: %{}})
+      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
       assert alerts.total_entries == 0
 
       {:ok, _} = AlertModel.create(valid_params)
 
-      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0, filters: %{}})
+      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
       assert alerts.total_entries == 1
 
       first_alert = alerts.entries |> List.first()
@@ -55,12 +55,12 @@ defmodule AcqdatCore.Alerts.Model.AlertTest do
 
     test "with invalid params" do
       invalid_params = %{name: "Test name"}
-      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0, filters: %{}})
+      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
       assert alerts.total_entries == 0
 
       {:error, _} = AlertModel.create(invalid_params)
 
-      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0, filters: %{}})
+      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
       assert alerts.total_entries == 0
     end
   end
@@ -104,12 +104,12 @@ defmodule AcqdatCore.Alerts.Model.AlertTest do
     end
 
     test "with valid params", %{alert: alert} do
-      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0, filters: %{}})
+      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
       assert alerts.total_entries == 1
 
       {:ok, _} = AlertModel.delete(alert)
 
-      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0, filters: %{}})
+      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
       assert alerts.total_entries == 0
     end
   end
@@ -124,7 +124,7 @@ defmodule AcqdatCore.Alerts.Model.AlertTest do
     test "with valid params", %{alert: _} do
       valid_params = @valid_params
 
-      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0, filters: %{}})
+      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
       assert alerts.total_entries == 1
 
       first_alert = alerts.entries |> List.first()
