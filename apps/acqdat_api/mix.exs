@@ -62,6 +62,11 @@ defmodule AcqdatApi.MixProject do
 
       # writer for the MS Excel OpenXML format
       {:elixlsx, "~> 0.4.2"}
+      {:sentry, "~> 7.0"},
+      {:hackney, "~> 1.8"},
+
+      # javascript execution
+      {:execjs, git: "https://github.com/devinus/execjs"}
     ]
   end
 end
