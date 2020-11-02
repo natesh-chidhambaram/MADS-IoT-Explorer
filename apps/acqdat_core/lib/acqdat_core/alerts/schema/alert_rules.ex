@@ -38,6 +38,7 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
     field(:slug, :string, null: false)
     field(:rule_parameters, :map, null: false)
     field(:recepient_ids, {:array, :integer})
+    field(:phone_numbers, {:array, :string})
     field(:assignee_ids, {:array, :integer})
     field(:policy_type, {:array, :string})
     field(:severity, AlertSeverityEnum)
@@ -55,7 +56,7 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
   end
 
   @required_params ~w(rule_name entity entity_id app communication_medium recepient_ids status policy_name uuid slug rule_parameters creator_id org_id severity)a
-  @optional_params ~w(policy_type description project_id assignee_ids)a
+  @optional_params ~w(policy_type phone_numbers description project_id assignee_ids)a
   @embedded_required_params ~w(name uuid data_type)a
   @embedded_optional_params ~w(unit)a
   @permitted_embedded @embedded_optional_params ++ @embedded_required_params

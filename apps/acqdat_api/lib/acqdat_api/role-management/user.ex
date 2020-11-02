@@ -56,6 +56,7 @@ defmodule AcqdatApi.RoleManagement.User do
       password: password,
       password_confirmation: password_confirmation,
       first_name: first_name,
+      phone_number: phone_number,
       last_name: last_name
     } = attrs
 
@@ -65,6 +66,7 @@ defmodule AcqdatApi.RoleManagement.User do
       |> Map.put(:password_confirmation, password_confirmation)
       |> Map.put(:first_name, first_name)
       |> Map.put(:last_name, last_name)
+      |> Map.put(:phone_number, phone_number)
 
     fetch_existing_invitation(token, user_details)
   end

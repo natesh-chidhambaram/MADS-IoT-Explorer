@@ -16,6 +16,7 @@ defmodule AcqdatApiWeb.Validators.Alerts.AlertRules do
       assignee_ids!: {:array, :integer},
       policy_type!: {:array, :string},
       severity!: :string,
+      phone_numbers: {:array, :string},
       status!: :string,
       app!: :string,
       project_id: :integer,
