@@ -20,19 +20,35 @@ defmodule AcqdatApi.DashboardExport.DashboardExport do
       |> Map.put_new(:dashboard_id, dashboard.id)
       |> Map.put_new(:url, url)
 
-    if (params.is_secure == true and params.password != nil) or
-         (params.is_secure == false and params.password == nil) do
+    if valid_params?(params) do
       verify_dashboard_export(DashboardExport.create(params))
     else
       {:error, %{error: "wrong information provided"}}
     end
   end
 
-  def verify_dashboard_export({:ok, dashboard_export}) do
+  def update(dashboard_export, params) do
+    params = params_extraction(params)
+
+    if valid_params?(params) do
+      verify_dashboard_export(DashboardExport.update(dashboard_export, params))
+    else
+      {:error, %{error: "wrong information provided"}}
+    end
+  end
+
+  ################# private functions ###############
+
+  defp valid_params?(params) do
+    (params.is_secure == true and params.password != nil) or
+      (params.is_secure == false and params.password == nil)
+  end
+
+  defp verify_dashboard_export({:ok, dashboard_export}) do
     {:ok, dashboard_export}
   end
 
-  def verify_dashboard_export({:error, message}) do
+  defp verify_dashboard_export({:error, message}) do
     {:error, %{error: extract_changeset_error(message)}}
   end
 
