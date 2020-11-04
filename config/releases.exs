@@ -11,6 +11,8 @@ elastic_search_host = System.fetch_env!("ELASTIC_SEARCH_HOST")
 db_port = System.fetch_env!("DB_PORT")
 mqtt_host = System.fetch_env!("MQTT_HOST")
 mqtt_port = System.fetch_env!("MQTT_PORT")
+twilio_account_sid = System.fetch_env!("TWILIO_ACCOUNT_SID")
+twilio_auth_token = System.fetch_env!("TWILIO_AUTH_TOKEN")
 
 config :acqdat_iot, AcqdatIotWeb.Endpoint, server: true
 
@@ -86,3 +88,9 @@ config :acqdat_core, AcqdatCore.Mailer,
 config :acqdat_core, :mqtt_broker,
   host: mqtt_host,
   port: mqtt_port
+
+
+# Configures twilio
+config :ex_twilio,
+  account_sid: twilio_account_sid,
+  auth_token: twilio_auth_token
