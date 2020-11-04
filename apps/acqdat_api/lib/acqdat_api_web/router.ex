@@ -76,8 +76,14 @@ defmodule AcqdatApiWeb.Router do
   scope "/orgs/:org_id", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
     post("/dashboards/:dashboard_id/export", DashboardExport.DashboardExportController, :create)
+
+    put(
+      "/dashboards/:dashboard_id/export/:dashboard_uuid",
+      DashboardExport.DashboardExportController,
+      :update
+    )
+
     resources "/components", DataCruncher.ComponentsController, only: [:index]
-    post "/export/:dashboard_id", DashboardExport.DashboardExportController, :create
 
     resources "/users", RoleManagement.UserController, only: [:show, :update, :index, :delete] do
       resources "/tasks", DataCruncher.TasksController, only: [:create, :index, :show, :delete]
@@ -125,6 +131,9 @@ defmodule AcqdatApiWeb.Router do
       resources "/policies", PolicyController, only: [:index]
       resources "/alert-rules", AlertRulesController, except: [:new, :edit]
       resources "/alert", AlertController, except: [:new, :edit, :create]
+      get "/alert_rule_listing", AlertFilterListingController, :alert_rule_listing
+      get "/alert_apps", AlertFilterListingController, :alert_app_listing
+      get "/alert_status", AlertFilterListingController, :alert_status_listing
     end
 
     scope "/projects/:project_id", EntityManagement do

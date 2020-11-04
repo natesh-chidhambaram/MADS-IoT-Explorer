@@ -2,6 +2,7 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
   import AsNestedSet.Modifiable
   import Ecto.Query
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SensorModel
+  alias AcqdatCore.Model.IotManager.Gateway, as: GatewayModel
   alias AcqdatCore.Schema.EntityManagement.Asset
   alias Ecto.Multi
   alias AcqdatCore.Repo
@@ -19,6 +20,10 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
 
   def child_assets(project_id) do
     Asset |> dump_assets(%{project_id: project_id}) |> AsNestedSet.execute(Repo)
+  end
+
+  def child_assets_including_gateway(project_id) do
+    Asset |> dump_assets_for_gateway(%{project_id: project_id}) |> AsNestedSet.execute(Repo)
   end
 
   @doc """
@@ -205,6 +210,26 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     end
   end
 
+  defp dump_assets_for_gateway(module, scope, parent_id \\ nil) do
+    fn repo ->
+      children = fetch_child_assets(repo, module, scope, parent_id)
+
+      Enum.reduce(children, [], fn asset, acc ->
+        res_asset = dump_assets(module, scope, asset.id).(repo)
+        sensor_entities = fetch_asset_descendants_map_for_gateway(nil, res_asset, asset)
+
+        res_asset =
+          fetch_asset_descendants_map_for_gateway(
+            List.first(res_asset),
+            res_asset,
+            sensor_entities
+          )
+
+        acc ++ [res_asset]
+      end)
+    end
+  end
+
   # NOTE: Taken reference from as_nested_set queriable module dump function:
   # https://github.com/secretworry/as_nested_set/blob/1883d61796c676fdb610c6be19fd565f501635de/lib/as_nested_set/queriable.ex#L117
   defp fetch_child_assets(repo, module, scope, parent_id) do
@@ -242,6 +267,30 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
       Enum.reduce(entities, [], fn asset, acc_sensor ->
         entities = SensorModel.child_sensors(asset)
         asset = Map.put_new(asset, :sensors, entities)
+        acc_sensor ++ [asset]
+      end)
+
+    Map.put_new(asset, :assets, entities_with_sensors)
+  end
+
+  # fetch_asset_descendants_map" function will return all the sensors + gateways of the leaf
+  # asset.
+  defp fetch_asset_descendants_map_for_gateway(nil, _entities, asset) do
+    sensors = SensorModel.child_sensors(asset)
+    gateways = GatewayModel.child_gateways(asset)
+    Map.put_new(asset, :sensors, sensors)
+    Map.put_new(asset, :gateways, gateways)
+  end
+
+  # fetch_asset_descendants_map" function will return all the descendants(assets/sensors/gateway)
+  # of the respective asset.
+  defp fetch_asset_descendants_map_for_gateway(_data, entities, asset) do
+    entities_with_sensors =
+      Enum.reduce(entities, [], fn asset, acc_sensor ->
+        entities = SensorModel.child_sensors(asset)
+        gateways = GatewayModel.child_gateways(asset)
+        asset = Map.put_new(asset, :sensors, entities)
+        asset = Map.put_new(asset, :gateways, gateways)
         acc_sensor ++ [asset]
       end)
 

@@ -7,7 +7,7 @@ defmodule AcqdatApi.Alerts.Alert do
   import AcqdatApiWeb.Helpers
 
   defdelegate update(alert, params), to: Alert
-  defdelegate get_all(data), to: Alert
+  defdelegate get_all(data, params), to: Alert
   defdelegate delete(alert), to: Alert
 
   def create(params) do

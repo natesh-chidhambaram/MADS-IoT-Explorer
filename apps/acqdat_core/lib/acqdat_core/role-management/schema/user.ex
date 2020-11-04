@@ -21,6 +21,7 @@ defmodule AcqdatCore.Schema.RoleManagement.User do
     field(:password_confirmation, :string, virtual: true)
     field(:avatar, :string)
     field(:is_deleted, :boolean, default: false)
+    field(:phone_number, :string)
     field(:is_invited, :boolean, default: false)
     field(:password_hash, :string)
 
@@ -35,7 +36,7 @@ defmodule AcqdatCore.Schema.RoleManagement.User do
   end
 
   @required ~w(first_name email password is_invited password_confirmation role_id org_id)a
-  @optional ~w(password_hash is_deleted last_name avatar)a
+  @optional ~w(password_hash is_deleted phone_number last_name avatar)a
   @permitted @optional ++ @required
 
   def changeset(%__MODULE__{} = user, params) do

@@ -24,6 +24,17 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
     end)
   end
 
+  def hierarchy_data_for_gateway(org_id, project_id) do
+    org_projects = fetch_projects(org_id, project_id)
+
+    Enum.reduce(org_projects, [], fn project, acc ->
+      entities = AssetModel.child_assets_including_gateway(project.id)
+      sensors = SensorModel.get_all_by_parent_project(project.id)
+      map_data = Map.put_new(project, :assets, entities)
+      acc ++ [Map.put_new(map_data, :sensors, sensors)]
+    end)
+  end
+
   def get_by_id(id) when is_integer(id) do
     case Repo.get(Project, id) do
       nil ->

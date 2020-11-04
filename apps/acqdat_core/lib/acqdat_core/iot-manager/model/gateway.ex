@@ -84,6 +84,23 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     end
   end
 
+  def child_gateways(root) do
+    child_gateways_query(root)
+    |> Repo.all()
+  end
+
+  def child_gateways_query(root) when not is_list(root) do
+    from(gateway in Gateway,
+      where: gateway.parent_id == ^root.id and gateway.parent_type == "Asset"
+    )
+  end
+
+  def child_gateways_query(asset_ids) when is_list(asset_ids) do
+    from(gateway in Gateway,
+      where: gateway.parent_id in ^asset_ids and gateway.parent_type == "Asset"
+    )
+  end
+
   def update(%Gateway{} = gateway, params) do
     gateway_channel = gateway.channel
 
@@ -179,9 +196,9 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
   end
 
   def fetch_hierarchy_data(org, org_id, project_id) do
-    hierarchy = PModel.hierarchy_data(org_id, project_id)
+    hierarchy = PModel.hierarchy_data_for_gateway(org_id, project_id)
     gateway = get_gateways(project_id)
-    org = Map.put_new(org, :project_data, hierarchy)
+    org = Map.replace!(org, :project_data, hierarchy)
     Map.put_new(org, :gateway_data, gateway)
   end
 

@@ -21,6 +21,23 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectView do
     }
   end
 
+  def render("project_including_gateway.json", %{project: project}) do
+    params =
+      render_many(project.sensors, SensorView, "sensor_tree.json") ++
+        render_many(project.assets, AssetView, "asset_tree_with_gateway.json")
+
+    %{
+      type: "Project",
+      id: project.id,
+      name: project.name,
+      archived: project.archived,
+      slug: project.slug,
+      description: project.description,
+      version: project.version,
+      entities: params
+    }
+  end
+
   def render("index.json", project) do
     %{
       projects: render_many(project.entries, ProjectView, "project_index.json"),
