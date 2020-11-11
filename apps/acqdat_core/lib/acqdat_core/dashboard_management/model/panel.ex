@@ -59,12 +59,15 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
            to_date: to_date,
            aggregate_func: aggr_fun,
            group_interval: grp_intv,
-           group_interval_type: grp_intv_type
+           group_interval_type: grp_intv_type,
+           last: last
          }
        }) do
+    %{from_date: from_date, to_date: to_date} = fetch_datetime_range(from_date, to_date, last)
+
     %{
-      from_date: from_unix(from_date),
-      to_date: from_unix(to_date),
+      from_date: from_date,
+      to_date: to_date,
       aggregate_func: aggr_fun,
       group_interval: grp_intv,
       group_interval_type: grp_intv_type
@@ -77,8 +80,28 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
       to_date: Timex.now(),
       aggregate_func: "max",
       group_interval: 1,
-      group_interval_type: "hour"
+      group_interval_type: "hour",
+      last: "30_day"
     }
+  end
+
+  defp fetch_datetime_range(from_date, to_date, last) when last == "custom" do
+    %{from_date: from_unix(from_date), to_date: from_unix(to_date)}
+  end
+
+  defp fetch_datetime_range(_from_date, _to_date, last) do
+    [interval, duration] = String.split(last, "_")
+    {interval, _} = Integer.parse(interval)
+    to_date = DateTime.utc_now()
+
+    from_date = to_date |> from_date(duration, interval)
+
+    %{from_date: from_date, to_date: to_date}
+  end
+
+  defp from_date(to_date, duration, interval) do
+    duration = String.to_atom(duration <> "s")
+    Timex.shift(to_date, [{duration, -interval}])
   end
 
   defp from_unix(datetime) do

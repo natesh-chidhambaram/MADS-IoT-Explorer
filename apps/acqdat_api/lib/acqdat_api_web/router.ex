@@ -47,6 +47,7 @@ defmodule AcqdatApiWeb.Router do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
     post "/validate-token", AuthController, :validate_token
     post "/sign-out", AuthController, :sign_out
+    post "/orgs/:org_id/validate_credentials", AuthController, :validate_credentials
 
     resources "/roles", RoleManagement.RoleController, only: [:index]
 
@@ -81,6 +82,12 @@ defmodule AcqdatApiWeb.Router do
       "/dashboards/:dashboard_id/export/:dashboard_uuid",
       DashboardExport.DashboardExportController,
       :update
+    )
+
+    get(
+      "/dashboards/:dashboard_id/export/:dashboard_uuid/show_credentials",
+      DashboardExport.DashboardExportController,
+      :show_credentials
     )
 
     resources "/components", DataCruncher.ComponentsController, only: [:index]
