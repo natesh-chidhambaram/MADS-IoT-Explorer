@@ -1,4 +1,4 @@
-defmodule AcqdatApiWeb.DashboardExport.DashboardExportController do
+defmodule AcqdatApiWeb.DashboardManagement.DashboardExportController do
   use AcqdatApiWeb, :controller
   import AcqdatApiWeb.Helpers
   alias AcqdatApi.DashboardExport.DashboardExport
