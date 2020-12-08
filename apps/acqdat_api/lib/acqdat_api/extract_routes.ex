@@ -1,5 +1,6 @@
 defmodule AcqdatApi.ExtractRoutes do
   alias AcqdatApiWeb.Router
+  use Agent
 
   #   "DashboardManagement" => %{
   #     "DashboardExport" => {
@@ -10,6 +11,15 @@ defmodule AcqdatApi.ExtractRoutes do
   #       }
   #     }
   #  }
+
+  def start_link(_opts) do
+    Agent.start_link(fn -> extract_routes() end, name: __MODULE__)
+  end
+
+  def value() do
+    Agent.get(__MODULE__, & &1)
+  end
+
   def extract_routes() do
     routes = Router.__routes__()
 
