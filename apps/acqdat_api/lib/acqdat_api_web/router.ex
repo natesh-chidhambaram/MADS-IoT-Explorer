@@ -59,6 +59,7 @@ defmodule AcqdatApiWeb.Router do
 
   scope "/", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
+    get "/apis", RoleManagement.ExtractedRoutesController, :apis
     post "/validate-token", AuthController, :validate_token
     post "/sign-out", AuthController, :sign_out
     post "/orgs/:org_id/validate_credentials", AuthController, :validate_credentials

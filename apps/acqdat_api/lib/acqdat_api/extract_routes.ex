@@ -29,7 +29,7 @@ defmodule AcqdatApi.ExtractRoutes do
   end
 
   defp create_map(%{plug: controller_name, verb: request_type, plug_opts: action}, acc) do
-    [feature, controller_name, trunc_controller] =
+    [feature, trunc_controller] =
       controller_name |> to_string |> String.split(".") |> truncate_controller
 
     case Map.has_key?(acc, feature) do
@@ -91,12 +91,12 @@ defmodule AcqdatApi.ExtractRoutes do
 
   defp truncate_controller([_, _, feature, controller_name]) do
     [trunc_controller, _] = controller_name |> String.split("Controller") |> return_trunc
-    [feature, controller_name, trunc_controller]
+    [feature, trunc_controller]
   end
 
   defp truncate_controller([_, feature, controller_name]) do
     [trunc_controller, _] = controller_name |> String.split("Controller") |> return_trunc
-    [feature, controller_name, trunc_controller]
+    [feature, trunc_controller]
   end
 
   defp return_trunc([trunc_name, _]) do
