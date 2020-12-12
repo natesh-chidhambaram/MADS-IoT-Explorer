@@ -1,0 +1,103 @@
+defmodule AcqdatApiWeb.ApiAccessAuth do
+  import Plug.Conn
+  import Ecto.Query
+  alias AcqdatCore.Repo
+  alias AcqdatApi.ExtractRoutes
+  alias AcqdatCore.Schema.RoleManagement.{GroupUser, GroupPolicy}
+
+  def init(default), do: default
+
+  def call(conn, _params) do
+    user_id = Guardian.Plug.current_resource(conn)
+
+    case provide_access(conn, user_id) do
+      true ->
+        conn
+
+      false ->
+        conn
+        |> put_status(401)
+    end
+  end
+
+  def provide_access(conn, user_id) do
+    controller_name = Phoenix.Controller.controller_module(conn)
+    action = Phoenix.Controller.action_name(conn) |> to_string
+
+    [application, feature] =
+      controller_name |> to_string |> String.split(".") |> truncate_controller
+
+    group_ids = extract_user_groups(user_id)
+
+    case is_nil(List.first(group_ids)) do
+      false ->
+        group_policies = extract_policies(group_ids)
+
+        user_actions =
+          Enum.reduce(group_policies, [], fn policies, acc ->
+            acc ++ policies.policy.actions
+          end)
+
+        check_authentication(user_actions, action, application, feature)
+
+      true ->
+        true
+    end
+  end
+
+  def check_authentication(user_actions, action, application, feature) do
+    case is_nil(List.first(user_actions)) do
+      true ->
+        false
+
+      false ->
+        single_action = List.first(user_actions)
+
+        if single_action.action == action and single_action.app == application and
+             single_action.feature == feature do
+          true
+        else
+          user_actions = user_actions -- [single_action]
+          check_authentication(user_actions, action, application, feature)
+        end
+    end
+  end
+
+  defp extract_user_groups(user_id) do
+    query =
+      from(user_group in GroupUser,
+        where: user_group.user_id == ^user_id,
+        select: user_group.group_id
+      )
+
+    Repo.all(query) ++ [-1]
+  end
+
+  defp extract_policies(group_ids) do
+    query =
+      from(user_group in GroupPolicy,
+        where: user_group.group_id in ^group_ids,
+        preload: [:policy]
+      )
+
+    Repo.all(query)
+  end
+
+  defp truncate_controller([_, _, feature, controller_name]) do
+    [trunc_controller, _] = controller_name |> String.split("Controller") |> return_trunc
+    [feature, trunc_controller]
+  end
+
+  defp truncate_controller([_, feature, controller_name]) do
+    [trunc_controller, _] = controller_name |> String.split("Controller") |> return_trunc
+    [feature, trunc_controller]
+  end
+
+  defp return_trunc([trunc_name, _]) do
+    [trunc_name, nil]
+  end
+
+  defp return_trunc([trunc_name]) do
+    [trunc_name, nil]
+  end
+end

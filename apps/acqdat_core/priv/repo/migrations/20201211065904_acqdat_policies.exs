@@ -6,6 +6,7 @@ defmodule AcqdatCore.Repo.Migrations.AcqdatPolicies do
       add(:name, :string, null: false)
       add(:org_id, references("acqdat_organisation", on_delete: :delete_all), null: false)
       add(:actions, {:array, :map})
+
       timestamps(type: :timestamptz)
     end
 

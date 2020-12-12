@@ -1,4 +1,4 @@
-defmodule AcqdatCore.Schema.RoleManagement.Groups do
+defmodule AcqdatCore.Schema.RoleManagement.Group do
   @moduledoc """
   Models a group in acqdat.
   """
@@ -16,14 +16,13 @@ defmodule AcqdatCore.Schema.RoleManagement.Groups do
     # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     many_to_many(:users, User, join_through: "acqdat_group_users", on_replace: :delete)
-    many_to_many(:policies, User, join_through: "acqdat_group_policies", on_replace: :delete)
+    many_to_many(:policies, Policy, join_through: "acqdat_group_policies", on_replace: :delete)
 
     timestamps(type: :utc_datetime)
   end
 
   @required ~w(name org_id)a
-  @optional ~w(users policies)a
-  @permitted @required ++ @optional
+  @permitted @required
 
   def changeset(group, params) do
     group
