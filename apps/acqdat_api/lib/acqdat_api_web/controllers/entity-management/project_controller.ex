@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.EntityManagement.ProjectController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.EntityManagement.Project
   alias AcqdatApi.Image
   alias AcqdatApi.ImageDeletion
@@ -7,7 +7,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.EntityManagement.Project
 
-  plug AcqdatApiWeb.ApiAccessAuth
+  # plug AcqdatApiWeb.ApiAccessAuth
   plug AcqdatApiWeb.Plug.LoadOrg
 
   plug AcqdatApiWeb.Plug.LoadProject
