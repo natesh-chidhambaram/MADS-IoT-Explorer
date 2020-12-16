@@ -64,6 +64,8 @@ defmodule AcqdatApi.MixProject do
       {:elixlsx, "~> 0.4.2"}
       {:sentry, "~> 7.0"},
       {:hackney, "~> 1.8"},
+
+      {:poison, "~> 3.1", override: true}
     ]
   end
 end

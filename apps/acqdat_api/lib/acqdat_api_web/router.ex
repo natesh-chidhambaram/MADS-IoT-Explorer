@@ -215,6 +215,7 @@ defmodule AcqdatApiWeb.Router do
       as: :search_assets
 
     scope "/projects/:project_id", EntityManagement do
+      get "/entity_list", ProjectController, :entity_list
       resources "/asset_types", AssetTypeController, only: [:create, :update, :delete, :index]
       get "/assets/search", AssetController, :search_assets, as: :search_assets
       get "/sensors/search", SensorController, :search_sensors, as: :search_sensors
