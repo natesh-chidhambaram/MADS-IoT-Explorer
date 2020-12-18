@@ -3,7 +3,7 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
   import Ecto.Query
   alias AcqdatCore.Repo
   alias AcqdatApi.ExtractRoutes
-  alias AcqdatCore.Schema.RoleManagement.{GroupUser, GroupPolicy}
+  alias AcqdatCore.Schema.RoleManagement.{GroupUser, GroupPolicy, UserPolicy}
 
   def init(default), do: default
 
@@ -28,21 +28,47 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
       controller_name |> to_string |> String.split(".") |> truncate_controller
 
     group_ids = extract_user_groups(user_id)
+    user_policies = extract_user_policies(user_id)
 
-    case is_nil(List.first(group_ids)) do
-      false ->
-        group_policies = extract_policies(group_ids)
+    asd =
+      case is_nil(List.first(group_ids)) do
+        false ->
+          group_policies = extract_policies(group_ids)
 
-        user_actions =
-          Enum.reduce(group_policies, [], fn policies, acc ->
-            acc ++ policies.policy.actions
-          end)
+          policies =
+            Enum.reduce(group_policies, [], fn policies, acc ->
+              acc ++ [policies.policy]
+            end) ++
+              Enum.reduce(user_policies, [], fn policies, acc ->
+                acc ++ [policies.policy]
+              end)
 
-        check_authentication(user_actions, action, application, feature)
+          user_actions =
+            Enum.reduce(policies, [], fn policy, acc ->
+              acc ++ policy.actions
+            end)
 
-      true ->
-        true
-    end
+          check_authentication(user_actions, action, application, feature)
+
+        true ->
+          case is_nil(List.first(user_policies)) do
+            true ->
+              true
+
+            false ->
+              policies =
+                Enum.reduce(user_policies, [], fn policies, acc ->
+                  acc ++ [policies.policy]
+                end)
+
+              user_actions =
+                Enum.reduce(policies, [], fn policy, acc ->
+                  acc ++ policy.actions
+                end)
+
+              check_authentication(user_actions, action, application, feature)
+          end
+      end
   end
 
   def check_authentication(user_actions, action, application, feature) do
@@ -71,6 +97,16 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
       )
 
     Repo.all(query) ++ [-1]
+  end
+
+  defp extract_user_policies(user_id) do
+    query =
+      from(user_policy in UserPolicy,
+        where: user_policy.user_id == ^user_id,
+        preload: [:policy]
+      )
+
+    Repo.all(query)
   end
 
   defp extract_policies(group_ids) do
