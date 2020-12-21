@@ -25,14 +25,7 @@ defmodule AcqdatApiWeb.ApiAccessAuthTest do
   end
 
   def setup_groups_and_policies(%{org: org, user: user}) do
-    policy1 = %{
-      name: "policy_1",
-      org_id: org.id,
-      actions: [
-        %{app: "EntityManagement", feature: "Project", action: "create"},
-        %{app: "EntityManagement", feature: "Sensor", action: "create"}
-      ]
-    }
+    policy1 = %{app: "EntityManagement", feature: "Project", action: "create"}
 
     policy2 = %{
       name: "policy_2",
