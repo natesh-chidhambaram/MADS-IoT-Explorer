@@ -3,13 +3,14 @@ defmodule AcqdatCore.Repo.Migrations.AcqdatPolicies do
 
   def change do
     create table("acqdat_policies") do
-      add(:name, :string, null: false)
-      add(:org_id, references("acqdat_organisation", on_delete: :delete_all), null: false)
-      add(:actions, {:array, :map})
+      add(:app, :string, null: false)
+      add(:feature, :string, null: false)
+      add(:action, :string, null: false)
+
 
       timestamps(type: :timestamptz)
     end
 
-    create unique_index("acqdat_policies", [:name, :org_id])
+    create unique_index("acqdat_policies", [:app, :feature, :action])
   end
 end

@@ -1,5 +1,7 @@
 defmodule AcqdatApi.ExtractRoutes do
   alias AcqdatApiWeb.Router
+  alias AcqdatCore.Schema.RoleManagement.Policy
+  alias AcqdatCore.Repo
   use Agent
 
   #   "DashboardManagement" => %{
@@ -23,9 +25,12 @@ defmodule AcqdatApi.ExtractRoutes do
   def extract_routes() do
     routes = Router.__routes__()
 
-    Enum.reduce(routes, %{}, fn route, acc ->
-      create_map(route, acc)
-    end)
+    routes =
+      Enum.reduce(routes, %{}, fn route, acc ->
+        create_map(route, acc)
+      end)
+
+    create_policies(routes)
   end
 
   defp create_map(%{plug: controller_name, verb: request_type, plug_opts: action}, acc) do
@@ -105,5 +110,31 @@ defmodule AcqdatApi.ExtractRoutes do
 
   defp return_trunc([trunc_name]) do
     [trunc_name, nil]
+  end
+
+  defp create_policies(routes) do
+    present_routes = convert_to_list(routes)
+    # present_policies =
+  end
+
+  defp convert_to_list(routes) do
+    Enum.reduce(routes, [], fn {app, value}, acc ->
+      features = Map.keys(value)
+      acc ++ extract_all_actions(app, features, value)
+    end)
+  end
+
+  defp extract_all_actions(app, features, value) do
+    Enum.reduce(features, [], fn feature, acc ->
+      %{actions: actions} = value[feature]
+      actions = Map.keys(actions)
+
+      action_list =
+        Enum.reduce(actions, [], fn action, action_acc ->
+          action_acc ++ [%{app: app, feature: feature, action: to_string(action)}]
+        end)
+
+      acc ++ action_list
+    end)
   end
 end
