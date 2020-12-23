@@ -6,9 +6,6 @@ defmodule AcqdatCore.Repo.Migrations.AcqdatPolicies do
       add(:app, :string, null: false)
       add(:feature, :string, null: false)
       add(:action, :string, null: false)
-
-
-      timestamps(type: :timestamptz)
     end
 
     create unique_index("acqdat_policies", [:app, :feature, :action])

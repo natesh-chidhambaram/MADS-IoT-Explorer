@@ -10,8 +10,6 @@ defmodule AcqdatCore.Schema.RoleManagement.Policy do
     field(:app, :string, null: false)
     field(:feature, :string, null: false)
     field(:action, :string, null: false)
-
-    timestamps(type: :utc_datetime)
   end
 
   @permitted ~w(app feature action)a

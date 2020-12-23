@@ -93,7 +93,7 @@ defmodule AcqdatApiWeb.Router do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
     # user group api
-    resources "/groups", ApiAccess.GroupController, except: [:new, :edit]
+    resources "/user_groups", ApiAccess.UserGroupController, except: [:new, :edit]
 
     post(
       "/dashboards/:dashboard_id/export",

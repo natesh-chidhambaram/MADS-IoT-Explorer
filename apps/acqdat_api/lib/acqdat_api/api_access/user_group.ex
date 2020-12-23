@@ -1,13 +1,17 @@
-defmodule AcqdatApi.ApiAccess.Group do
+defmodule AcqdatApi.ApiAccess.UserGroup do
   @moduledoc """
   All the helper function will be provided to the controller through this file
   """
-  alias AcqdatCore.Model.RoleManagement.Group
+  alias AcqdatCore.Model.RoleManagement.UserGroup
+  alias AcqdatCore.Model.RoleManagement.Policy
   import AcqdatApiWeb.Helpers
 
   def create(params) do
     params = params_extraction(params)
-    verify_group(Group.create(params))
+    policy_ids = Policy.extract_policies(params.actions)
+    params = Map.put_new(params, :policy_ids, policy_ids)
+    params = Map.put_new(params, :user_ids, [])
+    verify_group(UserGroup.create(params))
   end
 
   defp verify_group({:ok, group}) do

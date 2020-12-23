@@ -1,4 +1,4 @@
-defmodule AcqdatCore.Schema.RoleManagement.Group do
+defmodule AcqdatCore.Schema.RoleManagement.UserGroup do
   @moduledoc """
   Models a group in acqdat.
   """
@@ -29,7 +29,6 @@ defmodule AcqdatCore.Schema.RoleManagement.Group do
     |> cast(params, @permitted)
     |> validate_required(@permitted)
     |> common_changeset()
-    # NOTE need to be tested.
     |> put_group_users(params.user_ids)
     |> put_group_policies(params.policy_ids)
   end

@@ -1,8 +1,8 @@
-defmodule AcqdatApiWeb.ApiAccess.GroupController do
+defmodule AcqdatApiWeb.ApiAccess.UserGroupController do
   use AcqdatApiWeb, :controller
-  alias AcqdatApi.ApiAccess.Group
+  alias AcqdatApi.ApiAccess.UserGroup
   import AcqdatApiWeb.Helpers
-  import AcqdatApiWeb.Validators.ApiAccess.Group
+  import AcqdatApiWeb.Validators.ApiAccess.UserGroup
 
   # plug :load_group when action in [:show, :update, :delete]
 
@@ -25,10 +25,10 @@ defmodule AcqdatApiWeb.ApiAccess.GroupController do
         changeset = verify_group(params)
 
         with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
-             {:create, {:ok, group}} <- {:create, Group.create(data)} do
+             {:create, {:ok, group}} <- {:create, UserGroup.create(data)} do
           conn
           |> put_status(200)
-          |> render("group.json", %{group: group})
+          |> render("user_group.json", %{group: group})
         else
           {:extract, {:error, error}} ->
             send_error(conn, 400, error)

@@ -114,7 +114,10 @@ defmodule AcqdatApi.ExtractRoutes do
 
   defp create_policies(routes) do
     present_routes = convert_to_list(routes)
-    # present_policies =
+    present_policies = Repo.all(Policy) |> change_to_map
+    policies_to_be_created = present_routes -- present_policies
+    Task.start_link(fn -> Repo.insert_all(Policy, policies_to_be_created) end)
+    routes
   end
 
   defp convert_to_list(routes) do
@@ -136,5 +139,16 @@ defmodule AcqdatApi.ExtractRoutes do
 
       acc ++ action_list
     end)
+  end
+
+  defp change_to_map(policies) do
+    Enum.reduce(policies, [], fn policy, acc ->
+      acc ++ [params_extraction(policy)]
+    end)
+  end
+
+  defp params_extraction(params) do
+    Map.from_struct(params)
+    |> Map.drop([:_id, :__meta__, :inserted_at, :updated_at, :id])
   end
 end
