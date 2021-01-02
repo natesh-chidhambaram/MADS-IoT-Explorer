@@ -26,7 +26,9 @@ defmodule AcqdatApi.RoleManagement.Invitation do
            apps: apps,
            assets: assets,
            org_id: org_id,
-           role_id: role_id
+           role_id: role_id,
+           group_ids: group_ids,
+           policies: policies
          },
          current_user
        ) do
@@ -37,6 +39,8 @@ defmodule AcqdatApi.RoleManagement.Invitation do
       "email" => email,
       "app_ids" => app_ids,
       "asset_ids" => asset_ids,
+      "group_ids" => group_ids,
+      "policies" => policies,
       "inviter_email" => current_user.email,
       "inviter_name" => "#{current_user.first_name} #{current_user.last_name}",
       "inviter_id" => current_user.id,

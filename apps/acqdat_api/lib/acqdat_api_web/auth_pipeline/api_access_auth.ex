@@ -30,45 +30,44 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
     group_ids = extract_user_groups(user_id)
     user_policies = extract_user_policies(user_id)
 
-    asd =
-      case is_nil(List.first(group_ids)) do
-        false ->
-          group_policies = extract_policies(group_ids)
+    case is_nil(List.first(group_ids)) do
+      false ->
+        group_policies = extract_policies(group_ids)
 
-          policies =
-            Enum.reduce(group_policies, [], fn policies, acc ->
+        policies =
+          Enum.reduce(group_policies, [], fn policies, acc ->
+            acc ++ [policies.policy]
+          end) ++
+            Enum.reduce(user_policies, [], fn policies, acc ->
               acc ++ [policies.policy]
-            end) ++
+            end)
+
+        user_actions =
+          Enum.reduce(policies, [], fn policy, acc ->
+            acc ++ [policy |> Map.from_struct() |> Map.drop([:_id, :__meta__])]
+          end)
+
+        check_authentication(user_actions, action, application, feature)
+
+      true ->
+        case is_nil(List.first(user_policies)) do
+          true ->
+            true
+
+          false ->
+            policies =
               Enum.reduce(user_policies, [], fn policies, acc ->
                 acc ++ [policies.policy]
               end)
 
-          user_actions =
-            Enum.reduce(policies, [], fn policy, acc ->
-              acc ++ policy.actions
-            end)
+            user_actions =
+              Enum.reduce(policies, [], fn policy, acc ->
+                acc ++ [policy |> Map.from_struct() |> Map.drop([:_id, :__meta__])]
+              end)
 
-          check_authentication(user_actions, action, application, feature)
-
-        true ->
-          case is_nil(List.first(user_policies)) do
-            true ->
-              true
-
-            false ->
-              policies =
-                Enum.reduce(user_policies, [], fn policies, acc ->
-                  acc ++ [policies.policy]
-                end)
-
-              user_actions =
-                Enum.reduce(policies, [], fn policy, acc ->
-                  acc ++ policy.actions
-                end)
-
-              check_authentication(user_actions, action, application, feature)
-          end
-      end
+            check_authentication(user_actions, action, application, feature)
+        end
+    end
   end
 
   def check_authentication(user_actions, action, application, feature) do
@@ -93,7 +92,7 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
     query =
       from(user_group in GroupUser,
         where: user_group.user_id == ^user_id,
-        select: user_group.group_id
+        select: user_group.user_group_id
       )
 
     Repo.all(query) ++ [-1]
@@ -112,7 +111,7 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
   defp extract_policies(group_ids) do
     query =
       from(user_group in GroupPolicy,
-        where: user_group.group_id in ^group_ids,
+        where: user_group.user_group_id in ^group_ids,
         preload: [:policy]
       )
 

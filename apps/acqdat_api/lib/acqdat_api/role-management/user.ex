@@ -2,6 +2,10 @@ defmodule AcqdatApi.RoleManagement.User do
   alias AcqdatCore.Model.RoleManagement.User, as: UserModel
   alias AcqdatCore.Model.RoleManagement.Invitation, as: InvitationModel
   alias AcqdatCore.Schema.RoleManagement.Invitation
+  alias AcqdatCore.Model.RoleManagement.Policy
+  alias AcqdatCore.Schema.RoleManagement.GroupUser
+  alias AcqdatCore.Schema.RoleManagement.UserPolicy
+  alias AcqdatCore.Model.RoleManagement.UserGroup
   alias AcqdatCore.Repo
   alias Ecto.Multi
   import AcqdatApiWeb.Helpers
@@ -111,7 +115,9 @@ defmodule AcqdatApi.RoleManagement.User do
            app_ids: app_ids,
            email: email,
            org_id: org_id,
-           role_id: role_id
+           role_id: role_id,
+           group_ids: group_ids,
+           policies: policies
          } = invitation,
          user_details
        ) do
@@ -123,6 +129,8 @@ defmodule AcqdatApi.RoleManagement.User do
       |> Map.put(:org_id, org_id)
       |> Map.put(:role_id, role_id)
       |> Map.put(:is_invited, true)
+      |> Map.put(:group_ids, group_ids)
+      |> Map.put(:policies, policies)
 
     # case to check if the invited user exist in our database and is being deleted previously
     case UserModel.get(user_details.email) do
@@ -166,15 +174,42 @@ defmodule AcqdatApi.RoleManagement.User do
       |> Multi.run(:delete_invitation, fn _, _ ->
         InvitationModel.delete(invitation)
       end)
+      |> Multi.run(:add_group_and_policies, fn _, %{create_user: user} ->
+        add_group_and_policies(user, user_details)
+      end)
       |> run_transaction()
     )
+  end
+
+  defp add_group_and_policies(user, user_details) do
+    policy_ids = Policy.extract_policies(user_details.policies)
+    group_ids = UserGroup.extract_groups(user_details.group_ids)
+
+    user_policy_params =
+      Enum.reduce(policy_ids, [], fn policy_id, acc ->
+        acc ++ [%{user_id: user.id, policy_id: policy_id}]
+      end)
+
+    user_group_params =
+      Enum.reduce(group_ids, [], fn group_id, acc ->
+        acc ++ [%{user_id: user.id, user_group_id: group_id}]
+      end)
+
+    Repo.insert_all(UserPolicy, user_policy_params)
+    Repo.insert_all(GroupUser, user_group_params)
+    {:ok, user}
   end
 
   defp run_transaction(multi_query) do
     result = Repo.transaction(multi_query)
 
     case result do
-      {:ok, %{create_user: user, delete_invitation: _delete_invitation}} ->
+      {:ok,
+       %{
+         create_user: user,
+         delete_invitation: _delete_invitation,
+         add_group_and_policies: _add_group_and_policies
+       }} ->
         {:ok, user}
 
       {:ok, %{update_user: user, delete_invitation: _delete_invitation}} ->

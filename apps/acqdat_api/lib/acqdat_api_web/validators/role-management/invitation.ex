@@ -7,7 +7,9 @@ defmodule AcqdatApiWeb.Validators.RoleManagement.Invitation do
       assets: {:array, :map},
       apps: {:array, :map},
       org_id!: :string,
-      role_id!: :integer
+      role_id!: :integer,
+      group_ids: {:array, :integer},
+      policies: {:array, :map}
     })
   )
 

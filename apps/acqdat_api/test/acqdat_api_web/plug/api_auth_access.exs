@@ -3,7 +3,7 @@ defmodule AcqdatApiWeb.ApiAccessAuthTest do
   use AcqdatApiWeb.ConnCase
   use AcqdatCore.DataCase
   import AcqdatCore.Support.Factory
-  alias AcqdatCore.Model.RoleManagement.{Policy, Group, UserPolicy}
+  alias AcqdatCore.Model.RoleManagement.{Policy, UserGroup, UserPolicy}
 
   describe "checkin api access to users/2" do
     setup :setup_conn
@@ -25,41 +25,28 @@ defmodule AcqdatApiWeb.ApiAccessAuthTest do
   end
 
   def setup_groups_and_policies(%{org: org, user: user}) do
-    policy1 = %{
-      name: "policy_1",
-      org_id: org.id,
-      actions: [
-        %{app: "EntityManagement", feature: "Project", action: "create"},
-        %{app: "EntityManagement", feature: "Sensor", action: "create"}
-      ]
-    }
+    policies = [
+      %{"app" => "EntityManagement", "feature" => "Project", "action" => "create"},
+      %{"app" => "EntityManagement", "feature" => "Sensor", "action" => "create"},
+      %{"app" => "EntityManagement", "feature" => "Asset", "action" => "delete"}
+    ]
 
-    policy2 = %{
-      name: "policy_2",
-      org_id: org.id,
-      actions: [
-        %{app: "EntityManagement", feature: "Asset", action: "delete"},
-        %{app: "EntityManagement", feature: "Sensor", action: "create"}
-      ]
-    }
-
-    {:ok, policy1} = Policy.create(policy1)
-    {:ok, policy2} = Policy.create(policy2)
+    [policy1, policy2, policy3] = Policy.extract_policies(policies)
 
     group1 = %{
       name: "group_1",
       org_id: org.id,
       user_ids: [user.id],
-      policy_ids: [policy1.id]
+      policy_ids: [policy1, policy3]
     }
 
     user_group = %{
       user_id: user.id,
-      policy_id: policy2.id
+      policy_id: policy2
     }
 
-    {:ok, group1} = Group.create(group1)
+    {:ok, group1} = UserGroup.create(group1)
     {:ok, user_policy} = UserPolicy.create(user_group)
-    [policies: [policy1, policy2], group: group1, user_policy: [user_policy]]
+    [policies: [policy1, policy2, policy3], group: group1, user_policy: [user_policy]]
   end
 end
