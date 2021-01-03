@@ -18,6 +18,16 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     end
   end
 
+  def get_for_view(asset_ids) do
+    query =
+      from(asset in Asset,
+        where: asset.id in ^asset_ids,
+        preload: [:org, :project, :asset_type]
+      )
+
+    Repo.all(query)
+  end
+
   def child_assets(project_id) do
     Asset |> dump_assets(%{project_id: project_id}) |> AsNestedSet.execute(Repo)
   end

@@ -2,6 +2,7 @@ defmodule AcqdatApiWeb.EntityManagement.SensorView do
   use AcqdatApiWeb, :view
   alias AcqdatApiWeb.EntityManagement.{SensorView, SensorTypeView}
   alias AcqdatApiWeb.IotManager.GatewayView
+  alias AcqdatCore.Model.EntityManagement.Sensor
 
   def render("sensor.json", %{sensor: sensor}) do
     %{
@@ -113,5 +114,39 @@ defmodule AcqdatApiWeb.EntityManagement.SensorView do
       uuid: metadata.uuid,
       value: metadata.value
     }
+  end
+
+  def render("hits.json", %{hits: hits}) do
+    sensor_ids = extract_ids(hits.hits)
+    sensors = Sensor.get_for_view(sensor_ids)
+
+    %{
+      sensors: render_many(sensors, SensorView, "source.json"),
+      total_entries: hits.total.value
+    }
+  end
+
+  def render("source.json", %{sensor: hits}) do
+    %{
+      id: hits.id,
+      name: hits.name,
+      metadata: render_many(hits.metadata, SensorView, "metadata.json"),
+      slug: hits.slug,
+      uuid: hits.uuid,
+      project_id: hits.project_id,
+      org_id: hits.org_id,
+      gateway_id: hits.gateway_id,
+      parent_id: hits.parent_id,
+      parent_type: hits.parent_type,
+      sensor_type: render_one(hits.sensor_type, SensorTypeView, "sensor_type.json"),
+      description: hits.description,
+      sensor_type_id: hits.sensor_type_id
+    }
+  end
+
+  defp extract_ids(hits) do
+    Enum.reduce(hits, [], fn %{_source: hits}, acc ->
+      acc ++ [hits.id]
+    end)
   end
 end

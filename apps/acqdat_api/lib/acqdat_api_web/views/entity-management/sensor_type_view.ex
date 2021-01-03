@@ -47,4 +47,26 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeView do
       total_pages: sensor_type.total_pages
     }
   end
+
+  def render("hits.json", %{hits: hits}) do
+    %{
+      sensor_types: render_many(hits.hits, SensorTypeView, "source.json"),
+      total_entries: hits.total.value
+    }
+  end
+
+  def render("source.json", %{sensor_type: %{_source: hits}}) do
+    %{
+      id: hits.id,
+      name: hits.name,
+      slug: hits.slug,
+      uuid: hits.uuid,
+      description: hits.description,
+      project_id: hits.project_id,
+      org_id: hits.org_id,
+      generated_by: hits.generated_by,
+      metadata: render_many(hits.metadata, SensorTypeView, "metadata.json"),
+      parameters: hits.parameters
+    }
+  end
 end
