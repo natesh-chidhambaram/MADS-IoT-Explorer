@@ -2,7 +2,6 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
   import Ecto.Query
   alias AcqdatCore.Schema.EntityManagement.Project
   alias AcqdatCore.Schema.RoleManagement.User
-  alias AcqdatCore.Schema.EntityManagement.Organisation
   alias AcqdatCore.Model.EntityManagement.Asset, as: AssetModel
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SensorModel
   alias AcqdatCore.Model.Helper, as: ModelHelper
@@ -43,6 +42,16 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
       project ->
         {:ok, project}
     end
+  end
+
+  def get_for_view(project_ids) do
+    query =
+      from(project in Project,
+        where: project.id in ^project_ids,
+        preload: [:leads, :users, :creator]
+      )
+
+    Repo.all(query)
   end
 
   def update_version(%Project{} = project) do
