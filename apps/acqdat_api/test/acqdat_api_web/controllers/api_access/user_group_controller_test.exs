@@ -3,6 +3,7 @@ defmodule AcqdatApiWeb.ApiAccess.UserGroupControllerTest do
   use AcqdatApiWeb.ConnCase
   use AcqdatCore.DataCase
   alias AcqdatCore.Schema.RoleManagement.UserGroup
+  alias AcqdatCore.Model.RoleManagement.UserGroup, as: UGModel
   alias AcqdatCore.Repo
   import AcqdatCore.Support.Factory
 
@@ -81,6 +82,76 @@ defmodule AcqdatApiWeb.ApiAccess.UserGroupControllerTest do
     end
   end
 
+  describe "update/2" do
+    setup :setup_conn
+    setup :setup_request
+
+    test "update user group", %{conn: conn, org: org, group1: group1, group2: group2} do
+      temp_conn = post(conn, Routes.user_group_path(conn, :create, org.id), group1)
+      rgroup1 = temp_conn |> json_response(200)
+      conn = put(conn, Routes.user_group_path(conn, :update, org.id, rgroup1["id"]), group2)
+      response = conn |> json_response(200)
+      assert response["name"] == group2.name
+      assert response["org_id"] == org.id
+      assert response["id"] == rgroup1["id"]
+      assert response["policies"] -- Enum.uniq(group1.actions ++ group2.actions) == []
+    end
+
+    test "fails if invalid token in in authorization header", %{
+      conn: conn,
+      org: org,
+      group1: group1,
+      group2: group2
+    } do
+      temp_conn = post(conn, Routes.user_group_path(conn, :create, org.id), group1)
+      rgroup1 = temp_conn |> json_response(200)
+      bad_access_token = "qwerty1234567qwerty12"
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
+
+      conn = put(conn, Routes.user_group_path(conn, :update, org.id, rgroup1["id"]), group2)
+      result = conn |> json_response(403)
+      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+    end
+  end
+
+  describe "delete/2" do
+    setup :setup_conn
+    setup :setup_request
+
+    test "delete user group", %{conn: conn, org: org, group1: group1} do
+      temp_conn = post(conn, Routes.user_group_path(conn, :create, org.id), group1)
+      rgroup1 = temp_conn |> json_response(200)
+      conn = delete(conn, Routes.user_group_path(conn, :delete, org.id, rgroup1["id"]))
+      response = conn |> json_response(200)
+      assert response["name"] == group1.name
+      assert response["org_id"] == org.id
+      assert response["id"] == rgroup1["id"]
+      assert response["policies"] -- group1.actions == []
+    end
+
+    test "fails if invalid token in in authorization header", %{
+      conn: conn,
+      org: org,
+      group1: group1,
+      group2: group2
+    } do
+      temp_conn = post(conn, Routes.user_group_path(conn, :create, org.id), group1)
+      rgroup1 = temp_conn |> json_response(200)
+      bad_access_token = "qwerty1234567qwerty12"
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
+
+      conn = delete(conn, Routes.user_group_path(conn, :delete, org.id, rgroup1["id"]))
+      result = conn |> json_response(403)
+      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+    end
+  end
+
   def setup_request(_params) do
     actions1 = [
       %{"app" => "EntityManagement", "feature" => "Project", "action" => "create"},
@@ -89,7 +160,7 @@ defmodule AcqdatApiWeb.ApiAccess.UserGroupControllerTest do
     ]
 
     actions2 = [
-      %{"app" => "EntityManagement", "feature" => "Project", "action" => "create"},
+      %{"app" => "EntityManagement", "feature" => "AssetType", "action" => "create"},
       %{"app" => "EntityManagement", "feature" => "Sensor", "action" => "create"},
       %{"app" => "EntityManagement", "feature" => "Asset", "action" => "delete"}
     ]

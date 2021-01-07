@@ -4,6 +4,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroup do
   """
   import Ecto.Query
   alias AcqdatCore.Schema.RoleManagement.UserGroup
+  alias AcqdatCore.Schema.RoleManagement.GroupPolicy
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Helper, as: ModelHelper
 
@@ -12,11 +13,38 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroup do
     Repo.insert(changeset)
   end
 
+  def update(%UserGroup{} = user_group, attrs \\ %{}) do
+    user_group
+    |> Repo.preload([:policies, :users])
+    |> UserGroup.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def get(id) when is_integer(id) do
+    case Repo.get(UserGroup, id) do
+      nil ->
+        {:error, "User Group not found"}
+
+      group ->
+        {:ok, group}
+    end
+  end
+
   def extract_groups(ids) do
     query =
       from(group in UserGroup,
         where: group.id in ^ids,
         select: group.id
+      )
+
+    Repo.all(query)
+  end
+
+  def policies(group_id) do
+    query =
+      from(group_policy in GroupPolicy,
+        where: group_policy.user_group_id == ^group_id,
+        select: group_policy.policy_id
       )
 
     Repo.all(query)
@@ -34,5 +62,12 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroup do
     user_group_data_with_preloads = paginated_user_group_data.entries |> Repo.preload(preloads)
 
     ModelHelper.paginated_response(user_group_data_with_preloads, paginated_user_group_data)
+  end
+
+  def delete(%UserGroup{} = group) do
+    case Repo.delete(group) do
+      {:ok, group} -> {:ok, group |> Repo.preload([:policies, :users])}
+      {:error, error} -> {:error, error}
+    end
   end
 end

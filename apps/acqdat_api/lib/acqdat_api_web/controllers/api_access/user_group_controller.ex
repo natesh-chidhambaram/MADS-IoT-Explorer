@@ -4,20 +4,7 @@ defmodule AcqdatApiWeb.ApiAccess.UserGroupController do
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.ApiAccess.UserGroup
 
-  # plug :load_group when action in [:show, :update, :delete]
-
-  # def show(conn, _params) do
-  #   case conn.status do
-  #     nil ->
-  #       conn
-  #       |> put_status(200)
-  #       |> render("group.json", %{group: conn.assigns.group})
-
-  #     404 ->
-  #       conn
-  #       |> send_error(404, "Resource Not Found")
-  #   end
-  # end
+  plug :load_group when action in [:update, :delete]
 
   def create(conn, params) do
     case conn.status do
@@ -47,27 +34,31 @@ defmodule AcqdatApiWeb.ApiAccess.UserGroupController do
     end
   end
 
-  # def update(conn, params) do
-  #   case conn.status do
-  #     nil ->
-  #       case Group.update(conn.assigns.group, params) do
-  #         {:ok, group} ->
-  #           conn
-  #           |> put_status(200)
-  #           |> render("group.json", %{group: group})
+  def update(conn, params) do
+    case conn.status do
+      nil ->
+        case UserGroup.update(conn.assigns.group, params) do
+          {:ok, group} ->
+            conn
+            |> put_status(200)
+            |> render("user_group.json", %{group: group})
 
-  #         {:error, group} ->
-  #           error = extract_changeset_error(group)
+          {:error, group} ->
+            error = extract_changeset_error(group)
 
-  #           conn
-  #           |> send_error(400, error)
-  #       end
+            conn
+            |> send_error(400, error)
+        end
 
-  #     404 ->
-  #       conn
-  #       |> send_error(404, "Resource Not Found")
-  #   end
-  # end
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
+    end
+  end
 
   def index(conn, params) do
     changeset = verify_index_params(params)
@@ -84,40 +75,49 @@ defmodule AcqdatApiWeb.ApiAccess.UserGroupController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
-  # def delete(conn, _params) do
-  #   case conn.status do
-  #     nil ->
-  #       case Group.delete(conn.assigns.group) do
-  #         {:ok, _group} ->
-  #           conn
-  #           |> put_status(200)
-  #           |> render("group.json", %{group: conn.assigns.group})
-  #         {:error, message} ->
-  #             error = extract_changeset_error(message)
+  def delete(conn, _params) do
+    case conn.status do
+      nil ->
+        case UserGroup.delete(conn.assigns.group) do
+          {:ok, group} ->
+            conn
+            |> put_status(200)
+            |> render("user_group.json", %{group: group})
 
-  #             conn
-  #             |> send_error(400, error)
-  #       end
+          {:error, message} ->
+            error = extract_changeset_error(message)
 
-  #     404 ->
-  #       conn
-  #       |> send_error(404, "Resource Not Found")
-  #   end
-  # end
+            conn
+            |> send_error(400, error)
+        end
 
-  # defp load_group(%{params: %{"id" => id}} = conn, _params) do
-  #   {id, _} = Integer.parse(id)
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
 
-  #   case Group.get(id) do
-  #     {:ok, group} ->
-  #       assign(conn, :group, group)
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
+    end
+  end
 
-  #     {:error, _message} ->
-  #       conn
-  #       |> put_status(404)
-  #   end
-  # end
+  defp load_group(%{params: %{"id" => id}} = conn, _params) do
+    {id, _} = Integer.parse(id)
+
+    case UserGroup.get(id) do
+      {:ok, group} ->
+        assign(conn, :group, group)
+
+      {:error, _message} ->
+        conn
+        |> put_status(404)
+    end
+  end
 end
