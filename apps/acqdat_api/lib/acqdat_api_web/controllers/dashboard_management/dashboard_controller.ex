@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.DashboardManagement.DashboardController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.DashboardManagement.Dashboard
   alias AcqdatApi.DashboardManagement.Dashboard

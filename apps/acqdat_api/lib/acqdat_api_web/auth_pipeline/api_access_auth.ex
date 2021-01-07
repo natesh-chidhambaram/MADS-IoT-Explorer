@@ -95,7 +95,7 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
         select: user_group.user_group_id
       )
 
-    Repo.all(query) ++ [-1]
+    Repo.all(query)
   end
 
   defp extract_user_policies(user_id) do

@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.EntityManagement.AssetType
   alias AcqdatApi.EntityManagement.AssetType

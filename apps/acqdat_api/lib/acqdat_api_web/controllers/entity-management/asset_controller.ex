@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.EntityManagement.AssetController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.EntityManagement.Asset
   alias AcqdatCore.Model.EntityManagement.AssetType, as: ATModel
   alias AcqdatApi.ElasticSearch

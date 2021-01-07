@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.Widgets.WidgetController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.Widgets.Widget
   alias AcqdatApi.Widgets.Widget

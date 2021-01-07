@@ -6,6 +6,8 @@ defmodule AcqdatApi.ApiAccess.UserGroup do
   alias AcqdatCore.Model.RoleManagement.Policy
   import AcqdatApiWeb.Helpers
 
+  defdelegate get_all(data, preloads), to: UserGroup
+
   def create(params) do
     params = params_extraction(params)
     policy_ids = Policy.extract_policies(params.actions)

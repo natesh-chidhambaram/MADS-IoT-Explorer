@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.Widgets.UserWidgetController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.Widgets.User
   alias AcqdatCore.Model.RoleManagement.User, as: UserModel
   alias AcqdatCore.Model.Widgets.User, as: UserWidgetModel

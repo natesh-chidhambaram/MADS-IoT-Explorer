@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.Widgets.WidgetTypeController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.Widgets.WidgetType
   alias AcqdatCore.Model.Widgets.WidgetType, as: WTModel
   import AcqdatApiWeb.Helpers

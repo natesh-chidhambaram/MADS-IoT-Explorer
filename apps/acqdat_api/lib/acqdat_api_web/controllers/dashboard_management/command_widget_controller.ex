@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.DashboardManagement.CommandWidgetController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Validators.DashboardManagement.CommandWidget
   import AcqdatApiWeb.Helpers
   alias AcqdatApi.DashboardManagement.CommandWidget

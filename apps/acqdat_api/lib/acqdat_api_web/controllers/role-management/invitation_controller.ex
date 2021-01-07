@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.RoleManagement.InvitationController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.RoleManagement.Invitation
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.RoleManagement.Invitation

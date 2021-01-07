@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.RoleManagement.UserSettingController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.RoleManagement.UserSetting
   import AcqdatApiWeb.Validators.RoleManagement.UserSetting
   import AcqdatApiWeb.Helpers

@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.EntityManagement.OrganisationController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   alias AcqdatCore.Model.EntityManagement.Organisation, as: OrgModel
 

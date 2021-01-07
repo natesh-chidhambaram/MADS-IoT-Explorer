@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.DashboardManagement.DashboardExportController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   alias AcqdatApi.DashboardExport.DashboardExport
   alias AcqdatApi.DashboardManagement.Panel

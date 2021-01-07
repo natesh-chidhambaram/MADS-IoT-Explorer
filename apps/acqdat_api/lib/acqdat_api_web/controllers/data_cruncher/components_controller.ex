@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.DataCruncher.ComponentsController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   alias AcqdatCore.DataCruncher.Model.ComponentHelper
 

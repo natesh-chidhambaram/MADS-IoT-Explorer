@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.DataCruncher.TasksController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.DataCruncher.Tasks
   alias AcqdatApi.DataCruncher.Task

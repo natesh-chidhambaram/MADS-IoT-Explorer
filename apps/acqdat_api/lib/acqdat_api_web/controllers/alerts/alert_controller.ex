@@ -2,7 +2,7 @@ defmodule AcqdatApiWeb.Alerts.AlertController do
   @moduledoc """
   Contains API related to alerts which is been created using alert rules defined for a particular entity.
   """
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.Alerts.Alert
   alias AcqdatApi.Alerts.Alert

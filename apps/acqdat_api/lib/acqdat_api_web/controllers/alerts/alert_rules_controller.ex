@@ -3,7 +3,7 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesController do
   ALERT RULES API.
   All the basic structure which support our alert creation logic will be drawn from their respective alert rule.
   """
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.Alerts.AlertRules
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.Alerts.AlertRules

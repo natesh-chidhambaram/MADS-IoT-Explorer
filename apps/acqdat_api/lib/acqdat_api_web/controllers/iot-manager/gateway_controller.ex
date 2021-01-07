@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.IotManager.GatewayController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.IotManager.Gateway
   alias AcqdatApi.Image
   alias AcqdatCore.Model.IotManager.Gateway, as: GModel

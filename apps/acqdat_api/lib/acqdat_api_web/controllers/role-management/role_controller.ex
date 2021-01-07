@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.RoleManagement.RoleController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.RoleManagement.Role
   alias AcqdatCore.Model.RoleManagement.Role, as: RoleModel

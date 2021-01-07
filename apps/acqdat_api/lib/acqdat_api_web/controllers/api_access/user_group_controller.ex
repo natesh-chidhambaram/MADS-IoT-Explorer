@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.ApiAccess.UserGroupController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.ApiAccess.UserGroup
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.ApiAccess.UserGroup
@@ -40,6 +40,10 @@ defmodule AcqdatApiWeb.ApiAccess.UserGroupController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -65,23 +69,23 @@ defmodule AcqdatApiWeb.ApiAccess.UserGroupController do
   #   end
   # end
 
-  # def index(conn, params) do
-  #   changeset = verify_index_params(params)
+  def index(conn, params) do
+    changeset = verify_index_params(params)
 
-  #   case conn.status do
-  #     nil ->
-  #       {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
-  #       {:list, group} = {:list, Group.get_all(data, [])}
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        {:list, group} = {:list, UserGroup.get_all(data, [:policies])}
 
-  #       conn
-  #       |> put_status(200)
-  #       |> render("index.json", group)
+        conn
+        |> put_status(200)
+        |> render("index.json", group)
 
-  #     404 ->
-  #       conn
-  #       |> send_error(404, "Resource Not Found")
-  #   end
-  # end
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+    end
+  end
 
   # def delete(conn, _params) do
   #   case conn.status do
