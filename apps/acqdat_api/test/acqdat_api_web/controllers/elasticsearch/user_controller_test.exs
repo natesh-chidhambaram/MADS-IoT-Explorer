@@ -97,6 +97,7 @@ defmodule AcqdatApiWeb.ElasticSearch.UserControllerTest do
     setup do
       org = insert(:organisation)
       User.create_index()
+      :timer.sleep(5000)
       [user1, user2, user3] = User.seed_multiple_user(org, 3)
       :timer.sleep(5000)
 
