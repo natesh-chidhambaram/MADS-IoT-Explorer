@@ -8,8 +8,8 @@ defmodule AcqdatApiWeb.Validators.RoleManagement.Invitation do
       apps: {:array, :map},
       org_id!: :string,
       role_id!: :integer,
-      group_ids: {:array, :integer},
-      policies: {:array, :map}
+      group_ids: [field: {:array, :integer}, default: []],
+      policies: [field: {:array, :map}, default: []]
     })
   )
 

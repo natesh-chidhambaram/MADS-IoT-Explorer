@@ -4,19 +4,28 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
   alias AcqdatCore.Repo
   alias AcqdatApi.ExtractRoutes
   alias AcqdatCore.Schema.RoleManagement.{GroupUser, GroupPolicy, UserPolicy}
+  alias AcqdatCore.Model.RoleManagement.User
 
   def init(default), do: default
 
   def call(conn, _params) do
     user_id = Guardian.Plug.current_resource(conn)
+    {:ok, user} = User.get(String.to_integer(user_id))
+    user = user |> Repo.preload([:role])
 
-    case provide_access(conn, user_id) do
+    case user.role.id == 1 and user.role.name == "admin" do
       true ->
         conn
 
       false ->
-        conn
-        |> put_status(401)
+        case provide_access(conn, user_id) do
+          true ->
+            conn
+
+          false ->
+            conn
+            |> put_status(401)
+        end
     end
   end
 

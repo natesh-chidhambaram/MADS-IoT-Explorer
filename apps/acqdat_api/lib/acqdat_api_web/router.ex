@@ -66,7 +66,9 @@ defmodule AcqdatApiWeb.Router do
 
     resources "/roles", RoleManagement.RoleController, only: [:index]
 
-    resources "/orgs", EntityManagement.OrganisationController, only: [:show]
+    resources "/orgs", EntityManagement.OrganisationController,
+      only: [:show, :create, :index, :update, :delete]
+
     resources "/apps", AppController, only: [:index]
     get("/orgs/:id/apps", EntityManagement.OrganisationController, :get_apps, as: :org_apps)
 

@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.RoleManagement.UserController do
-  use AcqdatApiWeb, :authorized_controller
+  use AcqdatApiWeb, :controller
   alias AcqdatApi.RoleManagement.User
   alias AcqdatApi.ElasticSearch
   alias AcqdatApi.Image

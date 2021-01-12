@@ -5,6 +5,11 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
   alias AcqdatCore.Schema.RoleManagement.App
   alias AcqdatCore.Repo
 
+  def create(params) do
+    changeset = Organisation.changeset(%Organisation{}, params)
+    Repo.insert(changeset)
+  end
+
   def get(id) when is_integer(id) do
     case Repo.get(Organisation, id) do
       nil ->

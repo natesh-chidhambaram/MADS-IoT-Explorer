@@ -19,8 +19,10 @@ defmodule AcqdatApiWeb.ApiAccessAuthTest do
       }
 
       conn = post(conn, Routes.project_path(conn, :create, org.id), data)
-      require IEx
-      IEx.pry()
+      response = conn |> json_response(200)
+      assert response["name"] == project.name
+      assert response["creator_id"] == user.id
+      assert response["org_id"] == org.id
     end
   end
 
