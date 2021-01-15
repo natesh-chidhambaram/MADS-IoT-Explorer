@@ -237,14 +237,15 @@ defmodule AcqdatApi.RoleManagement.User do
 
   def user_create_es(params) do
     create_function = fn ->
-      post("users/_doc/#{params.id}",
+      post("organisation/_doc/#{params.id}?routing=#{params.org_id}",
         id: params.id,
         email: params.email,
         first_name: params.first_name,
         last_name: params.last_name,
         org_id: params.org_id,
         is_invited: params.is_invited,
-        role_id: params.role_id
+        role_id: params.role_id,
+        join_field: %{name: "user", parent: params.org_id}
       )
     end
 
