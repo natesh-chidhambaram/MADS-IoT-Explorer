@@ -45,6 +45,10 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -67,6 +71,10 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -85,6 +93,10 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -114,6 +126,10 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -177,6 +193,10 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 

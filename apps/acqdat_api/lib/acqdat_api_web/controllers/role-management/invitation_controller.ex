@@ -25,6 +25,10 @@ defmodule AcqdatApiWeb.RoleManagement.InvitationController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -46,6 +50,10 @@ defmodule AcqdatApiWeb.RoleManagement.InvitationController do
       404 ->
         conn
         |> send_error(404, "User already exists with this email address")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -76,6 +84,10 @@ defmodule AcqdatApiWeb.RoleManagement.InvitationController do
       404 ->
         conn
         |> send_error(404, "User already exists with this email address")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -98,6 +110,10 @@ defmodule AcqdatApiWeb.RoleManagement.InvitationController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -120,6 +136,10 @@ defmodule AcqdatApiWeb.RoleManagement.InvitationController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 

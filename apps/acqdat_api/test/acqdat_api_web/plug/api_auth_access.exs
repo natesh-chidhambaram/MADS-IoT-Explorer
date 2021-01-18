@@ -24,6 +24,15 @@ defmodule AcqdatApiWeb.ApiAccessAuthTest do
       assert response["creator_id"] == user.id
       assert response["org_id"] == org.id
     end
+
+    test "checking if user is not allowed to access an api", %{conn: conn, org: org, user: user} do
+      project = insert(:project)
+      sensor = insert(:sensor, project: project)
+
+      conn = get(conn, Routes.sensor_path(conn, :show, org.id, project.id, sensor.id))
+      response = conn |> json_response(401)
+      assert response == %{"errors" => %{"message" => "Unauthorized"}}
+    end
   end
 
   def setup_groups_and_policies(%{org: org, user: user}) do
