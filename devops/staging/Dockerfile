@@ -10,7 +10,8 @@ ARG DASHBOARD_URL
 ENV MIX_ENV=prod \
     TEST=1 \
     LANG=C.UTF-8 \
-    DASHBOARD_URL=${DASHBOARD_URL}
+    DASHBOARD_URL=${DASHBOARD_URL} \
+    MADS_URL=${MADS_URL}
 
 RUN apk add build-base
 
