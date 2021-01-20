@@ -13,8 +13,7 @@ defmodule AcqdatApi.ApiAccess.UserGroup do
   def create(params) do
     params = params_extraction(params)
     policy_ids = Policy.extract_policies(params.actions)
-    params = Map.put_new(params, :policy_ids, policy_ids)
-    params = Map.put_new(params, :user_ids, [])
+    params = Map.put_new(params, :policy_ids, policy_ids) |> Map.put_new(:user_ids, [])
     verify_group(UserGroup.create(params))
   end
 

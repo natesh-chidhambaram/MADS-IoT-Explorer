@@ -41,15 +41,42 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
 
     case is_nil(List.first(group_ids)) do
       false ->
-        group_policies = extract_policies(group_ids)
+        group_id_present(group_ids, user_policies, action, application, feature)
 
+      true ->
+        user_id_present(user_policies, action, application, feature)
+    end
+  end
+
+  defp group_id_present(group_ids, user_policies, action, application, feature) do
+    group_policies = extract_policies(group_ids)
+
+    policies =
+      Enum.reduce(group_policies, [], fn policies, acc ->
+        acc ++ [policies.policy]
+      end) ++
+        Enum.reduce(user_policies, [], fn policies, acc ->
+          acc ++ [policies.policy]
+        end)
+
+    user_actions =
+      Enum.reduce(policies, [], fn policy, acc ->
+        acc ++ [policy |> Map.from_struct() |> Map.drop([:_id, :__meta__])]
+      end)
+
+    check_authentication(user_actions, action, application, feature)
+  end
+
+  defp user_id_present(user_policies, action, application, feature) do
+    case is_nil(List.first(user_policies)) do
+      true ->
+        true
+
+      false ->
         policies =
-          Enum.reduce(group_policies, [], fn policies, acc ->
+          Enum.reduce(user_policies, [], fn policies, acc ->
             acc ++ [policies.policy]
-          end) ++
-            Enum.reduce(user_policies, [], fn policies, acc ->
-              acc ++ [policies.policy]
-            end)
+          end)
 
         user_actions =
           Enum.reduce(policies, [], fn policy, acc ->
@@ -57,25 +84,6 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
           end)
 
         check_authentication(user_actions, action, application, feature)
-
-      true ->
-        case is_nil(List.first(user_policies)) do
-          true ->
-            true
-
-          false ->
-            policies =
-              Enum.reduce(user_policies, [], fn policies, acc ->
-                acc ++ [policies.policy]
-              end)
-
-            user_actions =
-              Enum.reduce(policies, [], fn policy, acc ->
-                acc ++ [policy |> Map.from_struct() |> Map.drop([:_id, :__meta__])]
-              end)
-
-            check_authentication(user_actions, action, application, feature)
-        end
     end
   end
 

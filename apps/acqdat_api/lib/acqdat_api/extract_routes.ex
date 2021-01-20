@@ -4,10 +4,10 @@ defmodule AcqdatApi.ExtractRoutes do
   alias AcqdatCore.Repo
   use Agent
 
-  #   "DashboardManagement" => %{
-  #     "DashboardExport" => {
+  #   "DashboardManagement" => %{  //This is the application name
+  #     "DashboardExport" => {  //This is the feature inside that application`
   #       "controller" => "DashboardExportController",
-  #       "actions" => {
+  #       "actions" => { //These are the actions inside that feature that user is being delegated to.
   #           "export" => %{path: :export, request_type: :get},
   #           "show" => %{path: :show, request_type: :get}
   #       }
