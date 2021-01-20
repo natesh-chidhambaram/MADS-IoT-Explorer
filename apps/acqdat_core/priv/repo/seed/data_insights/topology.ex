@@ -59,7 +59,8 @@ defmodule AcqdatCore.Seed.DataInsights.Topology do
   end
 
   defp creator() do
-    Repo.get_by(User, org_id: 1)
+    query = from(user in User, where: user.org_id==1, limit: 1)
+    Repo.one(query)
   end
 
   def build_topology(asset_types, user, org) do
