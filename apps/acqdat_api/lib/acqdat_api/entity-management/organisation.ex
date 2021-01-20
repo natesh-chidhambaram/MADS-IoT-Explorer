@@ -2,6 +2,7 @@ defmodule AcqdatApi.EntityManagement.Organisation do
   alias AcqdatCore.Model.EntityManagement.Organisation, as: OrgModel
   alias AcqdatCore.Model.RoleManagement.User, as: UserModel
   alias Ecto.Multi
+  alias AcqdatApi.ElasticSearch
   import Tirexs.HTTP
   import AcqdatApiWeb.Helpers
   alias AcqdatCore.Repo
@@ -40,7 +41,17 @@ defmodule AcqdatApi.EntityManagement.Organisation do
           |> Map.put_new("org_id", organisation.id)
           |> Map.put_new("is_invited", false)
 
-        UserModel.create(user_details)
+        case UserModel.create(user_details) do
+          {:ok, user} ->
+            Task.start_link(fn ->
+              ElasticSearch.create_user("organisation", user, %{id: organisation.id})
+            end)
+
+            {:ok, user}
+
+          {:error, message} ->
+            {:error, message}
+        end
       end)
       |> run_transaction()
     )

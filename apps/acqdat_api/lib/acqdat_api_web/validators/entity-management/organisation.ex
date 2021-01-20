@@ -7,7 +7,7 @@ defmodule AcqdatApiWeb.Validators.EntityManagement.Organisation do
       description: :string,
       metadata: :map,
       app_ids: {:array, :integer},
-      user_details: :map
+      user_details!: :map
     })
   )
 
