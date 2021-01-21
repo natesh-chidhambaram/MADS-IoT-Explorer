@@ -90,7 +90,7 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationController do
 
         conn
         |> put_status(200)
-        |> render("org.json", %{organisation: organisation})
+        |> render("index.json", %{organisation: organisation})
 
       404 ->
         conn
@@ -102,31 +102,31 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationController do
     end
   end
 
-  def delete(conn, _params) do
-    case conn.status do
-      nil ->
-        case Organisation.delete(conn.assigns.org) do
-          {:ok, organisation} ->
-            conn
-            |> put_status(200)
-            |> render("org.json", %{organisation: organisation})
+  # def delete(conn, _params) do
+  #   case conn.status do
+  #     nil ->
+  #       case Organisation.delete(conn.assigns.org) do
+  #         {:ok, organisation} ->
+  #           conn
+  #           |> put_status(200)
+  #           |> render("org.json", %{organisation: organisation})
 
-          {:error, organisation} ->
-            error = extract_changeset_error(organisation)
+  #         {:error, organisation} ->
+  #           error = extract_changeset_error(organisation)
 
-            conn
-            |> send_error(400, error)
-        end
+  #           conn
+  #           |> send_error(400, error)
+  #       end
 
-      404 ->
-        conn
-        |> send_error(404, "Resource Not Found")
+  #     404 ->
+  #       conn
+  #       |> send_error(404, "Resource Not Found")
 
-      401 ->
-        conn
-        |> send_error(401, "Unauthorized")
-    end
-  end
+  #     401 ->
+  #       conn
+  #       |> send_error(401, "Unauthorized")
+  #   end
+  # end
 
   def get_apps(conn, _params) do
     case conn.status do

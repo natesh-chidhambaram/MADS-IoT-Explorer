@@ -41,17 +41,7 @@ defmodule AcqdatApi.EntityManagement.Organisation do
           |> Map.put_new("org_id", organisation.id)
           |> Map.put_new("is_invited", false)
 
-        case UserModel.create(user_details) do
-          {:ok, user} ->
-            Task.start_link(fn ->
-              ElasticSearch.create_user("organisation", user, %{id: organisation.id})
-            end)
-
-            {:ok, user}
-
-          {:error, message} ->
-            {:error, message}
-        end
+        UserModel.create(user_details)
       end)
       |> run_transaction()
     )
