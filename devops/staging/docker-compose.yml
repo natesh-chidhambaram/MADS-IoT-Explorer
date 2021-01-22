@@ -55,6 +55,7 @@ services:
       dockerfile: ./devops/staging/Dockerfile
       args:
         DASHBOARD_URL: ${DASHBOARD_URL}
+        MADS_URL: ${MADS_URL}
     restart: always
     container_name: web
     ports:
