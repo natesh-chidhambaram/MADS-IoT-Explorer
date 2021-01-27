@@ -53,10 +53,10 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
 
     policies =
       Enum.reduce(group_policies, [], fn policies, acc ->
-        acc ++ [policies.policy]
+        [policies.policy | acc]
       end) ++
         Enum.reduce(user_policies, [], fn policies, acc ->
-          acc ++ [policies.policy]
+          [policies.policy | acc]
         end)
 
     user_actions =
@@ -75,7 +75,7 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
       false ->
         policies =
           Enum.reduce(user_policies, [], fn policies, acc ->
-            acc ++ [policies.policy]
+            [policies.policy | acc]
           end)
 
         user_actions =
