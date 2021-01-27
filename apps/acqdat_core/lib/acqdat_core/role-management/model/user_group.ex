@@ -64,6 +64,23 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroup do
     ModelHelper.paginated_response(user_group_data_with_preloads, paginated_user_group_data)
   end
 
+  def return_policies(
+        %{org_id: org_id, group_ids: group_ids, page_size: page_size, page_number: page_number},
+        preloads
+      ) do
+    query =
+      from(user_group in UserGroup,
+        where: user_group.org_id == ^org_id and user_group.id in ^group_ids
+      )
+
+    paginated_user_group_data =
+      query |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+
+    user_group_data_with_preloads = paginated_user_group_data.entries |> Repo.preload(preloads)
+
+    ModelHelper.paginated_response(user_group_data_with_preloads, paginated_user_group_data)
+  end
+
   def delete(%UserGroup{} = group) do
     case Repo.delete(group) do
       {:ok, group} -> {:ok, group |> Repo.preload([:policies, :users])}

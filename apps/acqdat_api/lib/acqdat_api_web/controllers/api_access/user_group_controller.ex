@@ -82,6 +82,28 @@ defmodule AcqdatApiWeb.ApiAccess.UserGroupController do
     end
   end
 
+  def group_policies(conn, params) do
+    changeset = verify_group_policies_params(params)
+
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        {:list, group} = {:list, UserGroup.return_policies(data, [:policies])}
+
+        conn
+        |> put_status(200)
+        |> render("index_policies.json", group)
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
+    end
+  end
+
   def delete(conn, _params) do
     case conn.status do
       nil ->

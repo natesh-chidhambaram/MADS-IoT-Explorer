@@ -96,6 +96,7 @@ defmodule AcqdatApiWeb.Router do
 
     # user group api
     resources "/user_groups", ApiAccess.UserGroupController, except: [:new, :edit]
+    post "/group_policies", ApiAccess.UserGroupController, :group_policies
 
     post(
       "/dashboards/:dashboard_id/export",

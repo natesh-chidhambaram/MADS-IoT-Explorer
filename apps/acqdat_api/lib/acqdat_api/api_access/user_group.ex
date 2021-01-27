@@ -9,6 +9,7 @@ defmodule AcqdatApi.ApiAccess.UserGroup do
   defdelegate get_all(data, preloads), to: UserGroup
   defdelegate get(id), to: UserGroup
   defdelegate delete(user_group), to: UserGroup
+  defdelegate return_policies(data, preloads), to: UserGroup
 
   def create(params) do
     params = params_extraction(params)
