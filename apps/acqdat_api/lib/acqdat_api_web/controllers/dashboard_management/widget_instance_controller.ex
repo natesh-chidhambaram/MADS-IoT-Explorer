@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.DashboardManagement.WidgetInstance
   alias AcqdatApi.DashboardManagement.WidgetInstance
@@ -30,6 +30,10 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -49,6 +53,10 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -70,6 +78,10 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -96,6 +108,10 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 end

@@ -1,4 +1,4 @@
-defmodule AcqdatApiWeb.DashboardExport.DashboardExportView do
+defmodule AcqdatApiWeb.DashboardManagement.DashboardExportView do
   use AcqdatApiWeb, :view
 
   def render("url.json", %{dashboard_export: url}) do

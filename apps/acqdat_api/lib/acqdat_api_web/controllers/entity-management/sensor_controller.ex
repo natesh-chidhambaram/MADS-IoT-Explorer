@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.EntityManagement.SensorController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.EntityManagement.Sensor
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SensorModel
   import AcqdatApiWeb.Helpers
@@ -29,6 +29,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -45,6 +49,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -67,6 +75,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -95,6 +107,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -123,6 +139,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -149,6 +169,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 

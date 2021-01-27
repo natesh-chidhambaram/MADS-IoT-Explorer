@@ -2,7 +2,7 @@ defmodule AcqdatApiWeb.Alerts.AlertFilterListingController do
   @moduledoc """
   Contains API related to listing of different parameters of alert table.
   """
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.Alerts.AlertRules
   alias AcqdatApi.Alerts.AlertFilterListing
   import AcqdatApiWeb.Helpers
@@ -25,6 +25,10 @@ defmodule AcqdatApiWeb.Alerts.AlertFilterListingController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 

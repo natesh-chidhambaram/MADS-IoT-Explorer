@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.RoleManagement.UserSettingController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.RoleManagement.UserSetting
   import AcqdatApiWeb.Validators.RoleManagement.UserSetting
   import AcqdatApiWeb.Helpers
@@ -27,6 +27,10 @@ defmodule AcqdatApiWeb.RoleManagement.UserSettingController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -52,6 +56,10 @@ defmodule AcqdatApiWeb.RoleManagement.UserSettingController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
