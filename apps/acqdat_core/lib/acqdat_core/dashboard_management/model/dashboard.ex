@@ -63,7 +63,7 @@ defmodule AcqdatCore.Model.DashboardManagement.Dashboard do
     query =
       from(dashboard in Dashboard,
         where: dashboard.org_id == ^org_id and dashboard.archived == false,
-        order_by: dashboard.name
+        order_by: [desc: dashboard.updated_at]
       )
 
     query |> Repo.paginate(page: page_number, page_size: page_size)
@@ -77,7 +77,7 @@ defmodule AcqdatCore.Model.DashboardManagement.Dashboard do
     query =
       from(dashboard in Dashboard,
         where: dashboard.org_id == ^org_id and dashboard.archived == true,
-        order_by: dashboard.name
+        order_by: [desc: dashboard.updated_at]
       )
 
     query |> Repo.paginate(page: page_number, page_size: page_size)

@@ -22,7 +22,8 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     query =
       from(asset in Asset,
         where: asset.id in ^asset_ids,
-        preload: [:org, :project, :asset_type]
+        preload: [:org, :project, :asset_type],
+        order_by: [desc: asset.updated_at]
       )
 
     Repo.all(query)

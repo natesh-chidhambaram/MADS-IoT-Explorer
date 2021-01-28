@@ -45,13 +45,15 @@ defmodule AcqdatCore.Model.Widgets.Widget do
 
   def get_all(%{page_size: page_size, page_number: page_number}) do
     Widget
-    |> order_by(:id)
+    |> order_by(desc: :updated_at)
     |> Repo.paginate(page: page_number, page_size: page_size)
   end
 
   def get_all(%{page_size: page_size, page_number: page_number}, preloads) do
     paginated_widget_data =
-      Widget |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+      Widget
+      |> order_by(desc: :updated_at)
+      |> Repo.paginate(page: page_number, page_size: page_size)
 
     widget_data_with_preloads = paginated_widget_data.entries |> Repo.preload(preloads)
 

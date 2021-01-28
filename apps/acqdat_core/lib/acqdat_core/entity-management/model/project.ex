@@ -48,7 +48,8 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
     query =
       from(project in Project,
         where: project.id in ^project_ids,
-        preload: [:leads, :users, :creator]
+        preload: [:leads, :users, :creator],
+        order_by: [desc: project.updated_at]
       )
 
     Repo.all(query)

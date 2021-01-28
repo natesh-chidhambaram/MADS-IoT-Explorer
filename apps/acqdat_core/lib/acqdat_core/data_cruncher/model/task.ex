@@ -35,6 +35,6 @@ defmodule AcqdatCore.DataCruncher.Model.Task do
         preload: [:user]
       )
 
-    query |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+    query |> order_by(desc: :updated_at) |> Repo.paginate(page: page_number, page_size: page_size)
   end
 end
