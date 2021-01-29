@@ -1,9 +1,9 @@
 defmodule AcqdatApiWeb.Widgets.WidgetController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.Widgets.Widget
   alias AcqdatApi.Widgets.Widget
-  alias AcqdatApi.ElasticSearch
+  alias AcqdatCore.ElasticSearch
   alias AcqdatCore.Model.Widgets.WidgetType, as: WTModel
   alias AcqdatApi.Image
   alias AcqdatApi.ImageDeletion
@@ -28,6 +28,10 @@ defmodule AcqdatApiWeb.Widgets.WidgetController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -46,6 +50,10 @@ defmodule AcqdatApiWeb.Widgets.WidgetController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -82,6 +90,10 @@ defmodule AcqdatApiWeb.Widgets.WidgetController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -103,6 +115,10 @@ defmodule AcqdatApiWeb.Widgets.WidgetController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -152,6 +168,10 @@ defmodule AcqdatApiWeb.Widgets.WidgetController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -195,6 +215,10 @@ defmodule AcqdatApiWeb.Widgets.WidgetController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 

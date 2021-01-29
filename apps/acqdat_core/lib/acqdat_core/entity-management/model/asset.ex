@@ -4,6 +4,7 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SensorModel
   alias AcqdatCore.Model.IotManager.Gateway, as: GatewayModel
   alias AcqdatCore.Schema.EntityManagement.Asset
+  alias AcqdatCore.ElasticSearch
   alias Ecto.Multi
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Helper, as: ModelHelper
@@ -92,14 +93,24 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
 
   def update_asset(asset, params) do
     changeset = Asset.update_changeset(asset, params)
-    Repo.update(changeset)
+
+    case Repo.update(changeset) do
+      {:ok, asset} ->
+        Task.start_link(fn ->
+          ElasticSearch.update_asset("assets", asset)
+        end)
+
+        {:ok, asset}
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   def fetch_root(org_id, parent_id) do
     query =
       from(asset in Asset,
-        where:
-          asset.org_id == ^org_id and is_nil(asset.parent_id) == true and asset.id == ^parent_id
+        where: asset.org_id == ^org_id and asset.id == ^parent_id
       )
 
     Repo.one!(query) |> Repo.preload([:org, :project, :creator, :asset_type])
@@ -141,6 +152,10 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
         |> create(:root)
         |> AsNestedSet.execute(Repo)
 
+      Task.start_link(fn ->
+        ElasticSearch.insert_asset("assets", taxon)
+      end)
+
       {:ok, taxon}
     rescue
       error in Ecto.InvalidChangesetError ->
@@ -161,6 +176,10 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
         |> Repo.preload(:org)
         |> create(parent, position)
         |> AsNestedSet.execute(Repo)
+
+      Task.start_link(fn ->
+        ElasticSearch.insert_asset("assets", taxon)
+      end)
 
       {:ok, taxon}
     rescue

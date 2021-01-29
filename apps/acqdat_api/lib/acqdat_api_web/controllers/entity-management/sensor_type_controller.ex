@@ -1,7 +1,7 @@
 defmodule AcqdatApiWeb.EntityManagement.SensorTypeController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.EntityManagement.SensorType
-  alias AcqdatApi.ElasticSearch
+  alias AcqdatCore.ElasticSearch
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.EntityManagement.SensorType
 
@@ -26,6 +26,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -48,6 +52,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -76,6 +84,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -109,6 +121,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -141,6 +157,10 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 end

@@ -29,7 +29,7 @@ defmodule AcqdatApiWeb.Router do
 
   scope "/", AcqdatApiWeb do
     pipe_through(:export_auth)
-    get("/dashboards/:dashboard_uuid", DashboardExport.DashboardExportController, :export)
+    get("/dashboards/:dashboard_uuid", DashboardManagement.DashboardExportController, :export)
 
     get(
       "/dashboards/:dashboard_uuid/verify",
@@ -37,7 +37,11 @@ defmodule AcqdatApiWeb.Router do
       :exported_dashboard
     )
 
-    get("/details/:dashboard_uuid/panels/:id", DashboardExport.DashboardExportController, :show)
+    get(
+      "/details/:dashboard_uuid/panels/:id",
+      DashboardManagement.DashboardExportController,
+      :show
+    )
   end
 
   scope "/", AcqdatApiWeb do
@@ -55,13 +59,16 @@ defmodule AcqdatApiWeb.Router do
 
   scope "/", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
+    get "/apis", RoleManagement.ExtractedRoutesController, :apis
     post "/validate-token", AuthController, :validate_token
     post "/sign-out", AuthController, :sign_out
     post "/orgs/:org_id/validate_credentials", AuthController, :validate_credentials
 
     resources "/roles", RoleManagement.RoleController, only: [:index]
 
-    resources "/orgs", EntityManagement.OrganisationController, only: [:show]
+    resources "/orgs", EntityManagement.OrganisationController,
+      only: [:show, :create, :index, :update, :delete]
+
     resources "/apps", AppController, only: [:index]
     get("/orgs/:id/apps", EntityManagement.OrganisationController, :get_apps, as: :org_apps)
 
@@ -86,17 +93,26 @@ defmodule AcqdatApiWeb.Router do
   # NOTE: Please add resources here, only if they needs to be scoped by organisation
   scope "/orgs/:org_id", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
-    post("/dashboards/:dashboard_id/export", DashboardExport.DashboardExportController, :create)
+
+    # user group api
+    resources "/user_groups", ApiAccess.UserGroupController, except: [:new, :edit]
+    post "/group_policies", ApiAccess.UserGroupController, :group_policies
+
+    post(
+      "/dashboards/:dashboard_id/export",
+      DashboardManagement.DashboardExportController,
+      :create
+    )
 
     put(
       "/dashboards/:dashboard_id/export/:dashboard_uuid",
-      DashboardExport.DashboardExportController,
+      DashboardManagement.DashboardExportController,
       :update
     )
 
     get(
       "/dashboards/:dashboard_id/export/:dashboard_uuid/show_credentials",
-      DashboardExport.DashboardExportController,
+      DashboardManagement.DashboardExportController,
       :show_credentials
     )
 

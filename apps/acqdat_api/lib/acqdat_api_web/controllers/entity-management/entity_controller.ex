@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.EntityManagement.EntityController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.EntityManagement.EntityParser
   alias AcqdatCore.Model.EntityManagement.Organisation, as: OrgModel
   import AcqdatApiWeb.Helpers
@@ -30,6 +30,10 @@ defmodule AcqdatApiWeb.EntityManagement.EntityController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -45,6 +49,10 @@ defmodule AcqdatApiWeb.EntityManagement.EntityController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 
@@ -67,6 +75,10 @@ defmodule AcqdatApiWeb.EntityManagement.EntityController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 

@@ -1,5 +1,5 @@
 defmodule AcqdatApiWeb.RoleManagement.RoleController do
-  use AcqdatApiWeb, :controller
+  use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.RoleManagement.Role
   alias AcqdatCore.Model.RoleManagement.Role, as: RoleModel
@@ -25,6 +25,10 @@ defmodule AcqdatApiWeb.RoleManagement.RoleController do
       404 ->
         conn
         |> send_error(404, "Resource Not Found")
+
+      401 ->
+        conn
+        |> send_error(401, "Unauthorized")
     end
   end
 end
