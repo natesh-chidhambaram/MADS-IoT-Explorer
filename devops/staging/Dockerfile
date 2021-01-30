@@ -8,12 +8,14 @@ FROM elixir:1.9.1-alpine AS app_builder
 # Set environment variables for building the application
 ARG DASHBOARD_URL
 ARG MADS_URL
+ARG REDIS_PORT
 
 ENV MIX_ENV=prod \
     TEST=1 \
     LANG=C.UTF-8 \
     DASHBOARD_URL=${DASHBOARD_URL} \
-    MADS_URL=${MADS_URL}
+    MADS_URL=${MADS_URL} \
+    REDIS_PORT=${REDIS_PORT}
 
 RUN apk add build-base
 

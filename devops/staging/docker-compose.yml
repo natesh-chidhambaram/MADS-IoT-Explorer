@@ -100,6 +100,7 @@ services:
       args:
         DASHBOARD_URL: ${DASHBOARD_URL}
         MADS_URL: ${MADS_URL}
+        REDIS_PORT: ${REDIS_PORT}
     restart: always
     container_name: web
     ports:
