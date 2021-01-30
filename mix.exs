@@ -74,9 +74,6 @@ defmodule AcqdatUmbrella.MixProject do
 
       # testing
       {:excoveralls, "~> 0.10", only: :test},
-
-      # redis
-      {:redix, ">= 0.0.0"}
     ]
   end
 
