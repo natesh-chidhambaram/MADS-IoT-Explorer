@@ -15,6 +15,7 @@ services:
 
   redis:
     image: redis:latest
+    container_name: redis
     expose:
       - "6379"
     command: ["redis-server", "--appendonly", "yes"]
