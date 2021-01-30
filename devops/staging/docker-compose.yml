@@ -187,3 +187,4 @@ volumes:
   vernemqdata:
   vernemqlogs:
   vernemqetc:
+  redis-data:
