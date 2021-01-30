@@ -77,6 +77,11 @@ config :ex_twilio,
 # Vernemq db configuration
 config :vernemq_mads_plugin, read_repo: VernemqMadsPlugin.Repo
 
+# Redis configuration
+config :acqdat_api,
+       :redis_port,
+       System.get_env("REDIS_PORT", "redis://localhost:6379/3")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

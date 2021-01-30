@@ -3,6 +3,7 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardController do
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.DashboardManagement.Dashboard
   alias AcqdatApi.DashboardManagement.Dashboard
+  alias AcqdatApi.Helper.Redis
   alias AcqdatApi.Image
   alias AcqdatApi.ImageDeletion
 
@@ -70,9 +71,19 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardController do
             send_error(conn, 400, message)
 
           {:ok, dashboard} ->
-            conn
-            |> put_status(200)
-            |> render("show.json", %{dashboard: dashboard})
+            case Redis.insert_dashboard(
+                   dashboard,
+                   String.to_integer(Guardian.Plug.current_resource(conn))
+                 ) do
+              {:ok, _} ->
+                conn
+                |> put_status(200)
+                |> render("show.json", %{dashboard: dashboard})
+
+              {:error, message} ->
+                conn
+                |> send_error(400, message)
+            end
         end
 
       404 ->
@@ -150,6 +161,33 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardController do
       401 ->
         conn
         |> send_error(401, "Unauthorized")
+    end
+  end
+
+  def recent_dashboard(conn, params) do
+    changeset = verify_index_params(params)
+
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+
+        case Redis.get_dashboard_ids(String.to_integer(Guardian.Plug.current_resource(conn))) do
+          {:ok, dashboard_ids} ->
+            data = Map.put_new(data, :dashboard_ids, dashboard_ids)
+            {:list, dashboards} = {:list, Dashboard.recent_dashboards(data)}
+
+            conn
+            |> put_status(200)
+            |> render("index.json", dashboards)
+
+          {:error, message} ->
+            conn
+            |> send_error(400, message)
+        end
+
+      404 ->
+        conn
+        |> send_error(404, "Resource Not Found")
     end
   end
 
