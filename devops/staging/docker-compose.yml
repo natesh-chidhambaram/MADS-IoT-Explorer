@@ -134,6 +134,7 @@ services:
       - es01
       - mqtt_broker
       - nodered
+      - redis
 
   nodered:
     image: nodered/node-red-docker:slim
