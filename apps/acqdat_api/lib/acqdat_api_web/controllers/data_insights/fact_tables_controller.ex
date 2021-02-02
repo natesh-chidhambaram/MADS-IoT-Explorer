@@ -77,7 +77,9 @@ defmodule AcqdatApiWeb.DataInsights.FactTablesController do
       nil ->
         conn
         |> put_status(200)
-        |> render("fact_table.json", %{fact_table: conn.assigns.fact_table})
+        |> render("fact_table_details.json", %{
+          fact_table: FactTables.fetch_fact_table_details(conn.assigns.fact_table)
+        })
 
       404 ->
         conn
@@ -129,7 +131,7 @@ defmodule AcqdatApiWeb.DataInsights.FactTablesController do
           {:ok, fact_table} ->
             conn
             |> put_status(200)
-            |> render("fact_table.json", %{fact_tables: fact_table})
+            |> render("fact_table.json", %{fact_table: fact_table})
 
           {:error, fact_table} ->
             error =
