@@ -21,6 +21,24 @@ defmodule AcqdatCore.Model.EntityManagement.SensorType do
     end
   end
 
+  def get(params) when is_map(params) do
+    case Repo.get_by(SensorType, params) do
+      nil ->
+        {:error, "SensorType not found"}
+
+      sensor_type ->
+        {:ok, sensor_type}
+    end
+  end
+
+  def get_all(%{org_id: org_id, project_id: project_id}) do
+    SensorType
+    |> where([sensor_type], sensor_type.project_id == ^project_id)
+    |> where([sensor_type], sensor_type.org_id == ^org_id)
+    |> order_by(:id)
+    |> Repo.all()
+  end
+
   def get_all(%{
         page_size: page_size,
         page_number: page_number,
