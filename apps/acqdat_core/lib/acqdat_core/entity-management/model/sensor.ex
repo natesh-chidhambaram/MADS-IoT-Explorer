@@ -86,6 +86,13 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     end
   end
 
+  def get_all_by_sensor_type(entity_ids) do
+    Sensor
+    |> where([sensor], sensor.sensor_type_id in ^entity_ids)
+    |> order_by(:id)
+    |> Repo.all()
+  end
+
   def get_all_by_parent_gateway(gateway_ids) do
     Sensor
     |> where([sensor], sensor.gateway_id in ^gateway_ids)
@@ -152,11 +159,29 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.all(query) |> Repo.preload(preloads)
   end
 
+  def get_all_by_sensor_type(sensor_type_id) do
+    from(sensor in Sensor,
+      where: sensor.sensor_type_id == ^sensor_type_id,
+      select: map(sensor, [:id, :name])
+    )
+    |> Repo.all()
+  end
+
   def child_sensors_query(root) when not is_list(root) do
     from(sensor in Sensor,
       preload: [:sensor_type, :gateway],
       where: sensor.parent_id == ^root.id and sensor.parent_type == "Asset"
     )
+  end
+
+  def child_sensors(root, sensor_type_ids) when not is_list(root) do
+    from(sensor in Sensor,
+      preload: [:sensor_type],
+      where:
+        sensor.parent_id == ^root.id and sensor.parent_type == "Asset" and
+          sensor.sensor_type_id in ^sensor_type_ids
+    )
+    |> Repo.all()
   end
 
   def child_sensors_query(asset_ids) when is_list(asset_ids) do

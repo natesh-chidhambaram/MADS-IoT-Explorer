@@ -29,6 +29,23 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     Repo.all(query)
   end
 
+  def get_all_by_asset_type(entity_ids) do
+    Asset
+    |> where([asset], asset.asset_type_id in ^entity_ids)
+    |> order_by(:id)
+    |> Repo.all()
+  end
+
+  def get_all_by_ids(entity_ids) do
+    Asset
+    |> where([asset], asset.id in ^entity_ids)
+    |> Repo.all()
+  end
+
+  def fetch_child_descendants(asset) do
+    AsNestedSet.descendants(asset) |> AsNestedSet.execute(Repo)
+  end
+
   def child_assets(project_id) do
     Asset |> dump_assets(%{project_id: project_id}) |> AsNestedSet.execute(Repo)
   end
@@ -414,5 +431,21 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     asset_data_with_preloads = paginated_asset_data.entries |> Repo.preload(preloads)
 
     ModelHelper.paginated_response(asset_data_with_preloads, paginated_asset_data)
+  end
+
+  def fetch_asset_metadata(asset_type_id, metadata_names) do
+    from(
+      asset in Asset,
+      join: c in fragment("unnest(?)", asset.metadata),
+      where:
+        asset.asset_type_id == ^asset_type_id and fragment("?->>'name'", c) in ^metadata_names,
+      select: %{
+        id: asset.id,
+        name: asset.name,
+        value: fragment("?->>'value'", c),
+        metadata_name: fragment("?->>'name'", c)
+      }
+    )
+    |> Repo.all()
   end
 end

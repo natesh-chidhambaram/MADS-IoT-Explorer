@@ -5,7 +5,7 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
   All advanced queries related to SensorData will be placed here.
   """
   import Ecto.Query
-  alias AcqdatCore.Schema.EntityManagement.SensorsData
+  alias AcqdatCore.Schema.EntityManagement.{SensorsData, Sensor}
 
   def filter_by_date_query(entity_id, date_from, date_to) when is_integer(entity_id) do
     from(
@@ -22,6 +22,18 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
       where:
         data.sensor_id in ^entity_ids and data.inserted_timestamp >= ^date_from and
           data.inserted_timestamp <= ^date_to
+    )
+  end
+
+  def filter_by_date_query_wrt_parent(entity_ids, date_from, date_to) when is_list(entity_ids) do
+    from(
+      data in SensorsData,
+      join: sensor in Sensor,
+      on:
+        data.sensor_id == sensor.id and data.sensor_id in ^entity_ids and
+          data.inserted_timestamp >= ^date_from and
+          data.inserted_timestamp <= ^date_to,
+      select_merge: %{sensor_parent_id: sensor.parent_id, sensor_name: sensor.name}
     )
   end
 
@@ -426,6 +438,67 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
           data.inserted_timestamp
         ),
         fragment("avg(CAST(ROUND(CAST (?->>'value' AS NUMERIC), 2) AS FLOAT))", c)
+      ]
+    )
+  end
+
+  def fetch_sensors_data_with_parent_id(
+        subquery,
+        param_uuids
+      ) do
+    from(
+      data in subquery(subquery),
+      cross_join: c in fragment("unnest(?)", data.parameters),
+      where: fragment("?->>'name'", c) in ^param_uuids,
+      select: %{
+        parent_id: data.sensor_parent_id,
+        time: data.inserted_timestamp,
+        id: data.sensor_id,
+        name: data.sensor_name,
+        value: fragment("?->>'value'", c),
+        param_name: fragment("?->>'name'", c)
+      }
+    )
+  end
+
+  def fetch_sensors_data(subquery, param_uuids) do
+    from(
+      data in subquery(subquery),
+      cross_join: c in fragment("unnest(?)", data.parameters),
+      where: fragment("?->>'name'", c) in ^param_uuids,
+      select: %{
+        time: data.inserted_timestamp,
+        id: data.sensor_id,
+        name: data.sensor_name,
+        value: fragment("?->>'value'", c),
+        param_name: fragment("?->>'name'", c)
+      }
+    )
+  end
+
+  def fetch_sensor_data_btw_time_intv(sensor_ids, date_from, date_to) do
+    from(
+      data in SensorsData,
+      join: sensor in Sensor,
+      on:
+        data.sensor_id == sensor.id and data.sensor_id in ^sensor_ids and
+          data.inserted_timestamp >= ^date_from and
+          data.inserted_timestamp <= ^date_to,
+      select_merge: %{sensor_name: sensor.name}
+    )
+  end
+
+  def fetch_sensors_values_n_timeseries(
+        subquery,
+        param_uuids
+      ) do
+    from(
+      data in subquery(subquery),
+      cross_join: c in fragment("unnest(?)", data.parameters),
+      where: fragment("?->>'name'", c) in ^param_uuids,
+      select: [
+        fragment("?->>'value'", c),
+        data.inserted_timestamp
       ]
     )
   end
