@@ -18,7 +18,12 @@ config :acqdat_iot, AcqdatIotWeb.Endpoint, server: true
 
 config :acqdat_api, AcqdatApiWeb.Endpoint,
   server: true,
-  check_origin: ["https://mads.netlify.app","https://mads.netlify.com"]
+  check_origin: [
+    "https://mads.netlify.app",
+    "https://mads.netlify.com",
+    "https://mads-staging.netlify.app",
+    "https://mads-staging.netlify.com"
+    ]
 
 # Configure Guardian
 config :acqdat_api, AcqdatApiWeb.Guardian,
