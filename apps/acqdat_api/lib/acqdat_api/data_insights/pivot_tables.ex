@@ -1,5 +1,5 @@
 defmodule AcqdatApi.DataInsights.PivotTables do
-  alias AcqdatCore.Model.DataInsights.PivotTables
+  alias AcqdatCore.Model.DataInsights.{PivotTables, FactTables}
   alias AcqdatApi.DataInsights.PivotTableGenWorker
   alias Ecto.Multi
   alias AcqdatCore.Repo
@@ -8,6 +8,11 @@ defmodule AcqdatApi.DataInsights.PivotTables do
 
   defdelegate get_all(params), to: PivotTableModel
   defdelegate delete(pivot_table), to: PivotTableModel
+
+  def fetch_fact_table_headers(%{fact_table_id: fact_table_id} = pivot_table) do
+    res = FactTables.get_fact_table_headers(fact_table_id)
+    Map.put(pivot_table, :fact_table_headers, List.flatten(res.rows))
+  end
 
   def create(org_id, fact_tables_id, %{name: project_name, id: project_id}, %{id: creator_id}) do
     res_name = :crypto.strong_rand_bytes(5) |> Base.url_encode64() |> binary_part(0, 5)
@@ -64,7 +69,12 @@ defmodule AcqdatApi.DataInsights.PivotTables do
       })
     end)
     |> Multi.run(:gen_pivot_data, fn _, %{persist_to_db: pivot_table} ->
-      gen_pivot_data(pivot_table)
+      try do
+        gen_pivot_data(pivot_table)
+      rescue
+        error in Postgrex.Error ->
+          {:error, error.postgres.message}
+      end
     end)
     |> run_under_transaction(:gen_pivot_data)
   end
