@@ -18,13 +18,8 @@ defmodule AcqdatApi.DataInsights.FactTables do
     Map.merge(data, %{total_pivot_tables: tot_pivot_count})
   end
 
-  def fetch_fact_table_details(%{id: fact_table_id} = fact_table) do
-    query =
-      "SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = 'fact_table_#{
-        fact_table_id
-      }'"
-
-    res = Ecto.Adapters.SQL.query!(Repo, query, [])
+  def fetch_fact_table_headers(%{id: fact_table_id} = fact_table) do
+    res = FactTables.get_fact_table_headers(fact_table_id)
     Map.put(fact_table, :fact_table_headers, List.flatten(res.rows))
   end
 
@@ -69,7 +64,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
       order by 1
     """
 
-    res = Ecto.Adapters.SQL.query!(Repo, qry, [])
+    res = Ecto.Adapters.SQL.query!(Repo, qry, [], timeout: :infinity)
     %{data: List.flatten(res.rows)}
   end
 
@@ -78,7 +73,13 @@ defmodule AcqdatApi.DataInsights.FactTables do
 
     if Enum.sort(Enum.uniq(node_tracker)) == Enum.sort(entities_list) do
       subtree = NaryTree.from_map(subtree)
-      build_dynamic_query(fact_table_id, subtree, entities_list)
+
+      try do
+        build_dynamic_query(fact_table_id, subtree, entities_list)
+      rescue
+        error in Postgrex.Error ->
+          {:error, error.postgres.message}
+      end
     else
       {:error, "All entities are not directly connected, please connect common parent entity."}
     end
@@ -234,13 +235,37 @@ defmodule AcqdatApi.DataInsights.FactTables do
     |> Enum.reduce({%{}, 0}, fn {entity_type_id, index}, {acc, pos} ->
       {index_pos, res} =
         Stream.with_index(subtree.nodes[entity_type_id].content, pos)
-        |> Enum.reduce({pos, %{}}, fn {v, k}, {ind, acc} ->
+        |> Enum.reduce({pos, %{}}, fn {v, table_indx}, {ind, acc} ->
           if subtree.nodes[entity_type_id].type == "SensorType" and v != "name" do
-            k = 2 * k
-            acc = Map.put(acc, v, k)
-            {k + 1, Map.put(acc, "#{v}_dateTime", k + 1)}
+            ind_pos_of_entity =
+              Enum.find_index(subtree.nodes[entity_type_id].content, fn x -> x == v end)
+
+            name_pos =
+              Enum.find_index(subtree.nodes[entity_type_id].content, fn x -> x == "name" end)
+
+            table_indx =
+              if ind_pos_of_entity != 0 do
+                if name_pos == ind_pos_of_entity - 1 do
+                  if name_pos != 0, do: table_indx + 1, else: table_indx
+                else
+                  if name_pos < ind_pos_of_entity,
+                    do: table_indx + ind_pos_of_entity - 1,
+                    else: table_indx + ind_pos_of_entity
+                end
+              else
+                table_indx
+              end
+
+            acc = Map.put(acc, v, table_indx)
+            {table_indx + 1, Map.put(acc, "#{v}_dateTime", table_indx + 1)}
           else
-            {k, Map.put(acc, v, k)}
+            name_pos =
+              Enum.find_index(subtree.nodes[entity_type_id].content, fn x -> x == "name" end)
+
+            if subtree.nodes[entity_type_id].type == "SensorType" and v == "name" and
+                 name_pos != 0,
+               do: {table_indx + name_pos, Map.put(acc, v, table_indx + name_pos)},
+               else: {table_indx, Map.put(acc, v, table_indx)}
           end
         end)
 
@@ -287,7 +312,9 @@ defmodule AcqdatApi.DataInsights.FactTables do
   end
 
   def create_fact_table_view(fact_table_name, table_headers, data) do
-    Ecto.Adapters.SQL.query!(Repo, "drop view if exists #{fact_table_name};", [])
+    Ecto.Adapters.SQL.query!(Repo, "drop view if exists #{fact_table_name};", [],
+      timeout: :infinity
+    )
 
     qry = """
       CREATE OR REPLACE VIEW #{fact_table_name} AS
@@ -450,7 +477,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
           end
         end
 
-      entity_data = Repo.all(query)
+      entity_data = Repo.all(query, timeout: :infinity)
 
       entity_data =
         if entity_data == [] do
@@ -583,7 +610,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
       drop view if exists #{fact_table_name}
     """
 
-    res = Ecto.Adapters.SQL.query!(Repo, qry, [])
+    res = Ecto.Adapters.SQL.query!(Repo, qry, [], timeout: :infinity)
     {:ok, res.rows}
   end
 

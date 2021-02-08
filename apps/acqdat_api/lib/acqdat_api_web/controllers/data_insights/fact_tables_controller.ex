@@ -78,7 +78,7 @@ defmodule AcqdatApiWeb.DataInsights.FactTablesController do
         conn
         |> put_status(200)
         |> render("fact_table_details.json", %{
-          fact_table: FactTables.fetch_fact_table_details(conn.assigns.fact_table)
+          fact_table: FactTables.fetch_fact_table_headers(conn.assigns.fact_table)
         })
 
       404 ->
@@ -92,6 +92,7 @@ defmodule AcqdatApiWeb.DataInsights.FactTablesController do
         "project_id" => project_id,
         "id" => id,
         "user_list" => user_list,
+        "date_range_settings" => date_range_settings,
         "name" => name
       }) do
     case conn.status do
@@ -102,7 +103,8 @@ defmodule AcqdatApiWeb.DataInsights.FactTablesController do
                conn.assigns.project,
                name,
                conn.assigns.fact_table,
-               user_list
+               user_list,
+               date_range_settings
              ) do
           {:error, %Ecto.Changeset{} = changeset} ->
             error = extract_changeset_error(changeset)
