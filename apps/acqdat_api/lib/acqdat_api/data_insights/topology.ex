@@ -93,7 +93,7 @@ defmodule AcqdatApi.DataInsights.Topology do
         query =
           from(sensor in Sensor,
             where: sensor.sensor_type_id == ^id,
-            select: map(sensor, [:name])
+            select: [sensor.name]
           )
 
         %{headers: ["#{name}"], data: Repo.all(query)}
@@ -201,10 +201,17 @@ defmodule AcqdatApi.DataInsights.Topology do
   # NOTE: this validate_entities will get executed if there are multiple only sensor_types present in user input
   defp validate_entities(fact_table_id, {_, sensor_types}, entities_list, _)
        when length(sensor_types) == length(entities_list) do
-    output =
-      {:error, "Please attach parent asset_type as all the user-entities are of SensorTypes."}
+    uniq_sensor_types = Enum.uniq_by(sensor_types, fn sensor_type -> sensor_type["id"] end)
 
-    broadcast_to_channel(fact_table_id, output)
+    output =
+      if length(uniq_sensor_types) == 1 do
+        FactTableGenWorker.process({fact_table_id, entities_list, uniq_sensor_types})
+      else
+        output =
+          {:error, "Please attach parent asset_type as all the user-entities are of SensorTypes."}
+
+        broadcast_to_channel(fact_table_id, output)
+      end
   end
 
   # NOTE: this validate_entities will get executed if there are multiple only asset_types present in user input
