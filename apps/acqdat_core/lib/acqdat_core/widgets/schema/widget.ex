@@ -50,7 +50,7 @@ defmodule AcqdatCore.Widgets.Schema.Widget do
     field(:classification, :string, default: "timeseries")
 
     # embedded associations
-    embeds_many(:visual_settings, VisualSettings)
+    embeds_many(:visual_settings, VisualSettings, on_replace: :delete)
     embeds_many(:data_settings, DataSettings)
 
     # associations
@@ -84,6 +84,10 @@ defmodule AcqdatCore.Widgets.Schema.Widget do
   def update_changeset(%__MODULE__{} = widget, params) do
     widget
     |> cast(params, @permitted)
+    |> cast_embed(:visual_settings, with: &VisualSettings.changeset/2)
+    |> cast_embed(:data_settings, with: &DataSettings.changeset/2)
+    |> validate_required(@required)
+    |> validate_inclusion(:classification, @classifications)
   end
 end
 
@@ -106,7 +110,7 @@ defmodule AcqdatCore.Widgets.Schema.Widget.VisualSettings do
     field(:source, :map)
     field(:value, :map)
     field(:user_controlled, :boolean, default: false)
-    embeds_many(:properties, VisualSettings)
+    embeds_many(:properties, VisualSettings, on_replace: :delete)
   end
 
   @permitted ~w(key data_type source value user_controlled)a
