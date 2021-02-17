@@ -10,9 +10,10 @@ defmodule AcqdatCore.Seed.Widgets.StaticCard do
   @custom_card_key_widget_settings %{
     card: %{
       visual: %{
-        card: [type: %{value: "static card"}, backgroundColor: %{}, font: %{}],
+        card: [type: %{value: "static card"}, backgroundColor: %{}, fontColor: %{}],
         title: [text: %{}, align: %{}],
-        description: [text: %{}, align: %{}]
+        description: [text: %{}, fontSize: %{}, fontColor: %{}, align: %{}],
+        subtitle: [text: %{}, fontSize: %{}, fontColor: %{}, align: %{}]
       }
     }
   }
