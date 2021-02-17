@@ -102,6 +102,7 @@ services:
         DASHBOARD_URL: ${DASHBOARD_URL}
         MADS_URL: ${MADS_URL}
         REDIS_PORT: ${REDIS_PORT}
+        HTTP_URL: ${HTTP_URL}
     restart: always
     container_name: web
     ports:
