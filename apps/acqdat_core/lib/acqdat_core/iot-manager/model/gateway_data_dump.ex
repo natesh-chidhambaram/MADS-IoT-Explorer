@@ -4,7 +4,9 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
   alias AcqdatCore.Schema.IotManager.GatewayDataDump
   alias AcqdatCore.Model.IotManager.Gateway
   alias AcqdatCore.Model.Helper, as: ModelHelper
+  alias AcqdatCore.Schema.IoTManager.GatewayError
 
+  @spec create(map) :: {:ok, GatewayDataDump.t()} | {:error, Ecto.Changeset.t()}
   def create(params) do
     parse_params_and_insert(params)
   end
@@ -37,6 +39,22 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
 
     ModelHelper.paginated_response(data_dump_with_preloads, paginated_data_dump)
   end
+
+  @doc """
+  Deletes all the gateway related errors a week before the provided timestamp.
+  """
+  def delete_errors(timestamp) do
+    previous_week_threshold = Timex.shift(timestamp, days: -7)
+
+    query =
+      from(error in GatewayError,
+        where: error.inserted_at < ^previous_week_threshold
+      )
+
+    Repo.delete_all(query)
+  end
+
+  #################### private functions ##############################
 
   defp parse_params_and_insert(params) do
     has_gateway_with_uuid(Gateway.get(%{uuid: params.gateway_uuid}), params)
