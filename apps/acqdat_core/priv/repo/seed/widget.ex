@@ -3,10 +3,10 @@ defmodule AcqdatCore.Seed.Widget do
   Holds seeds for initial widgets.
   """
   alias AcqdatCore.Seed.Widgets.{Line, Area, Pie, Bar, LineTimeseries, AreaTimeseries, GaugeSeries, SolidGauge,
-        StockSingleLine, DynamicCard, ImageCard, StaticCard, BasicColumn, StackedColumn}
+        StockSingleLine, DynamicCard, ImageCard, StaticCard, BasicColumn, StackedColumn, StockColumn}
   alias AcqdatCore.Seed.Helpers.WidgetHelpers
   alias AcqdatCore.Repo
-  alias AcqdatCore.Widgets.Schema.Widget
+  alias AcqdatCore.Model.Widgets.Widget, as: WidgetModel
 
   def seed() do
     #Don't change the sequence it is important that widgets seeds this way.
@@ -24,7 +24,21 @@ defmodule AcqdatCore.Seed.Widget do
     StaticCard.seed()
     BasicColumn.seed()
     StackedColumn.seed()
+    StockColumn.seed()
     WidgetHelpers.seed_in_elastic()
+  end
+
+  def update_classifications() do
+    Repo.transaction(fn ->
+      card_widgets = ["Image Card", "Static Card", "Dynamic Card"]
+      update_classifications_of_widgets(card_widgets, "cards")
+
+      gauge_widgets = ["solidgauge", "gauge"]
+      update_classifications_of_widgets(gauge_widgets, "gauge")
+
+      pie_widget = ["pie"]
+      update_classifications_of_widgets(pie_widget, "standard")
+    end)
   end
 
   def update_visual_settings() do
@@ -42,13 +56,24 @@ defmodule AcqdatCore.Seed.Widget do
       "Stock Single line series" => {StockSingleLine, :line},
       "Dynamic Card" => {DynamicCard, :card},
       "Image Card" => {ImageCard, :card},
-      "Static Card" => {StaticCard, :card}
+      "Static Card" => {StaticCard, :card},
+      "Stock Column" => {StockColumn, :column}
     }
 
     Enum.each(charts, fn {label, value} ->
       {module, widget_key} = value
       module.update_visual_settings(label, widget_key)
     end)
+  end
 
+  defp update_classifications_of_widgets(widgets, classification) do
+    Enum.each(widgets, fn name ->
+      case WidgetModel.get_by_label(name) do
+        {:ok, widget} ->
+          WidgetModel.update(widget, %{classification: classification})
+        _ ->
+          name
+      end
+    end)
   end
 end
