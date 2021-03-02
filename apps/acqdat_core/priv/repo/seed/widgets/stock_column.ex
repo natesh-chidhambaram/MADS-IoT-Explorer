@@ -1,6 +1,6 @@
-defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
+defmodule AcqdatCore.Seed.Widgets.StockColumn do
   @moduledoc """
-  Holds seeds for Line widgets.
+  Holds seeds for Stock Column widgets.
   """
   use AcqdatCore.Seed.Helpers.HighchartsUpdateHelpers
   alias AcqdatCore.Repo
@@ -9,14 +9,11 @@ defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
   alias AcqdatCore.Widgets.Schema.Vendors.HighCharts
 
   @highchart_key_widget_settings %{
-    line: %{
+    column: %{
       visual: %{
-        chart: [type: %{value: "line"}, backgroundColor: %{}, plotBackgroundColor: %{}],
-        title: [text: %{}, align: %{}],
-        caption: [text: %{}, align: %{}],
-        subtitle: [text: %{}, align: %{}],
-        yAxis: [title: [text: %{}]],
-        xAxis: [type: %{value: "datetime"}, title: [text: %{value: "Date"}]],
+        chart: [type: %{value: "column"}],
+        title: [text: %{}],
+        rangeSelector: [selected: %{value: 1}],
         credits: [enabled: %{value: false}],
         legend: [enabled: %{value: true}]
       },
@@ -26,8 +23,7 @@ defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
           value: %{},
           properties: %{
             name: %{data_type: :string, value: %{}, properties: %{}},
-            color: %{data_type: :color, value: %{data: "#000000"}, properties: %{}},
-            multiple: %{data_type: :boolean, value: %{data: true}, properties: %{}}
+            multiple: %{data_type: :boolean, value: %{data: false}, properties: %{}}
           }
         },
         axes: %{
@@ -43,44 +39,29 @@ defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
     }
   }
 
-
   @high_chart_value_settings %{
-    line: %{
+    column: %{
       visual_setting_values: %{
-        title: %{text: "Solar Employment growth by year"},
-        caption: %{
-           text: "A brief description of the data being stored by
-                the chart here."
-        },
-        subtitle: %{
-          text: "Source: thesolarfoundation.com"
-        },
-        yAxis: %{
-          title: %{
-            text: "Number of Employees"
-          }
-        }
+        title: %{text: "AAPL Stock Price"},
+        rangeSelector: %{selected: 1},
+        legend: %{enabled: true}
       },
       data_settings_values: %{
         series: [
           %{
-            name: "Installation",
-            data: [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
-          }, %{
-            name: "Manufacturing",
-            data: [24916, 24064, 29742, 29851, 32490, 30282, 38121, 40434]
-          }, %{
-            name: "Sales & Distribution",
-            data: [11744, 17722, 16005, 19771, 20185, 24377, 32147, 39387]
-          }, %{
-            name: "Project Development",
-            data: ["null", "null", 7988, 12169, 15112, 22452, 34400, 34227]
-          }, %{
-            name: "Other",
-            data: [12908, 5948, 8105, 11248, 8989, 11816, 18274, 18111]
+            name: "AAPL",
+            data: [
+              %{x: 1533735000000, y: 207.25},
+              %{x: 1533821400000, y: 208.88},
+              %{x: 1533907800000, y: 207.53},
+              %{x: 1534167000000, y: 208.87},
+              %{x: 1534253400000, y: 209.75},
+              %{x: 1534339800000, y: 210.24},
+              %{x: 1534426200000, y: 213.32}
+            ]
           }
         ]
-     }
+      }
     }
   }
 
@@ -97,17 +78,16 @@ defmodule AcqdatCore.Seed.Widgets.LineTimeseries do
     end)
     |> Enum.each(fn data ->
       Repo.insert!(data)
-      WidgetHelpers.create("widgets", data)
     end)
   end
 
-  def set_widget_data(key, widget_settings, data, widget_type) do
+  def set_widget_data(_key, widget_settings, data, widget_type) do
     %WidgetSchema{
-      label: "Line Timeseries",
+      label: "Stock Column",
       properties: %{},
       uuid: UUID.uuid1(:hex),
-      image_url: "https://assets.highcharts.com/images/demo-thumbnails/highcharts/line-time-series-default.png",
-      category: ["chart", "line"],
+      image_url: "https://www.highcharts.com/demo/images/samples/stock/demo/column/thumbnail.png",
+      category: ["stock_chart", "column"],
       policies: %{},
       widget_type_id: widget_type.id,
       visual_settings: WidgetHelpers.do_settings(widget_settings, :visual, %HighCharts{}),

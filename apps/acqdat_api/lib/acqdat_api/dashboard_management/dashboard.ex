@@ -12,6 +12,14 @@ defmodule AcqdatApi.DashboardManagement.Dashboard do
 
   defdelegate recent_dashboards(data), to: DashboardModel
 
+  def get_panels_data(%{"id" => id, "filter_metadata" => filter_metadata}) do
+    PanelModel.get_with_widgets(id, %{"filter_metadata" => filter_metadata})
+  end
+
+  def get_panels_data(%{"id" => id}) do
+    PanelModel.get_with_widgets(id)
+  end
+
   def get_all(%{type: "archived"} = data) do
     DashboardModel.get_all_archived(data)
   end
@@ -26,7 +34,8 @@ defmodule AcqdatApi.DashboardManagement.Dashboard do
       description: description,
       org_id: org_id,
       avatar: avatar,
-      settings: settings
+      settings: settings,
+      creator_id: creator_id
     } = attrs
 
     dashboard_params = %{
@@ -34,7 +43,8 @@ defmodule AcqdatApi.DashboardManagement.Dashboard do
       description: description,
       org_id: org_id,
       avatar: avatar,
-      settings: settings || %{}
+      settings: settings || %{},
+      creator_id: creator_id
     }
 
     create_dashboard(dashboard_params)
@@ -52,7 +62,7 @@ defmodule AcqdatApi.DashboardManagement.Dashboard do
         name: "Home",
         org_id: dashboard.org_id,
         dashboard_id: dashboard.id,
-        filter_metadata: %{from_date: from_date}
+        filter_metadata: %{from_date: from_date()}
       })
     end)
     |> run_transaction()
@@ -75,7 +85,9 @@ defmodule AcqdatApi.DashboardManagement.Dashboard do
 
   defp verify_dashboard({:ok, dashboard}) do
     dashboard =
-      dashboard |> Repo.preload([:panels, :dashboard_export]) |> DashboardModel.reorder_panels()
+      dashboard
+      |> Repo.preload([:panels, :dashboard_export, :creator])
+      |> DashboardModel.reorder_panels()
 
     {:ok, dashboard}
   end

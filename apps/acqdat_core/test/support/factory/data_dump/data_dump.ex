@@ -95,6 +95,10 @@ defmodule AcqdatCore.Test.Support.DataDump do
   end
 
   def dump_iot_data(gateway) do
+    hour = Enum.random(0..20)
+    minute = Enum.random(0..40)
+    time = Timex.now() |> Timex.set(hour: hour, minute: minute)
+
     %{
       gateway_uuid: gateway.uuid,
       org_uuid: gateway.org.uuid,
@@ -113,7 +117,7 @@ defmodule AcqdatCore.Test.Support.DataDump do
         "timestamp" => 1_596_115_581
       },
       inserted_at: DateTime.truncate(DateTime.utc_now(), :second),
-      inserted_timestamp: DateTime.truncate(DateTime.utc_now(), :second) |> DateTime.to_unix()
+      inserted_timestamp: DateTime.truncate(time, :second)
     }
   end
 
