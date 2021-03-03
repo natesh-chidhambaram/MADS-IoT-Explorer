@@ -14,14 +14,11 @@ defmodule AcqdatApi.DataInsights.Topology do
   alias Ecto.Multi
   alias AcqdatApi.DataInsights.FactTables, as: FactTablesCon
 
-  @table :proj_topology
-
   def entities(data) do
     sensor_types = SensorTypeModel.get_all(data)
     asset_types = AssetTypeModel.get_all(data)
     %{topology: %{sensor_types: sensor_types || [], asset_types: asset_types || []}}
   end
-
 
   @doc """
   Creates a topology for the provided project.
@@ -78,7 +75,6 @@ defmodule AcqdatApi.DataInsights.Topology do
     %{parsed_items: result, parent_tree: NaryTree.from_map(topology_map)}
   end
 
-
   @doc """
   Validates the user provided entity list and assigns it a `case`(explained below).
 
@@ -104,7 +100,9 @@ defmodule AcqdatApi.DataInsights.Topology do
   In this case the user provides only different sensor types in the list. The
   following case cannot generate a fact table as sensor types represent the properties
   of an asset and if a common parent asset type is not present in the user provided
-  list then it makes no sense to analyse this data.
+  list then it makes no sense to analyse this data. However, if the provided sensor
+  types list contains multiple sensor types which are same with different metadata
+  then a fact table is created with different metadata for the same sensor type.
 
   ### Multiple Asset Types
   In this case the user provides different asset types in the list. In this
@@ -122,61 +120,79 @@ defmodule AcqdatApi.DataInsights.Topology do
   def validate_entity_list(fact_table_id, {[], sensor_types}, _, _parent_tree)
       when length(sensor_types) == 1
     do
-
+      {:ok, %{type: :single_sensor_type}}
   end
 
   def validate_entity_list(fact_table_id, {asset_types, []}, _, _parent_tree)
       when length(asset_types) == 1
     do
-
+      {:ok, %{type: :single_asset_type}}
   end
 
   def validate_entity_list(fact_table_id, {[], sensor_types}, _, _parent_tree) do
 
+    uniq_sensor_types = Enum.uniq_by(sensor_types, fn
+        sensor_type -> sensor_type["id"]
+    end)
+
+    if length(uniq_sensor_types) == 1 do
+      {:ok, %{type: :multiple_sensor_type}}
+    else
+      {
+        :error,
+        "Please attach parent asset_type as all the user-entities are of SensorTypes."
+      }
+    end
   end
 
   def validate_entity_list(fact_table_id, {asset_types, []}, _, _parent_tree) do
+    uniq_asset_types = Enum.uniq_by(asset_types, fn asset_type -> asset_type["id"] end)
 
+    if length(uniq_asset_types) == 1 do
+      {:ok, %{type: :multiple_asset_types}}
+    else
+
+    end
   end
 
   def validate_entity_list(fact_table_id, {asset_types, sensor_types}, _, _parent_tree) do
-
+    {:ok , %{type: :multiple_asset_and_sensor_types}}
   end
 
   # NOTE: 1. gen_sub_topology will update fact_table with user provided inputs
   #       2. It'll pass user input to parse_entities
-  # def gen_sub_topology(id, org_id, project, name, fact_table, entities_list, date_range_settings) do
-  #   Multi.new()
-  #   |> Multi.run(:update_to_db, fn _, _changes ->
-  #     FactTables.update(fact_table, %{
-  #       name: name,
-  #       columns_metadata: entities_list,
-  #       date_range_settings: date_range_settings
-  #     })
-  #   end)
-  #   |> Multi.run(:gen_sub_topology, fn _, %{update_to_db: fact_table} ->
-  #     parse_entities(id, entities_list, org_id, project)
-  #     {:ok, "You'll receive fact table data on channel"}
-  #   end)
-  #   |> run_under_transaction(:gen_sub_topology)
-  # end
+  def gen_sub_topology(id, org_id, project, name, fact_table, entities_list, date_range_settings) do
+    Multi.new()
+    |> Multi.run(:update_to_db, fn _, _changes ->
+      FactTables.update(fact_table, %{
+        name: name,
+        columns_metadata: entities_list,
+        date_range_settings: date_range_settings
+      })
+    end)
+    |> Multi.run(:gen_sub_topology, fn _, %{update_to_db: fact_table} ->
+      parse_entities(id, entities_list, org_id, project)
+      {:ok, "You'll receive fact table data on channel"}
+    end)
+    |> run_under_transaction(:gen_sub_topology)
+  end
 
-  # # NOTE: 1. parse_entities will seperate asset_type_list and sensor_type_list
-  # #       2. It'll create parent tree from the map stores in ETS table
-  # #       3. It'll pass the flow to validate_entities
-  # defp parse_entities(id, entities_list, org_id, project) do
-  #   res =
-  #     Enum.reduce(entities_list, {[], []}, fn entity, {acc1, acc2} ->
-  #       acc1 = if entity["type"] == "AssetType", do: acc1 ++ [entity], else: acc1
-  #       acc2 = if entity["type"] == "SensorType", do: acc2 ++ [entity], else: acc2
-  #       {acc1, acc2}
-  #     end)
+  # NOTE: 1. parse_entities will seperate asset_type_list and sensor_type_list
+  #       2. It'll create parent tree from the map stores in ETS table
+  #       3. It'll pass the flow to validate_entities
+  defp parse_entities(id, entities_list, org_id, project) do
+    res =
+      Enum.reduce(entities_list, {[], []}, fn entity, {acc1, acc2} ->
+        acc1 = if entity["type"] == "AssetType", do: acc1 ++ [entity], else: acc1
+        acc2 = if entity["type"] == "SensorType", do: acc2 ++ [entity], else: acc2
+        {acc1, acc2}
+      end)
 
-  #   topology_map = gen_topology(org_id, project)
-  #   parent_tree = NaryTree.from_map(topology_map)
+    topology_map = gen_topology(org_id, project)
+    parent_tree = NaryTree.from_map(topology_map)
 
-  #   validate_entities(id, res, entities_list, parent_tree)
-  # end
+    validate_entities(id, res, entities_list, parent_tree)
+  end
 
   # NOTE: 1. execute_descendants will start a Genserver, which will do the asynchronous computation
   #          of subtree generation + subree validations + dynamic query building + fact table gen
