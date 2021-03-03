@@ -4,7 +4,6 @@ defmodule AcqdatApi.DataInsights.Topology do
   alias AcqdatCore.Model.EntityManagement.AssetType, as: AssetTypeModel
   alias AcqdatApiWeb.DataInsights.TopologyEtsConfig
   alias AcqdatApi.DataInsights.FactTableGenWorker
-  alias AcqdatCore.Model.DataInsights.FactTables
   alias NaryTree
   import AcqdatApiWeb.Helpers
   alias AcqdatCore.Schema.EntityManagement.{Asset, Sensor}
@@ -23,16 +22,27 @@ defmodule AcqdatApi.DataInsights.Topology do
     %{topology: %{sensor_types: sensor_types || [], asset_types: asset_types || []}}
   end
 
-  # NOTE: 1. gen_topology will parse tree hirerachy
-  #       2. It'll generate parent tree map
-  #       3. It'll save the parent tree map to ETS table
+
+  @doc """
+  Creates a topology for the provided project.
+
+  The functions parses the project tree and generates a hierarchy tree based on
+  asset types and sensor types. The tree depicts a compressed view of the actual
+  asset tree of a project in which all the assets at the same level, under a single
+  parent are grouped within a single node based on the asset type. Similarly all the
+  sensors under an asset are grouped together based on their sensory type within a
+  node and placed as a child of the parent.
+
+  The function then caches the generated tree in an ets table for fast access.
+  In case the tree is already present in the cache the same is returned.
+
+  #TODO: project version should also be stored in the cache, in case the project
+  version has changed the tree in the cache should be updated.
+  """
   def gen_topology(org_id, project) do
     proj_key = project |> ets_proj_key()
     data = proj_key |> TopologyEtsConfig.get()
 
-    # Note: if value is not there for the respective proj_key in ets table, then do following things:
-    # 1. fetch project topology
-    # 2. set fetched project topology to ets table, with key being project_id + project_version
     if data != [] do
       [{_, tree}] = data
       tree
@@ -46,9 +56,9 @@ defmodule AcqdatApi.DataInsights.Topology do
   Generates the pre-requisites required to analyse the user provided entity list
   for a fact table.
 
-  To create a fact table, the user provides a list of assets and/or sensors. The
-  function separates the provided list into two based on their type `AssetType`
-  or `SensorType`.
+  To create a fact table, the user provides a list of asset types and/or sensor
+  types. The function separates the provided list into two based on their type
+  `AssetType` or `SensorType`.
 
   It also returns the project topology tree in the form of an N-Ary tree so
   it can be used for further processing.
@@ -57,7 +67,7 @@ defmodule AcqdatApi.DataInsights.Topology do
   - `parsed_items`: A tuple containging list of asset and sensor types.
   - `parent_tree`: The project topology in the form of an N-Ary tree
   """
-  def gen_sub_topology(entities_list, org_id, project) do
+  def gen_fact_table_meta(entities_list, org_id, project) do
     result = Enum.reduce(entities_list, {[], []}, fn entity, {acc1, acc2} ->
       acc1 = if entity["type"] == "AssetType", do: acc1 ++ [entity], else: acc1
       acc2 = if entity["type"] == "SensorType", do: acc2 ++ [entity], else: acc2
@@ -66,6 +76,71 @@ defmodule AcqdatApi.DataInsights.Topology do
 
     topology_map = gen_topology(org_id, project)
     %{parsed_items: result, parent_tree: NaryTree.from_map(topology_map)}
+  end
+
+
+  @doc """
+  Validates the user provided entity list and assigns it a `case`(explained below).
+
+  The user provided entity list for a fact table generation falls into different
+  `cases`:
+  - `single sensor type`
+  - `single asset type`
+  - `multiple sensor type`
+  - `multiple asset types`
+  - `multiple asset types and multiple sensor types`
+
+  The cases are explained below
+
+  ### Single Sensor Type
+  The user provides only a single sensor type, in this case, a fact table
+  is created with data for all the sensors under that sensor type.
+
+  ### Single Asset Type
+  The user provides only a single asset type, in this case, a fact table
+  is created only with data for assets under that asset type.
+
+  ### Multiple Sensor Type
+  In this case the user provides only different sensor types in the list. The
+  following case cannot generate a fact table as sensor types represent the properties
+  of an asset and if a common parent asset type is not present in the user provided
+  list then it makes no sense to analyse this data.
+
+  ### Multiple Asset Types
+  In this case the user provides different asset types in the list. In this
+  case it is evaluated if the asset types form a tree with one of the asset type
+  as the root of the tree. In case they don't form a tree then this case can not
+  be analysed and an error is returned.
+
+  ### Multiple Asset Types and Sensor Types
+  In this case the user provides different asset types alongwith sensor types in
+  the list. In this case it is evaluated if the asset types and sensor types form a
+  tree with one of the asset type as the root of the tree. In case they don't form
+  a tree then this case can not be analysed and an error is returned.
+  """
+
+  def validate_entity_list(fact_table_id, {[], sensor_types}, _, _parent_tree)
+      when length(sensor_types) == 1
+    do
+
+  end
+
+  def validate_entity_list(fact_table_id, {asset_types, []}, _, _parent_tree)
+      when length(asset_types) == 1
+    do
+
+  end
+
+  def validate_entity_list(fact_table_id, {[], sensor_types}, _, _parent_tree) do
+
+  end
+
+  def validate_entity_list(fact_table_id, {asset_types, []}, _, _parent_tree) do
+
+  end
+
+  def validate_entity_list(fact_table_id, {asset_types, sensor_types}, _, _parent_tree) do
+
   end
 
   # NOTE: 1. gen_sub_topology will update fact_table with user provided inputs

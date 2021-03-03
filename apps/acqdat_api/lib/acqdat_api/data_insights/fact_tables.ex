@@ -25,7 +25,6 @@ defmodule AcqdatApi.DataInsights.FactTables do
       marshal_fact_table()
   end
 
-
   def get_all(%{project_id: project_id, org_id: org_id} = params) do
     data = FactTables.get_all(params)
 
