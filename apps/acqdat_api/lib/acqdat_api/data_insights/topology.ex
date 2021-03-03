@@ -42,40 +42,66 @@ defmodule AcqdatApi.DataInsights.Topology do
     end
   end
 
-  # NOTE: 1. gen_sub_topology will update fact_table with user provided inputs
-  #       2. It'll pass user input to parse_entities
-  def gen_sub_topology(id, org_id, project, name, fact_table, entities_list, date_range_settings) do
-    Multi.new()
-    |> Multi.run(:update_to_db, fn _, _changes ->
-      FactTables.update(fact_table, %{
-        name: name,
-        columns_metadata: entities_list,
-        date_range_settings: date_range_settings
-      })
-    end)
-    |> Multi.run(:gen_sub_topology, fn _, %{update_to_db: fact_table} ->
-      parse_entities(id, entities_list, org_id, project)
-      {:ok, "You'll receive fact table data on channel"}
-    end)
-    |> run_under_transaction(:gen_sub_topology)
-  end
+  @doc """
+  Generates the pre-requisites required to analyse the user provided entity list
+  for a fact table.
 
-  # NOTE: 1. parse_entities will seperate asset_type_list and sensor_type_list
-  #       2. It'll create parent tree from the map stores in ETS table
-  #       3. It'll pass the flow to validate_entities
-  defp parse_entities(id, entities_list, org_id, project) do
-    res =
-      Enum.reduce(entities_list, {[], []}, fn entity, {acc1, acc2} ->
-        acc1 = if entity["type"] == "AssetType", do: acc1 ++ [entity], else: acc1
-        acc2 = if entity["type"] == "SensorType", do: acc2 ++ [entity], else: acc2
-        {acc1, acc2}
-      end)
+  To create a fact table, the user provides a list of assets and/or sensors. The
+  function separates the provided list into two based on their type `AssetType`
+  or `SensorType`.
+
+  It also returns the project topology tree in the form of an N-Ary tree so
+  it can be used for further processing.
+
+  It returns a map with the following keys:
+  - `parsed_items`: A tuple containging list of asset and sensor types.
+  - `parent_tree`: The project topology in the form of an N-Ary tree
+  """
+  def gen_sub_topology(entities_list, org_id, project) do
+    result = Enum.reduce(entities_list, {[], []}, fn entity, {acc1, acc2} ->
+      acc1 = if entity["type"] == "AssetType", do: acc1 ++ [entity], else: acc1
+      acc2 = if entity["type"] == "SensorType", do: acc2 ++ [entity], else: acc2
+      {acc1, acc2}
+    end)
 
     topology_map = gen_topology(org_id, project)
-    parent_tree = NaryTree.from_map(topology_map)
-
-    validate_entities(id, res, entities_list, parent_tree)
+    %{parsed_items: result, parent_tree: NaryTree.from_map(topology_map)}
   end
+
+  # NOTE: 1. gen_sub_topology will update fact_table with user provided inputs
+  #       2. It'll pass user input to parse_entities
+  # def gen_sub_topology(id, org_id, project, name, fact_table, entities_list, date_range_settings) do
+  #   Multi.new()
+  #   |> Multi.run(:update_to_db, fn _, _changes ->
+  #     FactTables.update(fact_table, %{
+  #       name: name,
+  #       columns_metadata: entities_list,
+  #       date_range_settings: date_range_settings
+  #     })
+  #   end)
+  #   |> Multi.run(:gen_sub_topology, fn _, %{update_to_db: fact_table} ->
+  #     parse_entities(id, entities_list, org_id, project)
+  #     {:ok, "You'll receive fact table data on channel"}
+  #   end)
+  #   |> run_under_transaction(:gen_sub_topology)
+  # end
+
+  # # NOTE: 1. parse_entities will seperate asset_type_list and sensor_type_list
+  # #       2. It'll create parent tree from the map stores in ETS table
+  # #       3. It'll pass the flow to validate_entities
+  # defp parse_entities(id, entities_list, org_id, project) do
+  #   res =
+  #     Enum.reduce(entities_list, {[], []}, fn entity, {acc1, acc2} ->
+  #       acc1 = if entity["type"] == "AssetType", do: acc1 ++ [entity], else: acc1
+  #       acc2 = if entity["type"] == "SensorType", do: acc2 ++ [entity], else: acc2
+  #       {acc1, acc2}
+  #     end)
+
+  #   topology_map = gen_topology(org_id, project)
+  #   parent_tree = NaryTree.from_map(topology_map)
+
+  #   validate_entities(id, res, entities_list, parent_tree)
+  # end
 
   # NOTE: 1. execute_descendants will start a Genserver, which will do the asynchronous computation
   #          of subtree generation + subree validations + dynamic query building + fact table gen

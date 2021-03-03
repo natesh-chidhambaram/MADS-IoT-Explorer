@@ -9,6 +9,23 @@ defmodule AcqdatApi.DataInsights.FactTables do
   alias Ecto.Multi
   alias AcqdatCore.Schema.EntityManagement.SensorsData, as: SD
 
+  def build_fact_table(params) do
+    %{"org_id" => org_id,
+      "project_id" => project_id,
+      "id" => id,
+      "user_list" => user_list,
+      "date_range_settings" => date_range_settings,
+      "name" => name,
+      "fact_table" => fact_table
+      } = params
+
+
+      gen_sub_topology
+      validate_entities
+      marshal_fact_table()
+  end
+
+
   def get_all(%{project_id: project_id, org_id: org_id} = params) do
     data = FactTables.get_all(params)
 
