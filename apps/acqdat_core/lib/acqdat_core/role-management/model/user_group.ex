@@ -20,6 +20,13 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroup do
     |> Repo.update()
   end
 
+  def normal_update(%UserGroup{} = user_group, attrs \\ %{}) do
+    user_group
+    |> Repo.preload([:policies, :users])
+    |> UserGroup.normal_changeset(attrs)
+    |> Repo.update()
+  end
+
   def get(id) when is_integer(id) do
     case Repo.get(UserGroup, id) do
       nil ->
@@ -86,5 +93,14 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroup do
       {:ok, group} -> {:ok, group |> Repo.preload([:policies, :users])}
       {:error, error} -> {:error, error}
     end
+  end
+
+  def return_multipl_user_groups(group_ids) do
+    query =
+      from(group in UserGroup,
+        where: group.id in ^group_ids
+      )
+
+    Repo.all(query) |> Repo.preload(:policies)
   end
 end
