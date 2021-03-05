@@ -1,6 +1,6 @@
 defmodule AcqdatApiWeb.Endpoint do
+  use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :acqdat_api
-  use Sentry.Phoenix.Endpoint
 
   @doc """
   Callback invoked for dynamically configuring the endpoint.
@@ -47,6 +47,8 @@ defmodule AcqdatApiWeb.Endpoint do
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
+
+  plug Sentry.PlugContext
 
   plug Plug.MethodOverride
   plug Plug.Head
