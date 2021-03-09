@@ -1,121 +1,86 @@
-defmodule AcqdatApi.DataInsights.PivotTables do
-  alias AcqdatCore.Model.DataInsights.{PivotTables, FactTables}
-  alias AcqdatApi.DataInsights.PivotTableGenWorker
-  alias Ecto.Multi
-  alias AcqdatCore.Repo
-  alias AcqdatCore.Model.DataInsights.PivotTables, as: PivotTableModel
-  import Ecto.Query
+defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
+  use AcqdatCore.Schema
+  alias AcqdatApi.DataInsights.Visualizations
 
-  defdelegate get_all(params), to: PivotTableModel
-  defdelegate delete(pivot_table), to: PivotTableModel
+  @behaviour AcqdatCore.DataInsights.Schema.Visualizations
+  @visualization_type "PivotTables"
+  @visualization_name "Pivot Table"
+  @icon_id "pivot-table"
 
-  def fetch_fact_table_headers(%{fact_table_id: fact_table_id} = pivot_table) do
-    res = FactTables.get_fact_table_headers(fact_table_id)
-    Map.put(pivot_table, :fact_table_headers, List.flatten(res.rows))
+  defstruct data_settings: %{
+              filters: [],
+              columns: [],
+              rows: [],
+              values: []
+            },
+            visual_settings: %{}
+
+  @impl true
+  def visual_prop_gen(visualization, _options \\ []) do
+    data = visualization.visual_settings
+
+    {:ok, data}
   end
 
-  def create(org_id, fact_tables_id, %{name: project_name, id: project_id}, %{id: creator_id}) do
-    res_name = :crypto.strong_rand_bytes(5) |> Base.url_encode64() |> binary_part(0, 5)
-    pivot_table_name = "#{project_name}_pivot_table_#{fact_tables_id}_#{res_name}"
-
-    PivotTables.create(%{
-      name: pivot_table_name,
-      org_id: org_id,
-      project_id: project_id,
-      fact_table_id: fact_tables_id,
-      creator_id: creator_id
-    })
-  end
-
-  def create(pivot_table_name, org_id, fact_tables_id, %{name: project_name, id: project_id}, %{
-        id: creator_id
-      }) do
-    PivotTables.create(%{
-      name: pivot_table_name,
-      org_id: org_id,
-      project_id: project_id,
-      fact_table_id: fact_tables_id,
-      creator_id: creator_id
-    })
-  end
-
-  def update_pivot_data(params, pivot_table) do
-    PivotTableGenWorker.process({pivot_table, params})
-  end
-
-  # TODO: Need to Refactor Pivot Table Creation Method
-  def gen_pivot_table(
+  @impl true
+  def data_prop_gen(
         %{
-          "id" => id,
-          "org_id" => org_id,
-          "project_id" => project_id,
-          "fact_tables_id" => fact_tables_id,
-          "name" => name,
-          "user_list" => user_list
-        },
-        pivot_table
-      ) do
-    Multi.new()
-    |> Multi.run(:persist_to_db, fn _, _changes ->
-      PivotTableModel.update(pivot_table, %{
-        org_id: org_id,
-        project_id: project_id,
-        fact_table_id: fact_tables_id,
-        name: name,
-        columns: user_list["columns"],
-        rows: user_list["rows"],
-        values: user_list["values"],
-        filters: user_list["filters"]
-      })
-    end)
-    |> Multi.run(:gen_pivot_data, fn _, %{persist_to_db: pivot_table} ->
-      try do
-        gen_pivot_data(pivot_table)
-      rescue
-        error in Postgrex.Error ->
-          {:error, error.postgres.message}
-      end
-    end)
-    |> run_under_transaction(:gen_pivot_data)
-  end
-
-  def fetch_n_gen_pivot(pivot_table_id) do
-    case PivotTableModel.get_by_id(pivot_table_id) do
-      {:ok, pivot_table} ->
-        gen_pivot_data(pivot_table)
-
-      {:error, error_msg} ->
-        {:error, error_msg}
-    end
-  end
-
-  def gen_pivot_data(
-        %{
-          rows: rows,
-          values: values,
-          columns: columns,
-          filters: filters,
+          data_settings: %{
+            "rows" => rows,
+            "values" => values,
+            "columns" => columns,
+            "filters" => filters
+          },
           fact_table_id: fact_tables_id
-        } = pivot_table
+        },
+        _options \\ []
       ) do
     fact_table_name = "fact_table_#{fact_tables_id}"
 
-    query =
-      if columns == [] do
-        pivot_with_cube(fact_table_name, rows, values, filters)
-      else
-        pivot_with_crosstab(fact_table_name, rows, columns, values, filters)
-      end
+    try do
+      query =
+        if columns == [] do
+          pivot_with_cube(fact_table_name, rows, values, filters)
+        else
+          pivot_with_crosstab(fact_table_name, rows, columns, values, filters)
+        end
 
-    pivot_output = Ecto.Adapters.SQL.query!(Repo, query, [], timeout: :infinity)
+      pivot_output = Ecto.Adapters.SQL.query!(Repo, query, [], timeout: :infinity)
 
-    {:ok,
-     %{
-       headers: pivot_output.columns,
-       data: pivot_output.rows,
-       id: pivot_table.id,
-       name: pivot_table.name
-     }}
+      {:ok,
+       %{
+         headers: pivot_output.columns,
+         data: pivot_output.rows
+       }}
+    rescue
+      error in Postgrex.Error ->
+        {:error, error.postgres.message}
+    end
+  end
+
+  @impl true
+  def visualization_type() do
+    @visualization_type
+  end
+
+  @impl true
+  def visualization_name() do
+    @visualization_name
+  end
+
+  @impl true
+  def icon_id() do
+    @icon_id
+  end
+
+  @impl true
+  def visual_settings() do
+    Map.from_struct(__MODULE__).visual_settings
+  end
+
+  @impl true
+  def data_settings() do
+    Map.from_struct(__MODULE__).data_settings
   end
 
   defp pivot_with_cube(fact_table_name, rows, values, filters) do
@@ -348,18 +313,18 @@ defmodule AcqdatApi.DataInsights.PivotTables do
         SELECT "#{rows_data}",
             time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp("#{col_name}", 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(AVG(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} where #{filter_data1} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
-        rows_data
-      }", "datetime_data"
+            FROM #{fact_table_name}
+            where #{filter_data1} and #{value_name} is not null and length(#{value_name}) > 0
+            GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """
     else
       """
         SELECT "#{rows_data}",
             time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp("#{col_name}", 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(AVG(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
-        rows_data
-      }", "datetime_data"
+            FROM #{fact_table_name}
+            where #{value_name} is not null and length(#{value_name}) > 0
+            GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """
     end
   end
@@ -382,18 +347,18 @@ defmodule AcqdatApi.DataInsights.PivotTables do
         SELECT "#{rows_data}",
             time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp("#{col_name}", 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(SUM(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} where #{filter_data1} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
-        rows_data
-      }", "datetime_data"
+            FROM #{fact_table_name}
+            where #{filter_data1} and #{value_name} is not null and length(#{value_name}) > 0
+            GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """
     else
       """
         SELECT "#{rows_data}",
             time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp("#{col_name}", 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(SUM(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
-        rows_data
-      }", "datetime_data"
+            FROM #{fact_table_name}
+            where #{value_name} is not null and length(#{value_name}) > 0 
+            GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """
     end
   end
@@ -416,18 +381,18 @@ defmodule AcqdatApi.DataInsights.PivotTables do
         SELECT "#{rows_data}",
             time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp("#{col_name}", 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(MIN(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} where #{filter_data1} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
-        rows_data
-      }", "datetime_data"
+            FROM #{fact_table_name}
+            where #{filter_data1} and #{value_name} is not null and length(#{value_name}) > 0
+            GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """
     else
       """
         SELECT "#{rows_data}",
             time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp("#{col_name}", 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(MIN(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
-        rows_data
-      }", "datetime_data"
+            FROM #{fact_table_name}
+            where #{value_name} is not null and length(#{value_name}) > 0
+            GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """
     end
   end
@@ -450,18 +415,18 @@ defmodule AcqdatApi.DataInsights.PivotTables do
         SELECT "#{rows_data}",
             time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp("#{col_name}", 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
              ROUND(MAX(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} where #{filter_data1} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
-        rows_data
-      }", "datetime_data"
+            FROM #{fact_table_name} 
+            where #{filter_data1} and #{value_name} is not null and length(#{value_name}) > 0
+            GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """
     else
       """
         SELECT "#{rows_data}",
             time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp("#{col_name}", 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(MAX(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
-        rows_data
-      }", "datetime_data"
+            FROM #{fact_table_name}
+            where #{value_name} is not null and length(#{value_name}) > 0
+            GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """
     end
   end
@@ -497,18 +462,6 @@ defmodule AcqdatApi.DataInsights.PivotTables do
       "ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) as #{value["title"]}"
     else
       "#{value["action"]}(\"#{value["name"]}\") as #{value["title"]}"
-    end
-  end
-
-  defp run_under_transaction(multi, result_key) do
-    multi
-    |> Repo.transaction(timeout: :infinity)
-    |> case do
-      {:ok, result} ->
-        {:ok, result}
-
-      {:error, _failed_operation, failed_value, _changes_so_far} ->
-        {:error, failed_value}
     end
   end
 end
