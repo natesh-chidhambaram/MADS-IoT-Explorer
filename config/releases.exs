@@ -22,7 +22,8 @@ config :acqdat_api, AcqdatApiWeb.Endpoint,
     "https://mads.netlify.app",
     "https://mads.netlify.com",
     "https://mads-staging.netlify.app",
-    "https://mads-staging.netlify.com"
+    "https://mads-staging.netlify.com",
+    "https://studio.mads-iot.com"
     ]
 
 # Configure Guardian
