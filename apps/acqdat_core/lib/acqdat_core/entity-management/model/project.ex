@@ -12,6 +12,15 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
     Repo.insert(changeset)
   end
 
+  def return_count() do
+    query =
+      from(p in Project,
+        select: count(p.id)
+      )
+
+    Repo.one(query)
+  end
+
   def hierarchy_data(org_id, project_id) do
     org_projects = fetch_projects(org_id, project_id)
 
@@ -54,7 +63,8 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
     query =
       from(project in Project,
         where: project.id in ^project_ids,
-        preload: [:leads, :users, :creator]
+        preload: [:leads, :users, :creator],
+        order_by: [desc: :inserted_at]
       )
 
     Repo.all(query)
