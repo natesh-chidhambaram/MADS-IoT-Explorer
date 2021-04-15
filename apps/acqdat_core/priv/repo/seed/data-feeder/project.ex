@@ -74,8 +74,8 @@ defmodule AcqdatCore.Seed.DataFeeder.Project do
     inserted_at: DateTime.to_unix(params.inserted_at),
     creator_id: params.creator_id,
     metadata: params.metadata,
-      "join_field": "pro"
-      )
+    "join_field": "pro"
+    )
   end
 
   defp seed_gateway_data() do
@@ -95,17 +95,9 @@ defmodule AcqdatCore.Seed.DataFeeder.Project do
       parent_id: params.parent_id,
       org_id: params.org_id,
       project_id: params.project_id,
-      description: params.description,
-      access_token: params.access_token,
-      serializer: params.serializer,
-      current_location: params.current_location,
       channel: params.channel,
       image_url: params.image_url,
-      static_data: params.static_data,
       inserted_at: DateTime.to_unix(params.inserted_at),
-      streaming_data: params.streaming_data,
-      mapped_parameters: params.mapped_parameters,
-      timestamp_mapping: params.timestamp_mapping,
       join_field: %{name: "gateway", parent: params.project_id}
       )
   end
