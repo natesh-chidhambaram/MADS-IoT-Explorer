@@ -22,16 +22,17 @@ defmodule AcqdatCore.Seed.DataFeeder.Project do
   end
 
   defp insert_organisation(type, params) do
-    post("#{type}/_doc/#{params.id}",
+    post("#{type}/_doc/#{params.id}?refresh=true",
       id: params.id,
       name: params.name,
       uuid: params.uuid,
+      inserted_at: DateTime.to_unix(params.inserted_at),
       "join_field": "org"
       )
   end
 
   defp create_project(type, params) do
-    post("#{type}/_doc/#{params.id}?routing=#{params.org_id}",
+    post("#{type}/_doc/#{params.id}?routing=#{params.org_id}?refresh=true",
       id: params.id,
       name: params.name,
       uuid: params.uuid,
@@ -43,6 +44,7 @@ defmodule AcqdatCore.Seed.DataFeeder.Project do
       version: params.version,
       start_date: params.start_date,
       creator_id: params.creator_id,
+      inserted_at: DateTime.to_unix(params.inserted_at),
       metadata: params.metadata,
       "join_field": %{"name": "project", "parent": params.org_id}
       )
@@ -58,7 +60,7 @@ defmodule AcqdatCore.Seed.DataFeeder.Project do
   end
 
   defp insert_pro(type, params) do
-    post("#{type}/_doc/#{params.id}",
+    post("#{type}/_doc/#{params.id}?refresh=true",
     id: params.id,
     name: params.name,
     uuid: params.uuid,
@@ -69,6 +71,7 @@ defmodule AcqdatCore.Seed.DataFeeder.Project do
     archived: params.archived,
     version: params.version,
     start_date: params.start_date,
+    inserted_at: DateTime.to_unix(params.inserted_at),
     creator_id: params.creator_id,
     metadata: params.metadata,
       "join_field": "pro"
@@ -83,7 +86,7 @@ defmodule AcqdatCore.Seed.DataFeeder.Project do
   end
 
   defp insert_gateway(type, params) do
-    post("#{type}/_doc/#{params.id}?routing=#{params.project_id}",
+    post("#{type}/_doc/#{params.id}?routing=#{params.project_id}?refresh=true",
       id: params.id,
       name: params.name,
       uuid: params.uuid,
@@ -99,6 +102,7 @@ defmodule AcqdatCore.Seed.DataFeeder.Project do
       channel: params.channel,
       image_url: params.image_url,
       static_data: params.static_data,
+      inserted_at: DateTime.to_unix(params.inserted_at),
       streaming_data: params.streaming_data,
       mapped_parameters: params.mapped_parameters,
       timestamp_mapping: params.timestamp_mapping,

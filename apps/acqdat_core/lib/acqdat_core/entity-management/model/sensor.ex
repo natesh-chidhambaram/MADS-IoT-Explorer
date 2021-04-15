@@ -21,6 +21,15 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     end
   end
 
+  def return_count() do
+    query =
+      from(p in Sensor,
+        select: count(p.id)
+      )
+
+    Repo.one(query)
+  end
+
   def update(sensor, params) do
     changeset = Sensor.update_changeset(sensor, params)
 
@@ -41,7 +50,8 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     query =
       from(sensor in Sensor,
         where: sensor.id in ^sensor_ids,
-        preload: [:sensor_type]
+        preload: [:sensor_type],
+        order_by: [desc: :inserted_at]
       )
 
     Repo.all(query)
@@ -212,7 +222,7 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
             ElasticSearch.delete("sensors", sensor.id)
           end)
 
-          {:ok, sensor}
+          {:ok, sensor |> Repo.preload(:sensor_type)}
 
         {:error, message} ->
           {:error, message}

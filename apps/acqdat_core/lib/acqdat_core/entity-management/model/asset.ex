@@ -19,11 +19,21 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     end
   end
 
+  def return_count() do
+    query =
+      from(p in Asset,
+        select: count(p.id)
+      )
+
+    Repo.one(query)
+  end
+
   def get_for_view(asset_ids) do
     query =
       from(asset in Asset,
         where: asset.id in ^asset_ids,
-        preload: [:org, :project, :asset_type]
+        preload: [:org, :project, :asset_type],
+        order_by: [desc: :inserted_at]
       )
 
     Repo.all(query)
@@ -117,7 +127,7 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
           ElasticSearch.update_asset("assets", asset)
         end)
 
-        {:ok, asset}
+        {:ok, asset |> Repo.preload(:asset_type)}
 
       {:error, error} ->
         {:error, error}

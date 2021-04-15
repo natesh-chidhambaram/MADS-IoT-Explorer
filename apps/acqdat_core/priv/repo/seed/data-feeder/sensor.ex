@@ -27,18 +27,19 @@ defmodule AcqdatCore.Seed.DataFeeder.Sensor do
   end
 
   def insert_asset(type, params) do
-    post("#{type}/_doc/#{params.id}",
+    post("#{type}/_doc/#{params.id}?refresh=true",
       id: params.id,
       name: params.name,
       properties: params.properties,
       slug: params.slug,
       uuid: params.uuid,
-      project_id: params.project_id
+      project_id: params.project_id,
+      inserted_at: DateTime.to_unix(params.inserted_at)
     )
   end
 
   defp insert_sensor(type, params) do
-    post("#{type}/_doc/#{params.id}",
+    post("#{type}/_doc/#{params.id}?refresh=true",
       id: params.id,
       name: params.name,
       metadata: params.metadata,
@@ -50,12 +51,13 @@ defmodule AcqdatCore.Seed.DataFeeder.Sensor do
       parent_id: params.parent_id,
       parent_type: params.parent_type,
       description: params.description,
-      sensor_type_id: params.sensor_type_id
+      sensor_type_id: params.sensor_type_id,
+      inserted_at: DateTime.to_unix(params.inserted_at)
       )
   end
 
   defp insert_asset_type(type, params) do
-    post("#{type}/_doc/#{params.id}",
+    post("#{type}/_doc/#{params.id}?refresh=true",
       id: params.id,
       name: params.name,
       slug: params.slug,
@@ -66,12 +68,13 @@ defmodule AcqdatCore.Seed.DataFeeder.Sensor do
       sensor_type_present: params.sensor_type_present,
       sensor_type_uuid: params.sensor_type_uuid,
       metadata: params.metadata,
-      parameters: params.parameters
+      parameters: params.parameters,
+      inserted_at: DateTime.to_unix(params.inserted_at)
       )
   end
 
   defp insert_sensor_type(type, params) do
-    post("#{type}/_doc/#{params.id}",
+    post("#{type}/_doc/#{params.id}?refresh=true",
       id: params.id,
       name: params.name,
       slug: params.slug,
@@ -81,7 +84,8 @@ defmodule AcqdatCore.Seed.DataFeeder.Sensor do
       org_id: params.org_id,
       generated_by: params.generated_by,
       metadata: params.metadata,
-      parameters: params.parameters
+      parameters: params.parameters,
+      inserted_at: DateTime.to_unix(params.inserted_at)
       )
   end
 end

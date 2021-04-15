@@ -21,16 +21,17 @@ defmodule AcqdatCore.Seed.DataFeeder.OrgAndUser do
   end
 
   defp insert_organisation(type, params) do
-    post("#{type}/_doc/#{params.id}",
+    post("#{type}/_doc/#{params.id}?refresh=true",
       id: params.id,
       name: params.name,
       uuid: params.uuid,
+      inserted_at: DateTime.to_unix(params.inserted_at),
       "join_field": "organisation"
       )
   end
 
   defp create(type, params, org) do
-    post("#{type}/_doc/#{params.id}?routing=#{org.id}",
+    post("#{type}/_doc/#{params.id}?routing=#{org.id}?refresh=true",
       id: params.id,
       email: params.email,
       first_name: params.first_name,
@@ -38,6 +39,7 @@ defmodule AcqdatCore.Seed.DataFeeder.OrgAndUser do
       org_id: params.org_id,
       is_invited: params.is_invited,
       role_id: params.role_id,
+      inserted_at: DateTime.to_unix(params.inserted_at),
       "join_field": %{"name": "user", "parent": org.id}
       )
   end
