@@ -27,8 +27,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
       if fact_table.headers_metadata do
         gen_fact_table_headers(fact_table.columns_metadata, fact_table.headers_metadata)
       else
-        res = FactTables.get_fact_table_headers(fact_table_id)
-        List.flatten(res.rows)
+        get_fact_table_headers(fact_table_id)
       end
 
     Map.put(fact_table, :fact_table_headers, headers)
@@ -142,29 +141,289 @@ defmodule AcqdatApi.DataInsights.FactTables do
         headers_metadata: %{"rows_len" => length(headers), "headers" => headers_metadata}
       })
 
-    headers = (metadata_list ++ ["entity_dateTime"]) |> Enum.map_join(",", &"\"#{&1}\"")
+    headers =
+      Enum.map(metadata_list, fn x ->
+        if x == "name", do: %{"#{x}" => "text"}, else: %{"#{x}" => "numeric"}
+      end) ++ [%{"entity_dateTime" => "timestamp"}]
 
     if res == [] do
       %{error: "No data present for the specified user inputs"}
     else
-      table_body = res |> convert_table_data_to_text
-
       fact_table_name = "fact_table_#{fact_table_id}"
 
       try do
-        create_fact_table_view(fact_table_name, headers, table_body)
+        create_fact_table(fact_table_name, headers, res)
 
         data =
           Ecto.Adapters.SQL.query!(Repo, "select * from #{fact_table_name} LIMIT 20", [],
             timeout: :infinity
           )
 
-        %{headers: data.columns, data: data.rows, total: total_no_of_rec(fact_table_name)}
+        columns =
+          Ecto.Adapters.SQL.query!(
+            Repo,
+            "select column_name, data_type from information_schema.columns where table_name = \'#{
+              fact_table_name
+            }\'",
+            [],
+            timeout: :infinity
+          )
+
+        columns = columns.rows |> Enum.map(fn [a, b] -> %{"#{a}" => b} end)
+
+        %{headers: columns, data: data.rows, total: total_no_of_rec(fact_table_name)}
       rescue
         error in Postgrex.Error ->
           {:error, error.postgres.message}
       end
     end
+  end
+
+  def gen_comp_asset_metadata(%{
+        fact_table_id: fact_table_id,
+        uniq_asset_types: uniq_asset_types,
+        asset_types: asset_types
+      }) do
+    [%{"id" => asset_type_id} | _] = uniq_asset_types
+    metadata_list = Enum.map(asset_types, fn asset_type -> asset_type["metadata_id"] end)
+
+    metadata_list_names = Enum.map(asset_types, fn asset_type -> asset_type["metadata_name"] end)
+
+    metadata_list =
+      if Enum.member?(metadata_list, "name"),
+        do: ["name"] ++ (metadata_list -- ["name"]),
+        else: ["name"] ++ metadata_list
+
+    {metadata_list, metadata_list_names} =
+      if Enum.member?(metadata_list, "name") do
+        {["name"] ++ (metadata_list -- ["name"]), ["name"] ++ (metadata_list_names -- ["name"])}
+      else
+        {["name"] ++ metadata_list, ["name"] ++ metadata_list_names}
+      end
+
+    res = AssetModel.fetch_asset_metadata(asset_type_id, metadata_list)
+
+    data = Enum.group_by(res, fn x -> x.name end, fn y -> %{"#{y.metadata_name}" => y.value} end)
+
+    data =
+      Enum.reduce(data, [], fn {key, metadatas}, acc1 ->
+        acc1 ++
+          [[key] ++ List.flatten(Enum.map(metadatas, fn metadata -> Map.values(metadata) end))]
+      end)
+
+    output =
+      if data != [] do
+        headers_metadata = %{
+          "#{asset_type_id}" =>
+            Stream.with_index(metadata_list, 0)
+            |> Enum.reduce(%{}, fn {v, k}, acc ->
+              Map.put(acc, v, k)
+            end)
+        }
+
+        {:ok, fact_table} = FactTables.get_by_id(fact_table_id)
+
+        {:ok, _} =
+          FactTables.update(fact_table, %{
+            headers_metadata: %{
+              "rows_len" => length(metadata_list),
+              "headers" => headers_metadata
+            }
+          })
+
+        headers = Enum.map(metadata_list_names, fn x -> %{"#{x}" => "text"} end)
+
+        fact_table_name = "fact_table_#{fact_table_id}"
+
+        create_fact_table(fact_table_name, headers, data)
+
+        data = Ecto.Adapters.SQL.query!(Repo, "select * from #{fact_table_name} LIMIT 20", [])
+
+        columns =
+          Ecto.Adapters.SQL.query!(
+            Repo,
+            "select column_name, data_type from information_schema.columns where table_name = \'#{
+              fact_table_name
+            }\'",
+            [],
+            timeout: :infinity
+          )
+
+        columns = columns.rows |> Enum.map(fn [a, b] -> %{"#{a}" => b} end)
+
+        %{
+          headers: columns,
+          data: data.rows,
+          total: total_no_of_rec(fact_table_name)
+        }
+      else
+        %{error: "no data present"}
+      end
+  end
+
+  def gen_comp_asset_data(%{fact_table_id: fact_table_id, asset_types: asset_types}) do
+    [
+      %{
+        "id" => id,
+        "name" => _name,
+        "metadata_name" => metadata_name,
+        "metadata_id" => metadata_id
+      }
+    ] = asset_types
+
+    {headers, data} =
+      if metadata_name == "name" do
+        data1 =
+          from(asset in Asset,
+            where: asset.asset_type_id == ^id,
+            select: [asset.name]
+          )
+          |> Repo.all()
+
+        headers = [%{"name" => "text"}]
+        {headers, data1}
+      else
+        data1 =
+          from(asset in Asset,
+            where: asset.asset_type_id == ^id,
+            cross_join: c in fragment("unnest(?)", asset.metadata),
+            where: fragment("?->>'uuid'", c) in ^[metadata_id],
+            select: [
+              fragment("?->>'value'", c)
+            ]
+          )
+          |> Repo.all()
+
+        headers = [%{"#{metadata_name}" => "text"}]
+        {headers, data1}
+      end
+
+    output =
+      if data != [] do
+        fact_table_name = "fact_table_#{fact_table_id}"
+
+        create_fact_table(fact_table_name, headers, data)
+
+        data = Ecto.Adapters.SQL.query!(Repo, "select * from #{fact_table_name} LIMIT 20", [])
+
+        headers_metadata = %{"#{id}" => %{"#{metadata_id}" => 0}}
+
+        {:ok, fact_table} = FactTables.get_by_id(fact_table_id)
+
+        {:ok, _} =
+          FactTables.update(fact_table, %{
+            headers_metadata: %{"rows_len" => 1, "headers" => headers_metadata}
+          })
+
+        columns =
+          Ecto.Adapters.SQL.query!(
+            Repo,
+            "select column_name, data_type from information_schema.columns where table_name = \'#{
+              fact_table_name
+            }\'",
+            [],
+            timeout: :infinity
+          )
+
+        columns = columns.rows |> Enum.map(fn [a, b] -> %{"#{a}" => b} end)
+
+        %{
+          headers: columns,
+          data: data.rows,
+          total: total_no_of_rec(fact_table_name)
+        }
+      else
+        %{error: "no data present"}
+      end
+  end
+
+  def gen_comp_sensor_data(%{fact_table_id: fact_table_id, sensor_types: sensor_types}) do
+    [
+      %{
+        "id" => id,
+        "name" => name,
+        "metadata_name" => metadata_name,
+        "metadata_id" => metadata_id
+      }
+    ] = sensor_types
+
+    output =
+      if metadata_name == "name" do
+        query =
+          from(sensor in Sensor,
+            where: sensor.sensor_type_id == ^id,
+            select: [sensor.name]
+          )
+
+        %{headers: [%{"#{name}" => "text"}], data: Repo.all(query)}
+      else
+        [%{"date_from" => date_from, "date_to" => date_to}] = sensor_types
+
+        sensor_ids =
+          from(sensor in Sensor,
+            where: sensor.sensor_type_id == ^id,
+            select: sensor.id
+          )
+          |> Repo.all()
+
+        date_from = from_unix(date_from)
+        date_to = from_unix(date_to)
+
+        query = SensorData.filter_by_date_query_wrt_parent(sensor_ids, date_from, date_to)
+        query = SensorData.fetch_sensors_values_n_timeseries(query, [metadata_id])
+
+        %{
+          headers: [
+            %{"#{name} #{metadata_name}" => "numeric"},
+            %{"#{name} #{metadata_name}_dateTime" => "timestamp"}
+          ],
+          data: Repo.all(query)
+        }
+      end
+
+    output =
+      if output[:data] != [] do
+        headers_metadata =
+          if metadata_name == "name",
+            do: %{"#{id}" => %{"#{metadata_id}" => 0}},
+            else: %{"#{id}" => %{"#{metadata_id}" => 0, "#{metadata_id}_dateTime" => 1}}
+
+        {:ok, fact_table} = FactTables.get_by_id(fact_table_id)
+
+        {:ok, _} =
+          FactTables.update(fact_table, %{
+            headers_metadata: %{
+              "rows_len" => length(output[:headers]),
+              "headers" => headers_metadata
+            }
+          })
+
+        fact_table_name = "fact_table_#{fact_table_id}"
+
+        create_fact_table(fact_table_name, output[:headers], output[:data])
+
+        data = Ecto.Adapters.SQL.query!(Repo, "select * from #{fact_table_name} LIMIT 20", [])
+
+        columns =
+          Ecto.Adapters.SQL.query!(
+            Repo,
+            "select column_name, data_type from information_schema.columns where table_name = \'#{
+              fact_table_name
+            }\'",
+            [],
+            timeout: :infinity
+          )
+
+        columns = columns.rows |> Enum.map(fn [a, b] -> %{"#{a}" => b} end)
+
+        %{
+          headers: columns,
+          data: data.rows,
+          total: total_no_of_rec(fact_table_name)
+        }
+      else
+        %{error: "no data present"}
+      end
   end
 
   def fetch_descendants(fact_table_id, parent_tree, root_node, entities_list, node_tracker) do
@@ -238,19 +497,28 @@ defmodule AcqdatApi.DataInsights.FactTables do
     if data == [] do
       %{error: "No data present for the specified user inputs"}
     else
-      table_headers =
-        gen_fact_table_headers(user_list, headers_metadata) |> Enum.map_join(",", &"\"#{&1}\"")
+      table_headers = gen_fact_table_headers(user_list, headers_metadata)
 
-      table_body = data |> convert_table_data_to_text
-
-      create_fact_table_view(fact_table_name, table_headers, table_body)
+      create_fact_table(fact_table_name, table_headers, data)
 
       data =
         Ecto.Adapters.SQL.query!(Repo, "select * from #{fact_table_name} LIMIT 20", [],
           timeout: :infinity
         )
 
-      %{headers: data.columns, data: data.rows, total: total_no_of_rec(fact_table_name)}
+      columns =
+        Ecto.Adapters.SQL.query!(
+          Repo,
+          "select column_name, data_type from information_schema.columns where table_name = \'#{
+            fact_table_name
+          }\'",
+          [],
+          timeout: :infinity
+        )
+
+      columns = columns.rows |> Enum.map(fn [a, b] -> %{"#{a}" => b} end)
+
+      %{headers: columns, data: data.rows, total: total_no_of_rec(fact_table_name)}
     end
   end
 
@@ -396,7 +664,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
           List.replace_at(
             acc,
             pos,
-            "#{entity["name"]} #{entity["metadata_name"]}"
+            %{"#{entity["name"]} #{entity["metadata_name"]}" => "text"}
           )
         else
           if entity["type"] == "AssetType" do
@@ -409,7 +677,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
             List.replace_at(
               acc,
               pos,
-              "#{entity["name"]} #{metadata_name}"
+              %{"#{entity["name"]} #{metadata_name}" => "text"}
             )
           else
             [%{name: [param_name]}] =
@@ -421,7 +689,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
               List.replace_at(
                 acc,
                 pos,
-                "#{entity["name"]} #{param_name}"
+                %{"#{entity["name"]} #{param_name}" => "numeric"}
               )
 
             pos = headers["#{entity["id"]}"]["#{entity["metadata_id"]}_dateTime"]
@@ -431,13 +699,13 @@ defmodule AcqdatApi.DataInsights.FactTables do
               List.replace_at(
                 acc,
                 pos_dateTime,
-                "entity_dateTime"
+                %{"entity_dateTime" => "timestamp"}
               )
             else
               List.replace_at(
                 acc,
                 pos,
-                "#{entity["name"]} #{param_name}_dateTime"
+                %{"#{entity["name"]} #{param_name}_dateTime" => "timestamp"}
               )
             end
           end
@@ -445,29 +713,38 @@ defmodule AcqdatApi.DataInsights.FactTables do
     end)
   end
 
-  def convert_table_data_to_text(data) do
-    text_form =
-      Enum.reduce(data, "", fn ele, acc ->
-        acc <> "(" <> Enum.map_join(ele, ",", &"\'#{&1}\'") <> "),"
-      end)
-
-    {text_form, _} = String.split_at(text_form, -1)
-    text_form
-  end
-
-  def create_fact_table_view(fact_table_name, table_headers, data) do
+  def create_fact_table(fact_table_name, table_headers, data) do
     Ecto.Adapters.SQL.query!(Repo, "drop table if exists #{fact_table_name};", [],
       timeout: :infinity
     )
 
-    qry = """
-      CREATE TABLE #{fact_table_name} AS
-      SELECT * FROM(
-      VALUES
-      #{data}) as #{fact_table_name}(#{table_headers});
-    """
+    {qry_text, headers, col_types} = gen_fact_table_column(table_headers)
 
-    Ecto.Adapters.SQL.query!(Repo, qry, [], timeout: :infinity)
+    {qry_text, _} = String.split_at(qry_text, -1)
+
+    {headers, _} = String.split_at(headers, -1)
+
+    gen_table(fact_table_name, qry_text)
+
+    data
+    |> Stream.chunk_every(500)
+    |> Task.async_stream(
+      fn data ->
+        text_form = convert_table_data_to_text(data, col_types)
+
+        qry = """
+          INSERT INTO #{fact_table_name}
+          (#{headers})
+          VALUES
+          #{text_form};
+        """
+
+        Ecto.Adapters.SQL.query!(Repo, qry, [])
+      end,
+      max_concurrency: 4,
+      timeout: :infinity
+    )
+    |> Stream.run()
   end
 
   def fetch_children(parent_node, parent_entity, subtree, output, computed_row, headers) do
@@ -757,6 +1034,47 @@ defmodule AcqdatApi.DataInsights.FactTables do
             end
           end)
     end
+  end
+
+  defp gen_fact_table_column(table_headers) do
+    Enum.reduce(table_headers, {"", "", []}, fn entity, {acc, keys, types} ->
+      [key] = Map.keys(entity)
+      [value] = Map.values(entity)
+      acc = acc <> "\"#{key}\" #{value},"
+      keys = keys <> "\"#{key}\","
+      types = types ++ [value]
+      {acc, keys, types}
+    end)
+  end
+
+  defp gen_table(fact_table_name, qry_text) do
+    qry = """
+      CREATE TABLE #{fact_table_name}
+      (#{qry_text})
+    """
+
+    Ecto.Adapters.SQL.query!(Repo, qry, [])
+  end
+
+  defp convert_table_data_to_text(data, col_types) do
+    text_form =
+      Enum.reduce(data, "", fn ele, acc ->
+        res =
+          Stream.with_index(ele, 0)
+          |> Enum.reduce("", fn {val, ind}, acc ->
+            if Enum.at(col_types, ind) == "numeric" and val == nil do
+              acc <> "\'0\',"
+            else
+              acc <> "\'#{val}\',"
+            end
+          end)
+
+        {res, _} = String.split_at(res, -1)
+        acc <> "(" <> res <> "),"
+      end)
+
+    {text_form, _} = String.split_at(text_form, -1)
+    text_form
   end
 
   defp delete_temp_fact_table_view(%{id: id}) do
