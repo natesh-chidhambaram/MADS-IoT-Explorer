@@ -87,18 +87,18 @@ defmodule AcqdatCore.Seed.DataFeeder.Project do
 
   defp insert_gateway(type, params) do
     post("#{type}/_doc/#{params.id}?routing=#{params.project_id}?refresh=true",
-      id: params.id,
-      name: params.name,
-      uuid: params.uuid,
-      slug: params.slug,
-      parent_type: params.parent_type,
-      parent_id: params.parent_id,
-      org_id: params.org_id,
-      project_id: params.project_id,
-      channel: params.channel,
-      image_url: params.image_url,
-      inserted_at: DateTime.to_unix(params.inserted_at),
-      join_field: %{name: "gateway", parent: params.project_id}
+    id: params.id,
+    name: params.name,
+    uuid: params.uuid,
+    slug: params.slug,
+    parent_type: params.parent_type,
+    parent_id: params.parent_id,
+    org_id: params.org_id,
+    project_id: params.project_id,
+    channel: params.channel,
+    image_url: params.image_url,
+    inserted_at: DateTime.to_unix(params.inserted_at),
+    join_field: %{name: "gateway", parent: params.project_id}
       )
   end
 end
