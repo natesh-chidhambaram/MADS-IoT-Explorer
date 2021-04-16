@@ -1,4 +1,5 @@
 defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
+  import AcqdatCore.DataInsights.Domain.DataFilter
   alias AcqdatCore.Repo
 
   def process_visual_data(options, type) do
@@ -87,9 +88,6 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
     [x_axis | _] = x_axes
     x_axis_col = "\"#{x_axis["name"]}\""
 
-    [value | _] = y_axes
-    value_name = "\"#{value["name"]}\""
-
     [legend | _] = legends
     legend_name = "\"#{legend["name"]}\""
 
@@ -101,10 +99,12 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
       """
         select #{legend_name},
         EXTRACT(EPOCH FROM (time_bucket('#{x_axis["group_interval"]} #{x_axis["group_by"]}'::VARCHAR::INTERVAL,
-        to_timestamp("#{x_axis["name"]}", 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{x_axis["title"]}\",
+        to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{
+        x_axis["title"]
+      }\",
         #{values_data}
         from #{fact_table_name}
-        where #{value_name} <> '' 
+        #{filters_query(filters)}
         group by 1, 2
         order by 1, 2
       """
@@ -114,7 +114,7 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
       """
         select #{values_data}
         from #{fact_table_name}
-        where #{value_name} <> '' 
+        #{filters_query(filters)}
         group by #{grouped_params} 
         order by #{grouped_params}
       """
@@ -125,18 +125,17 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
     [x_axis | _] = x_axes
     x_axis_col = "\"#{x_axis["name"]}\""
 
-    [value | _] = y_axes
-    value_name = "\"#{value["name"]}\""
-
     if x_axis["action"] == "group" do
       values_data = y_axes_data(y_axes)
 
       """
         select EXTRACT(EPOCH FROM (time_bucket('#{x_axis["group_interval"]} #{x_axis["group_by"]}'::VARCHAR::INTERVAL,
-        to_timestamp("#{x_axis["name"]}", 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{x_axis["title"]}\",
+        to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{
+        x_axis["title"]
+      }\",
         #{values_data}
         from #{fact_table_name}
-        where #{value_name} <> '' 
+        #{filters_query(filters)}
         group by 1
         order by 1
       """
@@ -146,7 +145,7 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
       """
         select #{values_data}
         from #{fact_table_name}
-        where #{value_name} <> '' 
+        #{filters_query(filters)}
         group by #{x_axis_col} 
         order by #{x_axis_col}
       """
