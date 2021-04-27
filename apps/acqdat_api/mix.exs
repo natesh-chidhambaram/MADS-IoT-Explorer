@@ -24,7 +24,7 @@ defmodule AcqdatApi.MixProject do
   def application do
     [
       mod: {AcqdatApi.Application, []},
-      extra_applications: [:logger, :google_maps, :runtime_tools, :gen_retry]
+      extra_applications: [:logger, :google_maps, :runtime_tools, :gen_retry, :amqp]
     ]
   end
 
@@ -62,6 +62,9 @@ defmodule AcqdatApi.MixProject do
 
       # writer for the MS Excel OpenXML format
       {:elixlsx, "~> 0.4.2"}
+
+      # Rabbitmq wrapper
+      {:amqp, "~> 2.1"}
     ]
   end
 end
