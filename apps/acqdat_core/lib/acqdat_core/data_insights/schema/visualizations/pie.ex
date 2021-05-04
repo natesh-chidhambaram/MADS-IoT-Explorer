@@ -1,28 +1,27 @@
-defmodule AcqdatCore.DataInsights.Schema.Visualizations.HeatMap do
+defmodule AcqdatCore.DataInsights.Schema.Visualizations.Pie do
   use AcqdatCore.Schema
   alias AcqdatCore.DataInsights.Domain.DataGenerator
 
   @behaviour AcqdatCore.DataInsights.Schema.Visualizations
-  @visualization_type "HeatMap"
-  @visualization_name "HeatMap"
-  @icon_id "heat-map"
+  @visualization_type "Pie"
+  @visualization_name "Pie"
+  @icon_id "pie-chart"
 
   defstruct data_settings: %{
               x_axes: [],
               y_axes: [],
-              values: [],
               filters: []
             },
             visual_settings: %{}
 
   @impl true
   def visual_prop_gen(_visualization, options \\ %{}) do
-    DataGenerator.process_visual_data(options, "heat_map")
+    DataGenerator.process_visual_data(options, "pie")
   end
 
   @impl true
   def data_prop_gen(params, _options \\ []) do
-    DataGenerator.process_data(params, "heat_map")
+    DataGenerator.process_data(params, "pie")
   end
 
   @impl true

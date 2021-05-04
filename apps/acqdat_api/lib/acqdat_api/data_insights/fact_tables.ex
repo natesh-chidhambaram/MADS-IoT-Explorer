@@ -723,7 +723,6 @@ defmodule AcqdatApi.DataInsights.FactTables do
     {qry_text, _} = String.split_at(qry_text, -1)
 
     {headers, _} = String.split_at(headers, -1)
-
     gen_table(fact_table_name, qry_text)
 
     data
