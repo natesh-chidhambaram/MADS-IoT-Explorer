@@ -1,6 +1,6 @@
 defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceView do
   use AcqdatApiWeb, :view
-  alias AcqdatApiWeb.DashboardManagement.WidgetInstanceView
+  alias AcqdatApiWeb.DashboardManagement.{WidgetInstanceView, PanelView}
 
   def render("show.json", %{widget_instance: widget}) do
     %{
@@ -13,6 +13,21 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceView do
       series: widget.series,
       widget_settings: widget.widget_settings,
       widget_category: widget.widget.category
+    }
+  end
+
+  def render("create.json", %{widget_instance: widget}) do
+    %{
+      id: widget.id,
+      widget_id: widget.widget_id,
+      label: widget.label,
+      uuid: widget.uuid,
+      series_data: render_many(widget.series_data, WidgetInstanceView, "series_data.json"),
+      visual_properties: widget.visual_properties,
+      series: widget.series,
+      widget_settings: widget.widget_settings,
+      widget_category: widget.widget.category,
+      panel: render_one(widget.panel, PanelView, "panel.json")
     }
   end
 
@@ -39,5 +54,9 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceView do
       source_type: series.source_type,
       source_details: series.source_metadata
     }
+  end
+
+  def render("error_data.json", %{widget_instance: error_res}) do
+    error_res
   end
 end

@@ -1,6 +1,7 @@
 defmodule AcqdatApiWeb.DataInsights.VisualizationsView do
   use AcqdatApiWeb, :view
   alias AcqdatApiWeb.DataInsights.VisualizationsView
+  alias AcqdatApiWeb.DashboardManagement.PanelView
 
   def render("type_detail.json", %{visualizations: visualization}) do
     %{
@@ -88,6 +89,19 @@ defmodule AcqdatApiWeb.DataInsights.VisualizationsView do
       page_size: visualizations.page_size,
       total_entries: visualizations.total_entries,
       total_pages: visualizations.total_pages
+    }
+  end
+
+  def render("widget_show.json", %{visualization: widget}) do
+    %{
+      id: widget.id,
+      widget_id: widget.widget_id,
+      label: widget.label,
+      uuid: widget.uuid,
+      source_app: widget.source_app,
+      source_metadata: widget.source_metadata,
+      visual_properties: widget.visual_properties,
+      panel: render_one(widget.panel, PanelView, "panel.json")
     }
   end
 end
