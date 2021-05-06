@@ -4,6 +4,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
   alias AcqdatApi.Image
   alias AcqdatApi.ImageDeletion
   alias AcqdatCore.ElasticSearch
+  alias AcqdatApiWeb.EntityManagement.ProjectErrorHelper
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.EntityManagement.Project
 
@@ -34,21 +35,16 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
         else
           {:error, message} ->
             conn
-            |> put_status(404)
-            |> json(%{
-              "status_code" => 404,
-              "title" => message,
-              "detail" => message
-            })
+            |> send_error(404, ProjectErrorHelper.error_message(:elasticsearch, message))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, ProjectErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, ProjectErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -58,23 +54,18 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
         with {:ok, hits} <- ElasticSearch.project_indexing(params) do
           conn |> put_status(200) |> render("hits.json", %{hits: hits})
         else
-          {:error, _message} ->
+          {:error, message} ->
             conn
-            |> put_status(404)
-            |> json(%{
-              "success" => false,
-              "error" => true,
-              "message" => "elasticsearch is not running"
-            })
+            |> send_error(404, ProjectErrorHelper.error_message(:elasticsearch, message))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, ProjectErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, ProjectErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -92,11 +83,11 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, ProjectErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, ProjectErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -125,11 +116,11 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, ProjectErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, ProjectErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -153,16 +144,16 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
             send_error(conn, 400, error)
 
           {:create, {:error, message}} ->
-            send_error(conn, 400, message)
+            send_error(conn, 400, message.error)
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, ProjectErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, ProjectErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -184,7 +175,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
             |> render("show.json", %{project: project})
 
           {:error, project} ->
-            error = extract_changeset_error(project)
+            error = ProjectErrorHelper.error_message(project.errors)
 
             conn
             |> send_error(400, error)
@@ -192,11 +183,11 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, ProjectErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, ProjectErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -213,7 +204,11 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, ProjectErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, ProjectErrorHelper.error_message(:unauthorized))
     end
   end
 

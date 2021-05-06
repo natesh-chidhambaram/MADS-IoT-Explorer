@@ -55,8 +55,8 @@ defmodule AcqdatCore.Schema.EntityManagement.Sensor do
   @required_params ~w(org_id project_id sensor_type_id uuid slug name)a
   @optional_params ~w(gateway_id parent_id parent_type description)a
 
-  @embedded_metadata_required ~w(name uuid data_type value)a
-  @embedded_metadata_optional ~w(unit)a
+  @embedded_metadata_required ~w(name uuid data_type)a
+  @embedded_metadata_optional ~w(unit value)a
   @permitted_metadata @embedded_metadata_optional ++ @embedded_metadata_required
 
   @permitted @required_params ++ @optional_params
@@ -91,6 +91,10 @@ defmodule AcqdatCore.Schema.EntityManagement.Sensor do
     |> assoc_constraint(:project)
     |> assoc_constraint(:gateway)
     |> assoc_constraint(:sensor_type)
+    |> unique_constraint(:name,
+      name: :acqdat_sensors_name_parent_id_project_id_index,
+      message: "Sensor with same name already exists under this parent,under this project"
+    )
   end
 
   defp create_metadata_changeset(schema, params) do

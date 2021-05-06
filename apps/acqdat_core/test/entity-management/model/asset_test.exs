@@ -147,6 +147,7 @@ defmodule AcqdatCore.Model.EntityManagement.AssetTest do
           metadata: [],
           mapped_parameters: [],
           owner_id: user.id,
+          description: "Something",
           properties: []
         })
 
@@ -227,18 +228,45 @@ defmodule AcqdatCore.Model.EntityManagement.AssetTest do
       params = %{
         name: "asset demo",
         org_id: project.org_id,
-        org_name: org.name,
         project_id: project.id,
         asset_type_id: asset.asset_type_id,
         creator_id: asset.creator_id,
         metadata: [],
         mapped_parameters: [],
         owner_id: asset.creator_id,
-        properties: []
+        properties: [],
+        description: ""
       }
 
       assert {:ok, root_asset} = Asset.add_as_root(params)
       refute is_nil(root_asset)
+    end
+
+    test "returns error if two roots with same name are added", context do
+      %{org: org, project: project, asset: asset} = context
+
+      params = %{
+        name: "asset demo",
+        org_id: project.org_id,
+        project_id: project.id,
+        asset_type_id: asset.asset_type_id,
+        creator_id: asset.creator_id,
+        metadata: [],
+        mapped_parameters: [],
+        owner_id: asset.creator_id,
+        properties: [],
+        description: ""
+      }
+
+      assert {:ok, root_asset} = Asset.add_as_root(params)
+      # insert another root with the same name
+      assert {:error, response} = Asset.add_as_root(params)
+
+      assert response == %{
+               title: "Insufficient or not unique parameters",
+               source: %{name: ["name already taken by a root asset"]},
+               error: "name already taken by a root asset"
+             }
     end
   end
 
@@ -259,6 +287,7 @@ defmodule AcqdatCore.Model.EntityManagement.AssetTest do
           metadata: [],
           mapped_parameters: [],
           owner_id: asset.creator_id,
+          description: "Something",
           properties: []
         })
 
@@ -305,6 +334,7 @@ defmodule AcqdatCore.Model.EntityManagement.AssetTest do
           metadata: [],
           mapped_parameters: [],
           owner_id: asset.creator_id,
+          description: "Something",
           properties: []
         })
 
@@ -337,6 +367,7 @@ defmodule AcqdatCore.Model.EntityManagement.AssetTest do
           metadata: [],
           mapped_parameters: [],
           owner_id: asset.creator_id,
+          description: "Something",
           properties: []
         })
 
@@ -401,7 +432,8 @@ defmodule AcqdatCore.Model.EntityManagement.AssetTest do
       metadata: [],
       mapped_parameters: [],
       owner_id: creator_id,
-      properties: []
+      properties: [],
+      description: ""
     }
   end
 
@@ -415,7 +447,8 @@ defmodule AcqdatCore.Model.EntityManagement.AssetTest do
       metadata: [],
       mapped_parameters: [],
       owner_id: creator_id,
-      properties: []
+      properties: [],
+      description: ""
     }
   end
 

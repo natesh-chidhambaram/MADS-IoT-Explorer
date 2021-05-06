@@ -4,6 +4,7 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SensorModel
   import AcqdatApiWeb.Helpers
   alias AcqdatCore.ElasticSearch
+  alias AcqdatApiWeb.EntityManagement.SensorErrorHelper
   import AcqdatApiWeb.Validators.EntityManagement.Sensor
 
   plug AcqdatApiWeb.Plug.LoadOrg
@@ -18,21 +19,16 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
         else
           {:error, message} ->
             conn
-            |> put_status(404)
-            |> json(%{
-              "status_code" => 404,
-              "title" => message,
-              "detail" => message
-            })
+            |> send_error(404, SensorErrorHelper.error_message(:elasticsearch, message))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, SensorErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, SensorErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -48,11 +44,11 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, SensorErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, SensorErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -64,21 +60,16 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
         else
           {:error, message} ->
             conn
-            |> put_status(404)
-            |> json(%{
-              "status_code" => 404,
-              "title" => message,
-              "detail" => message
-            })
+            |> send_error(404, SensorErrorHelper.error_message(:elasticsearch, message))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, SensorErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, SensorErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -89,10 +80,6 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
 
         with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
              {:create, {:ok, sensor}} <- {:create, Sensor.create(data)} do
-          Task.start_link(fn ->
-            ElasticSearch.insert_sensor("sensors", sensor)
-          end)
-
           conn
           |> put_status(200)
           |> render("sensor.json", %{sensor: sensor})
@@ -101,16 +88,22 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
             send_error(conn, 400, error)
 
           {:create, {:error, message}} ->
-            send_error(conn, 400, message)
+            response =
+              case is_map(message.error) do
+                false -> message
+                true -> message.error
+              end
+
+            send_error(conn, 400, response)
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, SensorErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, SensorErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -138,11 +131,11 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, SensorErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, SensorErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -159,8 +152,12 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
             |> put_status(200)
             |> render("sensor_delete.json", %{sensor: sensor})
 
-          {:error, sensor} ->
-            error = extract_changeset_error(sensor)
+          {:error, message} ->
+            error =
+              case String.valid?(message) do
+                true -> SensorErrorHelper.error_message(:iot_data_existence, message)
+                false -> extract_changeset_error(message)
+              end
 
             conn
             |> send_error(400, error)
@@ -168,11 +165,11 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, SensorErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, SensorErrorHelper.error_message(:unauthorized))
     end
   end
 

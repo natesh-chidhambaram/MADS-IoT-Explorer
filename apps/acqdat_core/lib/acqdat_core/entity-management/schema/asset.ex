@@ -74,9 +74,9 @@ defmodule AcqdatCore.Schema.EntityManagement.Asset do
     timestamps(type: :utc_datetime)
   end
 
-  @required_params ~w(uuid slug creator_id org_id project_id asset_type_id)a
+  @required_params ~w(uuid slug creator_id name org_id project_id asset_type_id)a
   @update_required_params ~w(uuid slug org_id )a
-  @optional_params ~w(name lft rgt parent_id description properties image owner_id image_url)a
+  @optional_params ~w(lft rgt parent_id description properties image owner_id image_url)a
 
   @required_embedded_params ~w(name)a
   @optional_embedded_params ~w(name uuid parameter_uuid sensor_uuid)a
@@ -117,8 +117,13 @@ defmodule AcqdatCore.Schema.EntityManagement.Asset do
     |> unique_constraint(:slug, name: :acqdat_asset_slug_index)
     |> unique_constraint(:uuid, name: :acqdat_asset_uuid_index)
     |> unique_constraint(:name,
-      name: :acqdat_asset_name_parent_id_org_id_index,
-      message: "unique name under hierarchy"
+      name: :acqdat_asset_name_parent_id_org_id_project_id_index,
+      message:
+        "name already taken under this hierarchy for this particular organisation, project and parent it is getting attached to."
+    )
+    |> unique_constraint(:name,
+      name: :asset_root_unique_name,
+      message: "name already taken by a root asset"
     )
   end
 
