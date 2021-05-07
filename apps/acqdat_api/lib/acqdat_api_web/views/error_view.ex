@@ -41,10 +41,20 @@ defmodule AcqdatApiWeb.ErrorView do
   defp handle_assign_error(default_message, assigns) do
     case has_assign_error_key?(assigns) do
       {:ok, errors} ->
-        %{errors: %{message: errors}}
+        %{
+          status_code: assigns.conn.status,
+          title: errors.title,
+          detail: errors.error,
+          source: errors.source
+        }
 
       _ ->
-        %{errors: %{message: default_message}}
+        %{
+          status_code: assigns.conn.status,
+          title: default_message,
+          source: nil,
+          detail: "You are not allowed to perform this action."
+        }
     end
   end
 

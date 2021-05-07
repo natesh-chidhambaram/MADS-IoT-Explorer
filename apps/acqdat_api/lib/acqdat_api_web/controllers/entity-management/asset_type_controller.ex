@@ -3,6 +3,7 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.EntityManagement.AssetType
   alias AcqdatApi.EntityManagement.AssetType
+  alias AcqdatApiWeb.EntityManagement.AssetTypeErrorHelper
   alias AcqdatCore.ElasticSearch
 
   plug AcqdatApiWeb.Plug.LoadProject
@@ -14,7 +15,8 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
       nil ->
         changeset = verify_asset_type_params(params)
 
-        with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
+        with {:extract, {:ok, data}} <-
+               {:extract, extract_changeset_data(changeset)},
              {:create, {:ok, asset_type}} <- {:create, AssetType.create(data)} do
           Task.start_link(fn ->
             ElasticSearch.insert_asset_type("asset_types", asset_type)
@@ -28,16 +30,22 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
             send_error(conn, 400, error)
 
           {:create, {:error, message}} ->
-            send_error(conn, 400, message)
+            response =
+              case is_map(message.error) do
+                false -> message
+                true -> message.error
+              end
+
+            send_error(conn, 400, response)
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, AssetTypeErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, AssetTypeErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -49,21 +57,16 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
         else
           {:error, message} ->
             conn
-            |> put_status(404)
-            |> json(%{
-              "status_code" => 404,
-              "title" => message,
-              "detail" => message
-            })
+            |> send_error(404, AssetTypeErrorHelper.error_message(:elasticsearch, message))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, AssetTypeErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, AssetTypeErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -75,21 +78,16 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
         else
           {:error, message} ->
             conn
-            |> put_status(404)
-            |> json(%{
-              "status_code" => 404,
-              "title" => message,
-              "detail" => message
-            })
+            |> send_error(404, AssetTypeErrorHelper.error_message(:elasticsearch, message))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, AssetTypeErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, AssetTypeErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -114,16 +112,16 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
 
           {:error, error} ->
             conn
-            |> send_error(400, error)
+            |> send_error(400, AssetTypeErrorHelper.error_message(:asset_association, error))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, AssetTypeErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, AssetTypeErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -148,16 +146,16 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeController do
 
           {:error, error} ->
             conn
-            |> send_error(400, error)
+            |> send_error(400, AssetTypeErrorHelper.error_message(:asset_association, error))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, AssetTypeErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, AssetTypeErrorHelper.error_message(:unauthorized))
     end
   end
 

@@ -6,6 +6,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
   alias AcqdatCore.Model.EntityManagement.Organisation, as: OrgModel
   alias AcqdatApi.ImageDeletion
   alias AcqdatCore.ElasticSearch
+  alias AcqdatApiWeb.IotManager.GatewayErrorHelper
   alias AcqdatCore.Model.IotManager.GatewayDataDump
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.IotManager.Gateway
@@ -33,21 +34,16 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
         else
           {:error, message} ->
             conn
-            |> put_status(404)
-            |> json(%{
-              "status_code" => 404,
-              "title" => message,
-              "detail" => message
-            })
+            |> send_error(404, GatewayErrorHelper.error_message(:elasticsearch, message))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -57,23 +53,18 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
         with {:ok, hits} <- ElasticSearch.gateway_indexing(params) do
           conn |> put_status(200) |> render("hits.json", %{hits: hits})
         else
-          {:error, _message} ->
+          {:error, message} ->
             conn
-            |> put_status(404)
-            |> json(%{
-              "success" => false,
-              "error" => true,
-              "message" => "elasticsearch is not running"
-            })
+            |> send_error(404, GatewayErrorHelper.error_message(:elasticsearch, message))
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -99,17 +90,22 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
             |> render("show.json", %{gateway: gateway})
 
           {:error, error} ->
-            conn
-            |> send_error(400, error)
+            response =
+              case is_map(error.error) do
+                false -> error
+                true -> error.error
+              end
+
+            send_error(conn, 400, response)
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -136,16 +132,22 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
             send_error(conn, 400, error)
 
           {:create, {:error, message}} ->
-            send_error(conn, 400, message)
+            response =
+              case is_map(message.error) do
+                false -> message
+                true -> message.error
+              end
+
+            send_error(conn, 400, response)
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -163,11 +165,11 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
 
       404 ->
         conn
-        |> send_error(404, "Resource not found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -182,11 +184,11 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -203,7 +205,9 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
               ImageDeletion.delete_operation(gateway.image_url, "gateway")
             end
 
-            ElasticSearch.delete_data("pro", gateway)
+            Task.start_link(fn ->
+              ElasticSearch.delete_data("pro", gateway)
+            end)
 
             conn
             |> put_status(200)
@@ -218,11 +222,11 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -239,11 +243,11 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -269,11 +273,11 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -288,11 +292,11 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 

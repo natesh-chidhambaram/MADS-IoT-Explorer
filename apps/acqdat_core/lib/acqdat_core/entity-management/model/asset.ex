@@ -152,30 +152,35 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
   def add_as_root(%{
         name: name,
         org_id: org_id,
-        org_name: org_name,
         project_id: project_id,
         creator_id: creator_id,
         asset_type_id: asset_type_id,
         metadata: metadata,
         mapped_parameters: mapped_parameters,
         owner_id: owner_id,
-        properties: properties
+        properties: properties,
+        description: description
       }) do
     # NOTE: function Ecto.Changeset.__as_nested_set_column_name__/1 is undefined or private
+
+    asset =
+      asset_struct(%{
+        name: name,
+        org_id: org_id,
+        slug: random_string(12),
+        project_id: project_id,
+        creator_id: creator_id,
+        asset_type_id: asset_type_id,
+        metadata: metadata,
+        mapped_parameters: mapped_parameters,
+        owner_id: owner_id,
+        properties: properties,
+        description: description
+      })
+
     try do
       taxon =
-        asset_struct(%{
-          name: name,
-          org_id: org_id,
-          slug: org_name <> name,
-          project_id: project_id,
-          creator_id: creator_id,
-          asset_type_id: asset_type_id,
-          metadata: metadata,
-          mapped_parameters: mapped_parameters,
-          owner_id: owner_id,
-          properties: properties
-        })
+        asset
         |> create(:root)
         |> AsNestedSet.execute(Repo)
 
@@ -187,6 +192,9 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
     rescue
       error in Ecto.InvalidChangesetError ->
         {:error, error.changeset}
+
+      error in Ecto.ConstraintError ->
+        {:error, handle_constraint_error(asset, error)}
     end
   end
 
@@ -240,6 +248,30 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
   end
 
   ############################# private functions ###########################
+
+  # The as_nested_set library inserts structs instead of changesets for root
+  # assets as a result constraint exceptions are raised. To be confirmant
+  # to the same error structure as changesets, we have to return the error in the format
+  # show in the function shown below.
+  defp handle_constraint_error(asset, error) do
+    changeset = asset.__struct__.changeset(asset, %{})
+    constraints = changeset.constraints
+
+    result =
+      Enum.find(constraints, fn constraint ->
+        constraint.constraint == error.constraint
+      end)
+
+    %{
+      title: "Insufficient or not unique parameters",
+      error: result.error_message,
+      source: Map.put(%{}, result.field, [result.error_message])
+    }
+  end
+
+  defp random_string(length) do
+    :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
+  end
 
   defp gen_asset_mapped_params(%{sensor_type: sensor_type} = sensor) do
     Enum.map(sensor_type.parameters, fn parameter ->
@@ -383,7 +415,8 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
          creator_id: creator_id,
          owner_id: owner_id,
          properties: properties,
-         metadata: metadata
+         metadata: metadata,
+         description: description
        }) do
     %Asset{
       name: name,
@@ -396,6 +429,7 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
       asset_type_id: asset_type_id,
       creator_id: creator_id,
       owner_id: owner_id,
+      description: description,
       properties: properties,
       metadata: metadata
     }

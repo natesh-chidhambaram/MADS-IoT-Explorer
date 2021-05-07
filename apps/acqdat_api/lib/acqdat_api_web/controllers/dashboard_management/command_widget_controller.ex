@@ -2,6 +2,7 @@ defmodule AcqdatApiWeb.DashboardManagement.CommandWidgetController do
   use AcqdatApiWeb, :authorized_controller
   import AcqdatApiWeb.Validators.DashboardManagement.CommandWidget
   import AcqdatApiWeb.Helpers
+  alias AcqdatApiWeb.DashboardManagement.CommandWidgetErrorHelper
   alias AcqdatApi.DashboardManagement.CommandWidget
 
   plug AcqdatApiWeb.Plug.LoadPanel when action not in [:command_widget_types]
@@ -30,21 +31,17 @@ defmodule AcqdatApiWeb.DashboardManagement.CommandWidgetController do
           {:extract, {:error, error}} ->
             send_error(conn, 400, error)
 
-          {:create, {:error, %Ecto.Changeset{} = changeset}} ->
-            error = extract_changeset_error(changeset)
-            send_error(conn, 400, error)
-
           {:create, {:error, error}} ->
-            send_error(conn, 400, error)
+            send_error(conn, 400, error.error)
         end
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, CommandWidgetErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, CommandWidgetErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -69,11 +66,11 @@ defmodule AcqdatApiWeb.DashboardManagement.CommandWidgetController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, CommandWidgetErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, CommandWidgetErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -88,11 +85,11 @@ defmodule AcqdatApiWeb.DashboardManagement.CommandWidgetController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, CommandWidgetErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, CommandWidgetErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -112,11 +109,11 @@ defmodule AcqdatApiWeb.DashboardManagement.CommandWidgetController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, CommandWidgetErrorHelper.error_message(:resource_not_found))
 
       401 ->
         conn
-        |> send_error(401, "Unauthorized")
+        |> send_error(401, CommandWidgetErrorHelper.error_message(:unauthorized))
     end
   end
 end

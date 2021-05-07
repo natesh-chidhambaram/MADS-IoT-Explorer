@@ -3,6 +3,7 @@ defmodule AcqdatApiWeb.AuthController do
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.Auth
   alias AcqdatApi.Account
+  alias AcqdatApiWeb.AuthErrorHelper
 
   plug AcqdatApiWeb.Plug.LoadCurrentUser when action in [:validate_credentials]
 
@@ -19,7 +20,7 @@ defmodule AcqdatApiWeb.AuthController do
         send_error(conn, 400, error)
 
       {:login, {:error, message}} ->
-        send_error(conn, 401, message)
+        send_error(conn, 401, AuthErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -35,10 +36,11 @@ defmodule AcqdatApiWeb.AuthController do
       |> render("validate_token.json", data: result)
     else
       {:extract, {:error, error}} ->
+        error = extract_changeset_error(error)
         send_error(conn, 400, error)
 
       {:refresh, {:error, message}} ->
-        send_error(conn, 400, message)
+        send_error(conn, 400, AuthErrorHelper.error_message(:token_error, message))
     end
   end
 
@@ -70,10 +72,11 @@ defmodule AcqdatApiWeb.AuthController do
       |> render("user.json", user)
     else
       {:extract, {:error, error}} ->
+        error = extract_changeset_error(error)
         send_error(conn, 400, error)
 
       {:validate, {:error, message}} ->
-        send_error(conn, 401, "Invalid Credentials")
+        send_error(conn, 401, AuthErrorHelper.error_message(:unauthorized))
     end
   end
 end

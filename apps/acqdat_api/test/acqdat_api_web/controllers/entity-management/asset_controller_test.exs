@@ -2,6 +2,7 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
   use ExUnit.Case, async: true
   use AcqdatApiWeb.ConnCase
   use AcqdatCore.DataCase
+  alias AcqdatCore.Model.EntityManagement.Asset
   import AcqdatCore.Support.Factory
 
   describe "show/2" do
@@ -26,7 +27,13 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
 
       conn = get(conn, Routes.assets_path(conn, :show, 1, 1, params.id))
       result = conn |> json_response(403)
-      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+
+      assert result == %{
+               "detail" => "You are not allowed to perform this action.",
+               "source" => nil,
+               "status_code" => 403,
+               "title" => "Unauthorized"
+             }
     end
 
     test "asset with invalid asset id", %{conn: conn} do
@@ -36,7 +43,14 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
 
       conn = get(conn, Routes.assets_path(conn, :show, 1, 1, params.id))
       result = conn |> json_response(404)
-      assert result == %{"errors" => %{"message" => "Resource Not Found"}}
+
+      assert result == %{
+               "detail" =>
+                 "Either Asset or Project or Organisation or Asset Type with this ID doesn't exists",
+               "source" => nil,
+               "status_code" => 404,
+               "title" => "Invalid entity ID"
+             }
     end
 
     test "asset with valid id", %{conn: conn, asset: asset} do
@@ -74,7 +88,13 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
 
       conn = put(conn, Routes.assets_path(conn, :update, 1, 1, 1, params))
       result = conn |> json_response(403)
-      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+
+      assert result == %{
+               "detail" => "You are not allowed to perform this action.",
+               "source" => nil,
+               "status_code" => 403,
+               "title" => "Unauthorized"
+             }
     end
 
     test "updated asset successfully", %{conn: conn, asset: asset} do
@@ -124,6 +144,78 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
   describe "create/2" do
     setup :setup_conn
 
+    setup do
+      org = insert(:organisation)
+      project = insert(:project)
+      asset_type = insert(:asset_type)
+      user = insert(:user)
+
+      [org: org, project: project, asset_type: asset_type, user: user]
+    end
+
+    test "successfully create a root asset", context do
+      %{
+        asset_type: asset_type,
+        project: project,
+        org: org,
+        user: user,
+        conn: conn
+      } = context
+
+      params = %{
+        "asset_type_id" => asset_type.id,
+        "creator_id" => user.id,
+        "description" => "",
+        "metadata" => [],
+        "name" => "Building 1",
+        "org_id" => org.id,
+        "parent_id" => nil,
+        "parent_type" => "Project",
+        "project_id" => project.id
+      }
+
+      conn = post(conn, Routes.assets_path(conn, :create, org.id, project.id), params)
+      response = conn |> json_response(200)
+      assert Map.has_key?(response, "name")
+      assert Map.has_key?(response, "id")
+    end
+
+    test "fails if two roots with same name are added", context do
+      %{
+        asset_type: asset_type,
+        project: project,
+        org: org,
+        user: user,
+        conn: conn
+      } = context
+
+      params = %{
+        "asset_type_id" => asset_type.id,
+        "creator_id" => user.id,
+        "description" => "",
+        "metadata" => [],
+        "name" => "Building 1",
+        "org_id" => org.id,
+        "parent_id" => nil,
+        "parent_type" => "Project",
+        "project_id" => project.id
+      }
+
+      # created an asset
+      post(conn, Routes.assets_path(conn, :create, org.id, project.id), params)
+
+      # try again with the same params
+      conn = post(conn, Routes.assets_path(conn, :create, org.id, project.id), params)
+      result = conn |> json_response(400)
+
+      assert result == %{
+               "detail" => "name already taken by a root asset",
+               "source" => %{"name" => ["name already taken by a root asset"]},
+               "status_code" => 400,
+               "title" => "Insufficient or not unique parameters"
+             }
+    end
+
     test "asset type create", %{conn: conn, org: org, user: user} do
       asset_manifest = build(:asset)
       project = insert(:project)
@@ -155,28 +247,14 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
       data = %{}
       conn = post(conn, Routes.assets_path(conn, :create, org.id, project.id), data)
       result = conn |> json_response(403)
-      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+
+      assert result == %{
+               "detail" => "You are not allowed to perform this action.",
+               "source" => nil,
+               "status_code" => 403,
+               "title" => "Unauthorized"
+             }
     end
-
-    # test "fails if sent params are not unique", %{conn: conn, org: org, user: user} do
-    #   asset_manifest = build(:asset)
-    #   data = %{
-    #     name: asset_manifest.name,
-    #     mapped_parameters: asset_manifest.mapped_parameters,
-    #     metadata: asset_manifest.metadata,
-    #     creator_id: user.id
-    #   }
-
-    #   conn = post(conn, Routes.assets_path(conn, :create, org.id), data)
-    #   conn = post(conn, Routes.assets_path(conn, :create, org.id), data)
-    #   response = conn |> json_response(400)
-
-    #   assert response == %{
-    #            "errors" => %{
-    #              "message" => %{"error" => %{"name" => ["asset already exists"]}}
-    #            }
-    #          }
-    # end
 
     test "fails if required params are missing", %{conn: conn, org: org} do
       asset = insert(:asset)
@@ -191,11 +269,116 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
       response = conn |> json_response(400)
 
       assert response == %{
-               "errors" => %{
-                 "message" => %{
-                   "creator_id" => ["can't be blank"]
-                 }
-               }
+               "detail" =>
+                 "Parameters provided to perform current action is either not valid or missing or not unique",
+               "source" => %{
+                 "creator_id" => ["can't be blank"],
+                 "name" => ["can't be blank"]
+               },
+               "status_code" => 400,
+               "title" => "Insufficient or not unique parameters"
+             }
+    end
+  end
+
+  describe "create/2 child assets " do
+    setup :setup_conn
+
+    setup do
+      org = insert(:organisation)
+      project = insert(:project)
+      asset_type = insert(:asset_type, org: org, project: project)
+      asset_type_child = insert(:asset_type, org: org, project: project)
+      user = insert(:user)
+
+      {:ok, root_asset} =
+        Asset.add_as_root(%{
+          name: "root asset",
+          org_id: org.id,
+          org_name: org.name,
+          project_id: project.id,
+          asset_type_id: asset_type.id,
+          creator_id: user.id,
+          metadata: [],
+          mapped_parameters: [],
+          owner_id: user.id,
+          description: "Something",
+          properties: []
+        })
+
+      [
+        parent_entity: root_asset,
+        org: org,
+        project: project,
+        asset_type: asset_type_child,
+        user: user
+      ]
+    end
+
+    test "inserts asssets successfully", context do
+      %{
+        parent_entity: parent,
+        org: org,
+        project: project,
+        asset_type: asset_type,
+        user: user,
+        conn: conn
+      } = context
+
+      params = %{
+        "asset_type_id" => asset_type.id,
+        "creator_id" => user.id,
+        "description" => "",
+        "metadata" => [],
+        "name" => "Building 1",
+        "org_id" => org.id,
+        "parent_id" => parent.id,
+        "parent_type" => "Project",
+        "project_id" => project.id
+      }
+
+      conn = post(conn, Routes.assets_path(conn, :create, org.id, project.id), params)
+      response = conn |> json_response(200)
+      assert Map.has_key?(response, "name")
+      assert Map.has_key?(response, "id")
+    end
+
+    test "returns error if duplicate names", context do
+      %{
+        parent_entity: parent,
+        org: org,
+        project: project,
+        asset_type: asset_type,
+        user: user,
+        conn: conn
+      } = context
+
+      params = %{
+        "asset_type_id" => asset_type.id,
+        "creator_id" => user.id,
+        "description" => "",
+        "metadata" => [],
+        "name" => "Building 1",
+        "org_id" => org.id,
+        "parent_id" => parent.id,
+        "parent_type" => "Project",
+        "project_id" => project.id
+      }
+
+      post(conn, Routes.assets_path(conn, :create, org.id, project.id), params)
+      conn = post(conn, Routes.assets_path(conn, :create, org.id, project.id), params)
+      response = conn |> json_response(400)
+
+      assert response == %{
+               "detail" =>
+                 "Parameters provided to perform current action is either not valid or missing or not unique",
+               "source" => %{
+                 "name" => [
+                   "name already taken under this hierarchy for this particular organisation, project and parent it is getting attached to."
+                 ]
+               },
+               "status_code" => 400,
+               "title" => "Insufficient or not unique parameters"
              }
     end
   end
@@ -226,7 +409,13 @@ defmodule AcqdatApiWeb.EntityManagement.AssetControllerTest do
         delete(conn, Routes.assets_path(conn, :delete, org.id, asset.project.id, asset.id), %{})
 
       result = conn |> json_response(403)
-      assert result == %{"errors" => %{"message" => "Unauthorized"}}
+
+      assert result == %{
+               "detail" => "You are not allowed to perform this action.",
+               "source" => nil,
+               "status_code" => 403,
+               "title" => "Unauthorized"
+             }
     end
   end
 end
