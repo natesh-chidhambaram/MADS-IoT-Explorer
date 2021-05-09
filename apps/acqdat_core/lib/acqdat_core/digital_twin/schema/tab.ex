@@ -23,7 +23,6 @@ defmodule AcqdatCore.DigitalTwin.Schema.Tab do
     field(:image_url, :string)
     field(:image_settings, :map)
 
-    # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:digital_twin, DigitalTwin, on_replace: :delete)
 

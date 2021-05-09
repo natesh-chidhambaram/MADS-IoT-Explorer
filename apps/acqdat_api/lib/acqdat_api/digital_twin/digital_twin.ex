@@ -5,7 +5,9 @@ defmodule AcqdatApi.DigitalTwin.DigitalTwin do
   def create(params) do
     params = params_extraction(params)
 
-    verify_digital_twin(DigitalTwinModel.create(params))
+    verify_digital_twin(
+      DigitalTwinModel.create(params)
+    )
   end
 
   defp verify_digital_twin({:ok, digital_twin}) do
