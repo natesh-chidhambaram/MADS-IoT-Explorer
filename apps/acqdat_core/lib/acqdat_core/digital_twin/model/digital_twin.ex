@@ -1,7 +1,7 @@
-defmodule AcqdatCore.Model.DigitalTwin do
+defmodule AcqdatCore.DigitalTwin.Model.DigitalTwin do
   import Ecto.Query
   alias AcqdatCore.Repo
-  alias AcqdatCore.Schema.DigitalTwin
+  alias AcqdatCore.DigitalTwin.Schema.DigitalTwin
   alias AcqdatCore.Model.Helper, as: ModelHelper
 
   def create(params) do

@@ -84,10 +84,6 @@ defmodule AcqdatApiWeb.Router do
     resources "/widget-type", Widgets.WidgetTypeController,
       only: [:create, :update, :delete, :index, :show]
 
-    resources("/digital-twin", DigitalTwinController,
-      only: [:create, :update, :delete, :index, :show]
-    )
-
     resources "/uploads", ImageUploadController, only: [:create]
   end
 
@@ -95,6 +91,11 @@ defmodule AcqdatApiWeb.Router do
   scope "/orgs/:org_id", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
+    scope "projects/:project_id", DigitalTwin do
+      resources("/digital-twin", DigitalTwinController,
+      only: [:create, :update, :delete, :index, :show]
+      )
+    end
     # user group api
     resources "/user_groups", RoleManagement.UserGroupController, except: [:new, :edit]
     post "/group_policies", RoleManagement.UserGroupController, :group_policies

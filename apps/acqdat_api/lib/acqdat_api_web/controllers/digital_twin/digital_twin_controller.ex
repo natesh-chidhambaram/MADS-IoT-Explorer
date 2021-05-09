@@ -1,9 +1,9 @@
-defmodule AcqdatApiWeb.DigitalTwinController do
+defmodule AcqdatApiWeb.DigitalTwin.DigitalTwinController do
   use AcqdatApiWeb, :controller
-  alias AcqdatApi.DigitalTwin
-  alias AcqdatCore.Model.DigitalTwin, as: DigitalTwinModel
+  alias AcqdatApi.DigitalTwin.DigitalTwin
+  alias AcqdatCore.DigitalTwin.Model.DigitalTwin, as: DigitalTwinModel
   import AcqdatApiWeb.Helpers
-  import AcqdatApiWeb.Validators.DigitalTwin
+  import AcqdatApiWeb.Validators.DigitalTwin.DigitalTwin
 
   plug :load_digital_twin when action in [:update, :delete, :show]
 
@@ -24,6 +24,8 @@ defmodule AcqdatApiWeb.DigitalTwinController do
   end
 
   def create(conn, params) do
+    opened_on = DateTime.utc_now
+    params = Map.put_new(params, "opened_on", opened_on)
     case conn.status do
       nil ->
         changeset = verify_digital_twin_params(params)
@@ -102,7 +104,7 @@ defmodule AcqdatApiWeb.DigitalTwinController do
     case conn.status do
       nil ->
         {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
-        {:list, digital_twin} = {:list, DigitalTwinModel.get_all(data, [:site, :process])}
+        {:list, digital_twin} = {:list, DigitalTwinModel.get_all(data, [])}
 
         conn
         |> put_status(200)
