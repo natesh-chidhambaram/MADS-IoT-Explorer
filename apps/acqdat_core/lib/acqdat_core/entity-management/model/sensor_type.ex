@@ -21,7 +21,17 @@ defmodule AcqdatCore.Model.EntityManagement.SensorType do
     end
   end
 
-  def return_count() do
+  def return_count(%{"project_id" => project_id}) do
+    query =
+      from(p in SensorType,
+        where: p.project_id == ^project_id,
+        select: count(p.id)
+      )
+
+    Repo.one(query)
+  end
+
+  def return_count(_params) do
     query =
       from(p in SensorType,
         select: count(p.id)
