@@ -9,7 +9,6 @@ defmodule AcqdatCore.DigitalTwin.Schema.Tab do
   alias AcqdatCore.Schema.EntityManagement.Organisation
   alias AcqdatCore.DigitalTwin.Schema.DigitalTwin
 
-
   @typedoc """
   `name`: Name for easy identification of the digital twin.
   """
@@ -18,14 +17,13 @@ defmodule AcqdatCore.DigitalTwin.Schema.Tab do
   schema("acqdat_tab") do
     field(:name, :string, null: false)
     field(:description, :string)
-      field(:uuid, :string, null: false)
-      field(:slug, :string, null: false)
-      field(:image, :any, virtual: true)
-      field(:image_url, :string)
-      field(:image_settings, :map)
+    field(:uuid, :string, null: false)
+    field(:slug, :string, null: false)
+    field(:image, :any, virtual: true)
+    field(:image_url, :string)
+    field(:image_settings, :map)
 
-
-    #associations
+    # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:digital_twin, DigitalTwin, on_replace: :delete)
 

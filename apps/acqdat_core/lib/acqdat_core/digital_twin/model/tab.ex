@@ -46,8 +46,7 @@ defmodule AcqdatCore.DigitalTwin.Model.Tab do
     paginated_tab_data =
       Tab |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
 
-    tab_data_with_preloads =
-      paginated_tab_data.entries |> Repo.preload(preloads)
+    tab_data_with_preloads = paginated_tab_data.entries |> Repo.preload(preloads)
 
     ModelHelper.paginated_response(tab_data_with_preloads, paginated_tab_data)
   end

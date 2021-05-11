@@ -93,9 +93,10 @@ defmodule AcqdatApiWeb.Router do
 
     scope "projects/:project_id", DigitalTwin do
       resources("/digital-twin", DigitalTwinController,
-      only: [:create, :update, :delete, :index, :show]
+        only: [:create, :update, :delete, :index, :show]
       )
     end
+
     # user group api
     resources "/user_groups", RoleManagement.UserGroupController, except: [:new, :edit]
     post "/group_policies", RoleManagement.UserGroupController, :group_policies

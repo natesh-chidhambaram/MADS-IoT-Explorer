@@ -9,7 +9,7 @@ defmodule AcqdatApiWeb.DigitalTwin.TabView do
       org_id: tab.org_id,
       image_url: tab.image_url,
       digital_twin_id: tab.digital_twin_id,
-      inserted_at: tab.inserted_at
+      inserted_at: tab.inserted_at,
       description: tab.description,
       image_settings: tab.settings
     }
@@ -17,8 +17,7 @@ defmodule AcqdatApiWeb.DigitalTwin.TabView do
 
   def render("index.json", tab) do
     %{
-      tab:
-        render_many(tab.entries, TabView, "tab.json"),
+      tab: render_many(tab.entries, TabView, "tab.json"),
       page_number: tab.page_number,
       page_size: tab.page_size,
       total_entries: tab.total_entries,

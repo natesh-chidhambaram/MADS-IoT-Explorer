@@ -32,8 +32,7 @@ defmodule AcqdatApiWeb.DigitalTwin.DigitalTwinView do
 
   def render("index.json", digital_twin) do
     %{
-      digital_twin:
-        render_many(digital_twin.entries, DigitalTwinView, "digital_twin.json"),
+      digital_twin: render_many(digital_twin.entries, DigitalTwinView, "digital_twin.json"),
       page_number: digital_twin.page_number,
       page_size: digital_twin.page_size,
       total_entries: digital_twin.total_entries,

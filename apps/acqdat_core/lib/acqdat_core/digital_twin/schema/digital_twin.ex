@@ -22,7 +22,7 @@ defmodule AcqdatCore.DigitalTwin.Schema.DigitalTwin do
     field(:slug, :string, null: false)
     field(:settings, :map)
     field(:opened_on, :utc_datetime)
-    #associations
+    # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:creator, User, on_replace: :delete)
     belongs_to(:project, Project, on_replace: :delete)

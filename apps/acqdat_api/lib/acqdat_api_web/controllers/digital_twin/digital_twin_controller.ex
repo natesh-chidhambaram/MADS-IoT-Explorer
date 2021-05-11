@@ -24,8 +24,9 @@ defmodule AcqdatApiWeb.DigitalTwin.DigitalTwinController do
   end
 
   def create(conn, params) do
-    opened_on = DateTime.utc_now
+    opened_on = DateTime.utc_now()
     params = Map.put_new(params, "opened_on", opened_on)
+
     case conn.status do
       nil ->
         changeset = verify_digital_twin_params(params)
