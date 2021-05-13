@@ -29,8 +29,8 @@ defmodule AcqdatCore.DigitalTwin.Schema.Tab do
     timestamps(type: :utc_datetime)
   end
 
-  @required_params ~w(name uuid slug image_url org_id digital_twin_id)a
-  @optional_params ~w(description image_settings)a
+  @required_params ~w(name uuid slug org_id digital_twin_id)a
+  @optional_params ~w(description image_url image_settings)a
   @permitted @required_params ++ @optional_params
 
   @spec changeset(
