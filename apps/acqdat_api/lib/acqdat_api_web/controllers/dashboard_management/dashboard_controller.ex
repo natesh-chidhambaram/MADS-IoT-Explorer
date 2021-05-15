@@ -112,6 +112,8 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardController do
     case conn.status do
       nil ->
         dashboard = conn.assigns.dashboard
+        params = Map.put(params, "avatar", dashboard.avatar)
+        params = extract_image(conn, dashboard, params)
 
         case Dashboard.update(dashboard, params) do
           {:ok, dashboard} ->
@@ -145,6 +147,17 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardController do
       nil ->
         case Dashboard.delete(conn.assigns.dashboard) do
           {:ok, dashboard} ->
+            if dashboard.avatar != nil do
+              ImageDeletion.delete_operation(dashboard.avatar, "dashboard_image/#{dashboard.id}")
+            end
+
+            if dashboard.settings != nil && dashboard.settings.client_logo != nil do
+              ImageDeletion.delete_operation(
+                dashboard.settings.client_logo,
+                "dashboard_settings/#{dashboard.id}"
+              )
+            end
+
             conn
             |> put_status(200)
             |> render("dashboard.json", %{dashboard: dashboard})
@@ -253,6 +266,72 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardController do
       true
     else
       false
+    end
+  end
+
+  defp extract_image(conn, dashboard, params) do
+    with {:update_dashboad_logo, {:ok, data}} <-
+           {:update_dashboad_logo, update_and_delete_image(conn, dashboard, params, "image")},
+         {:update_client_logo, {:ok, updated_params}} <-
+           {:update_client_logo, update_and_delete_image(conn, dashboard, data, "settings")} do
+      updated_params
+    else
+      {:update_dashboad_logo, {:error, error}} ->
+        send_error(conn, 400, error)
+
+      {:update_client_logo, {:error, error}} ->
+        send_error(conn, 400, error)
+    end
+  end
+
+  defp update_and_delete_image(conn, dashboard, params, type) do
+    {image_params, persisted_image} =
+      if type == "settings" do
+        {params["settings"]["client_logo"], dashboard.settings && dashboard.settings.client_logo}
+      else
+        {params["image"], dashboard.avatar}
+      end
+
+    case is_nil(image_params) do
+      true ->
+        params =
+          if type == "settings" && params["settings"] do
+            update_in(params, ["settings", "client_logo"], fn _ ->
+              dashboard.settings && dashboard.settings.client_logo
+            end)
+          else
+            params
+          end
+
+        {:ok, params}
+
+      false ->
+        if persisted_image != nil do
+          ImageDeletion.delete_operation(persisted_image, "dashboard_#{type}/#{dashboard.id}")
+        end
+
+        add_image_url(conn, params, dashboard.id, type)
+    end
+  end
+
+  defp add_image_url(conn, params, entity_id, type) do
+    scope = "dashboard_#{type}/#{entity_id}"
+
+    image = if type == "settings", do: params["settings"]["client_logo"], else: params["image"]
+
+    with {:ok, image_name} <- Image.store({image, scope}) do
+      params =
+        if type == "settings" do
+          update_in(params, ["settings", "client_logo"], fn _ ->
+            Image.url({image_name, scope})
+          end)
+        else
+          Map.replace!(params, "avatar", Image.url({image_name, scope}))
+        end
+
+      {:ok, params}
+    else
+      {:error, error} -> {:error, error}
     end
   end
 end
