@@ -91,10 +91,14 @@ defmodule AcqdatApiWeb.Router do
   scope "/orgs/:org_id", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
-    scope "projects/:project_id", DigitalTwin do
+    scope "/projects/:project_id", DigitalTwin do
       resources("/digital-twin", DigitalTwinController,
         only: [:create, :update, :delete, :index, :show]
       )
+    end
+
+    scope "/digital-twin/:digital_twin_id", DigitalTwin do
+      resources("/tab", TabController, only: [:create, :update, :delete, :index, :show])
     end
 
     # user group api
