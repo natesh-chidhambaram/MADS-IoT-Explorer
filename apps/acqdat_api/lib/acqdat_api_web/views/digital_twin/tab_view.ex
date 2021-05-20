@@ -11,7 +11,7 @@ defmodule AcqdatApiWeb.DigitalTwin.TabView do
       digital_twin_id: tab.digital_twin_id,
       inserted_at: tab.inserted_at,
       description: tab.description,
-      image_settings: tab.settings
+      image_settings: tab.image_settings
     }
   end
 

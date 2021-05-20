@@ -2,6 +2,8 @@ defmodule AcqdatApi.DigitalTwin.Tab do
   import AcqdatApiWeb.Helpers
   alias AcqdatCore.DigitalTwin.Model.Tab, as: TabModel
 
+  defdelegate update(tab, params), to: TabModel
+
   def create(params) do
     params = params_extraction(params)
     verify_tab(TabModel.create(params))

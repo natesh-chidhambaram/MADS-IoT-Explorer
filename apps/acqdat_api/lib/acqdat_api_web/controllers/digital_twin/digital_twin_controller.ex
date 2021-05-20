@@ -2,6 +2,7 @@ defmodule AcqdatApiWeb.DigitalTwin.DigitalTwinController do
   use AcqdatApiWeb, :controller
   alias AcqdatApi.DigitalTwin.DigitalTwin
   alias AcqdatCore.DigitalTwin.Model.DigitalTwin, as: DigitalTwinModel
+  alias AcqdatApiWeb.DigitalTwin.DigitalTwinErrorHelper
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.DigitalTwin.DigitalTwin
 
@@ -19,7 +20,11 @@ defmodule AcqdatApiWeb.DigitalTwin.DigitalTwinController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, DigitalTwinErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, DigitalTwinErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -46,10 +51,11 @@ defmodule AcqdatApiWeb.DigitalTwin.DigitalTwinController do
 
       404 ->
         conn
-        |> send_error(
-          404,
-          "Either Resource Not Found or Process and Site ID are not mutually exclusive or both are missing"
-        )
+        |> send_error(404, DigitalTwinErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, DigitalTwinErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -73,7 +79,11 @@ defmodule AcqdatApiWeb.DigitalTwin.DigitalTwinController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, DigitalTwinErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, DigitalTwinErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -95,7 +105,11 @@ defmodule AcqdatApiWeb.DigitalTwin.DigitalTwinController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, DigitalTwinErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, DigitalTwinErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -113,7 +127,11 @@ defmodule AcqdatApiWeb.DigitalTwin.DigitalTwinController do
 
       404 ->
         conn
-        |> send_error(404, "Resource Not Found")
+        |> send_error(404, DigitalTwinErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, DigitalTwinErrorHelper.error_message(:unauthorized))
     end
   end
 
