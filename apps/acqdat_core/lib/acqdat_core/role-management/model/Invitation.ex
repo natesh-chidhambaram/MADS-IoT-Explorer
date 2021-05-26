@@ -6,16 +6,42 @@ defmodule AcqdatCore.Model.RoleManagement.Invitation do
   alias AcqdatCore.Schema.RoleManagement.Invitation
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Helper, as: ModelHelper
+  alias AcqdatCore.Model.RoleManagement.User
   import Ecto.Query
 
   def list_invitations() do
     Repo.all(Invitation)
   end
 
+  def return_count(%{"type" => "UserInvite", "org_id" => org_id}) do
+    query =
+      from(p in Invitation,
+        where: p.org_id == ^org_id,
+        select: count(p.id)
+      )
+
+    Repo.one(query)
+  end
+
+  def return_count(%{"type" => "UserInvite"}) do
+    query =
+      from(p in Invitation,
+        select: count(p.id)
+      )
+
+    Repo.one(query)
+  end
+
   def create_invitation(attrs \\ %{}) do
-    %Invitation{}
-    |> Invitation.changeset(attrs)
-    |> Repo.insert()
+    case check_for_existing_user(attrs["email"]) do
+      true ->
+        {:user_exists, "User already exists"}
+
+      false ->
+        %Invitation{}
+        |> Invitation.changeset(attrs)
+        |> Repo.insert()
+    end
   end
 
   def update_invitation(%Invitation{} = invitation, attrs \\ %{}) do
@@ -66,5 +92,9 @@ defmodule AcqdatCore.Model.RoleManagement.Invitation do
 
   def delete(%Invitation{} = invitation) do
     Repo.delete(invitation)
+  end
+
+  defp check_for_existing_user(email) do
+    User.verify_email(email)
   end
 end
