@@ -99,16 +99,14 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeControllerTest do
       asset_type = insert(:asset_type)
 
       data = %{
-        asset_type: %{
-          name: "Water Plant",
-          metadata: [
-            %{
-              name: "metdata",
-              data_type: "string",
-              uuid: "test uuid"
-            }
-          ]
-        }
+        name: "Water Plant",
+        metadata: [
+          %{
+            name: "metdata",
+            data_type: "string",
+            uuid: "test uuid"
+          }
+        ]
       }
 
       conn =
@@ -120,7 +118,7 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeControllerTest do
       assert Map.has_key?(response, "id")
     end
 
-    test "asset type update fails, if asset is already associated with this asset_type", %{
+    test "update asset_type metadata if the user appends new metadata", %{
       conn: conn,
       org: org,
       project: project
@@ -128,16 +126,13 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeControllerTest do
       asset = insert(:asset)
 
       data = %{
-        asset_type: %{
-          name: "Water Plant",
-          metadata: [
-            %{
-              name: "metdata",
-              data_type: "string",
-              uuid: "test uuid"
-            }
-          ]
-        }
+        name: "Water Plant",
+        metadata: [
+          %{
+            name: "metdata",
+            data_type: "string"
+          }
+        ]
       }
 
       conn =
@@ -147,14 +142,36 @@ defmodule AcqdatApiWeb.EntityManagement.AssetTypeControllerTest do
           data
         )
 
-      response = conn |> json_response(400)
+      response = conn |> json_response(200)
 
-      assert response == %{
-               "detail" => "There are assets associated with this Asset Type",
-               "source" => nil,
-               "status_code" => 400,
-               "title" => "Asset is associated with this asset type"
-             }
+      assert Map.has_key?(response, "name")
+      assert Map.has_key?(response, "id")
+    end
+
+    test "asset type name should be updated even, if asset is already associated with this asset_type",
+         %{
+           conn: conn,
+           org: org,
+           project: project
+         } do
+      asset = insert(:asset)
+
+      data = %{
+        name: "updated Water Plant"
+      }
+
+      conn =
+        put(
+          conn,
+          Routes.asset_type_path(conn, :update, org.id, project.id, asset.asset_type_id),
+          data
+        )
+
+      response = conn |> json_response(200)
+
+      assert Map.has_key?(response, "name")
+      assert Map.has_key?(response, "id")
+      assert response["name"] == "updated Water Plant"
     end
 
     test "fails if invalid token in authorization header", %{

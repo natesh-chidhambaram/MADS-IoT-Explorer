@@ -94,18 +94,44 @@ defmodule AcqdatCore.Model.EntityManagement.AssetType do
           {:ok, AssetType.t()}
           | {:error, Ecto.Changeset.t()}
           | {:error, String.t()}
+
   def update(asset_type, params) do
     case is_nil(asset_present?(asset_type)) do
       true ->
-        changeset = AssetType.update_changeset(asset_type, params)
-
-        case Repo.update(changeset) do
-          {:ok, asset_type} -> {:ok, asset_type |> Repo.preload(:org)}
-          {:error, error} -> {:error, error}
-        end
+        update_asset_type(asset_type, params)
 
       false ->
-        {:error, "There are assets associated with this Asset Type"}
+        validate_n_append_metadata(asset_type, params)
+    end
+  end
+
+  def validate_n_append_metadata(asset_type, %{"metadata" => metadata} = params) do
+    new_metadata_params =
+      Enum.filter(metadata, fn param -> param["id"] == nil && param["uuid"] == nil end)
+
+    if length(new_metadata_params) > 0 do
+      metadata =
+        Enum.map(asset_type.metadata, fn metadata -> Map.from_struct(metadata) end) ++
+          new_metadata_params
+
+      params = %{params | "metadata" => metadata}
+
+      update_asset_type(asset_type, params)
+    else
+      {:error, "There are assets associated with this Asset Type"}
+    end
+  end
+
+  def validate_n_append_metadata(asset_type, params) do
+    update_asset_type(asset_type, params)
+  end
+
+  defp update_asset_type(asset_type, params) do
+    changeset = AssetType.update_changeset(asset_type, params)
+
+    case Repo.update(changeset) do
+      {:ok, asset_type} -> {:ok, asset_type |> Repo.preload(:org)}
+      {:error, error} -> {:error, error}
     end
   end
 
