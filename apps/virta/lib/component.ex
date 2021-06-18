@@ -242,7 +242,7 @@ defmodule Virta.Component do
       def component_properties do
         %{
           inports: @inports,
-          outports: @outports,
+          outports: @outports
           # properties: @properties,
           # category: @category,
           # info: @info,

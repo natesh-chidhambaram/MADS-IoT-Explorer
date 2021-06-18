@@ -34,7 +34,6 @@ defmodule AcqdatCore.Schema do
       defoverridable add_uuid: 1
       defoverridable add_slug: 1
       defoverridable random_string: 1
-
     end
   end
 end

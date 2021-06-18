@@ -17,7 +17,7 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     changeset = Organisation.update_changeset(org, params)
     Repo.update(changeset)
   end
-  
+
   # TODO: Implement delete
   @spec delete(any) :: any
   def delete(_org) do

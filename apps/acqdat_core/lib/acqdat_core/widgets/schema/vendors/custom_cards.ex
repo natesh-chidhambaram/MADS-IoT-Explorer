@@ -2,6 +2,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.CustomCards do
   @moduledoc """
     Embedded Schema of the settings of the widget with it keys and subkeys
   """
+
   # @data_types ~w(string color object list integer boolean)a
 
   defstruct card: %{
