@@ -1,6 +1,6 @@
 defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
   use AcqdatCore.Schema
-  alias AcqdatApi.DataInsights.Visualizations
+  # alias AcqdatApi.DataInsights.Visualizations
 
   @behaviour AcqdatCore.DataInsights.Schema.Visualizations
   @visualization_type "PivotTables"
@@ -100,7 +100,7 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
 
     values_data = pivot_values_col_data(values, rows_data)
     [value | _] = values
-    value_name = "\"#{value["name"]}\""
+    _value_name = "\"#{value["name"]}\""
 
     if filters != [] do
       filter_data = pivot_filters_data_parsing(filters)
@@ -201,7 +201,7 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
         String.slice(filter_data, 0..(String.length(filter_data) - 6))
       end
 
-    crosstab_query =
+    _crosstab_query =
       if column["action"] == "group" do
         inner_select_qry =
           aggregate_data_sub_query(
@@ -431,7 +431,7 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
         col_name
       }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
              ROUND(MAX(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} 
+            FROM #{fact_table_name}
             where #{filter_data1} and #{value_name} is not null
             GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """
@@ -452,13 +452,13 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
   defp pivot_values_col_data(values, rows_data) do
     Enum.reduce(values, rows_data, fn value, acc ->
       if Enum.member?(["sum", "avg", "min", "max"], value["action"]) do
-        rows_data <>
+        acc <>
           "," <>
           "ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) as \"#{
             value["title"]
           }\""
       else
-        rows_data <>
+        acc <>
           "," <> "#{value["action"]}(\"#{value["name"]}\") as \"#{value["title"]}\""
       end
     end)
@@ -472,7 +472,7 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
         acc <> "\"#{filter["name"]}\" not in (#{entities}) and "
       end)
 
-    filter_data = filter_data |> String.slice(0..(String.length(filter_data) - 6))
+    _filter_data = filter_data |> String.slice(0..(String.length(filter_data) - 6))
   end
 
   defp value_data_string(value) do

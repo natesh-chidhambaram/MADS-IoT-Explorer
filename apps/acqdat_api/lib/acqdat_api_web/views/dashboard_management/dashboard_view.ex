@@ -67,13 +67,6 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardView do
     }
   end
 
-  def render("creator.json", %{dashboard: creator}) do
-    %{
-      first_name: creator.first_name,
-      email: creator.email
-    }
-  end
-
   def render("exported_dashboard.json", %{dashboard: export_details}) do
     %{
       url: export_details.url,

@@ -29,7 +29,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
   end
 
   @doc """
-  Returns a user by the supplied id.
+  Returns a user by the supplied id/email.
   """
   def get(id) when is_integer(id) do
     case Repo.get(User, id) |> Repo.preload([:user_setting]) do
@@ -39,6 +39,10 @@ defmodule AcqdatCore.Model.RoleManagement.User do
       user ->
         {:ok, user}
     end
+  end
+
+  def get(email) when is_binary(email) do
+    Repo.get_by(User, email: email)
   end
 
   def get_for_view(user_ids) do
@@ -60,13 +64,6 @@ defmodule AcqdatCore.Model.RoleManagement.User do
       user ->
         {:ok, user}
     end
-  end
-
-  @doc """
-  Returns a user by the supplied email.
-  """
-  def get(email) when is_binary(email) do
-    Repo.get_by(User, email: email)
   end
 
   @doc """
@@ -131,6 +128,15 @@ defmodule AcqdatCore.Model.RoleManagement.User do
     |> run_transaction(params)
   end
 
+  def update_user(%User{} = user, params) do
+    changeset = User.update_changeset(user, params)
+
+    case Repo.update(changeset) do
+      {:ok, user} -> {:ok, user |> Repo.preload([:role, :org])}
+      {:error, message} -> {:error, message}
+    end
+  end
+
   defp run_transaction(multi_query, params) do
     result = Repo.transaction(multi_query)
 
@@ -151,15 +157,6 @@ defmodule AcqdatCore.Model.RoleManagement.User do
           :update_user_groups -> {:error, failed_value}
           :update_user_policies -> {:error, failed_value}
         end
-    end
-  end
-
-  def update_user(%User{} = user, params) do
-    changeset = User.update_changeset(user, params)
-
-    case Repo.update(changeset) do
-      {:ok, user} -> {:ok, user |> Repo.preload([:role, :org])}
-      {:error, message} -> {:error, message}
     end
   end
 

@@ -26,7 +26,7 @@ defmodule AcqdatCore.Seed.DataFeeder.OrgAndUser do
       name: params.name,
       uuid: params.uuid,
       inserted_at: DateTime.to_unix(params.inserted_at),
-      "join_field": "organisation"
+      join_field: "organisation"
       )
   end
 
@@ -40,7 +40,7 @@ defmodule AcqdatCore.Seed.DataFeeder.OrgAndUser do
       is_invited: params.is_invited,
       role_id: params.role_id,
       inserted_at: DateTime.to_unix(params.inserted_at),
-      "join_field": %{"name": "user", "parent": org.id}
+      join_field: %{name: "user", parent: org.id}
       )
   end
 end

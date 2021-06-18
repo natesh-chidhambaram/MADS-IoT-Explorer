@@ -28,6 +28,16 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     end
   end
 
+  def get(params) when is_map(params) do
+    case Repo.get_by(Organisation, params) do
+      nil ->
+        {:error, "organisation not found"}
+
+      org ->
+        {:ok, org}
+    end
+  end
+
   defp string_to_atom(params) do
     for {key, val} <- params, into: %{}, do: {String.to_atom(key), val}
   end
@@ -43,16 +53,6 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     org_data_with_preloads = paginated_org_data.entries |> Repo.preload(preloads)
 
     ModelHelper.paginated_response(org_data_with_preloads, paginated_org_data)
-  end
-
-  def get(params) when is_map(params) do
-    case Repo.get_by(Organisation, params) do
-      nil ->
-        {:error, "organisation not found"}
-
-      org ->
-        {:ok, org}
-    end
   end
 
   def get(id, project_id) when is_integer(id) do
@@ -100,5 +100,11 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     # org = org |> Repo.preload(:apps)
     # org.apps
     App |> order_by(:id) |> Repo.all()
+  end
+
+  # TODO: Implement delete
+  @spec delete(any) :: any
+  def delete(_org) do
+    nil
   end
 end
