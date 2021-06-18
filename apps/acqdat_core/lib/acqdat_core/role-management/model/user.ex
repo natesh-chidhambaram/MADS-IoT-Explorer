@@ -4,7 +4,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
   """
 
   alias AcqdatCore.Schema.EntityManagement.{Asset, Organisation}
-  alias AcqdatCore.Schema.RoleManagement.{User, App}
+  alias AcqdatCore.Schema.RoleManagement.{User, UserCredentials, App}
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Helper, as: ModelHelper
   alias AcqdatCore.Model.RoleManagement.GroupUser
@@ -32,7 +32,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
   Returns a user by the supplied id.
   """
   def get(id) when is_integer(id) do
-    case Repo.get(User, id) |> Repo.preload([:user_setting]) do
+    case Repo.get(User, id) |> Repo.preload([:user_credentials]) do
       nil ->
         {:error, "not found"}
 
@@ -45,7 +45,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
     query =
       from(user in User,
         where: user.id in ^user_ids,
-        preload: [:user_setting, :org, :role, user_group: :user_group, policies: :policy],
+        preload: [:user_credentials, :org, :role, user_group: :user_group, policies: :policy],
         order_by: [desc: :inserted_at]
       )
 
@@ -131,6 +131,15 @@ defmodule AcqdatCore.Model.RoleManagement.User do
     |> run_transaction(params)
   end
 
+  def update_user(%User{} = user, params) do
+    changeset = User.update_changeset(user, params)
+
+    case Repo.update(changeset) do
+      {:ok, user} -> {:ok, user |> Repo.preload([:role, :org])}
+      {:error, message} -> {:error, message}
+    end
+  end
+
   defp run_transaction(multi_query, params) do
     result = Repo.transaction(multi_query)
 
@@ -151,15 +160,6 @@ defmodule AcqdatCore.Model.RoleManagement.User do
           :update_user_groups -> {:error, failed_value}
           :update_user_policies -> {:error, failed_value}
         end
-    end
-  end
-
-  def update_user(%User{} = user, params) do
-    changeset = User.update_changeset(user, params)
-
-    case Repo.update(changeset) do
-      {:ok, user} -> {:ok, user |> Repo.preload([:role, :org])}
-      {:error, message} -> {:error, message}
     end
   end
 
@@ -206,7 +206,37 @@ defmodule AcqdatCore.Model.RoleManagement.User do
         select: user
       )
 
-    Repo.one!(query) |> Repo.preload(:org)
+    Repo.one!(query)
+    |> Repo.preload([:user_credentials, :org, :role, user_group: :user_group, policies: :policy])
+  end
+
+  def fetch_user_orgs_by_email(email) do
+    query =
+      from(
+        user in User,
+        join: cred in UserCredentials,
+        on:
+          cred.id == user.user_credentials_id and cred.email == ^email and
+            user.is_deleted == false,
+        select: user.org_id
+      )
+
+    Repo.all(query)
+  end
+
+  def fetch_user_by_email_n_org(email, org_id) do
+    query =
+      from(
+        user in User,
+        join: cred in UserCredentials,
+        on:
+          cred.id == user.user_credentials_id and
+            cred.email == ^email and
+            user.org_id == ^org_id,
+        select: user
+      )
+
+    Repo.one(query)
   end
 
   def verify_email(user) do
