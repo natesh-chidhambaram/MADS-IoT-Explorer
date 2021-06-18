@@ -5,7 +5,7 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardView do
   alias AcqdatCore.Repo
 
   def render("dashboard.json", %{dashboard: dashboard}) do
-    dashboard = Repo.preload(dashboard, [:panels, :dashboard_export, :creator])
+    dashboard = Repo.preload(dashboard, [:panels, :dashboard_export, creator: :user_credentials])
 
     %{
       id: dashboard.id,
@@ -25,11 +25,11 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardView do
     }
   end
 
-  def render("creator.json", %{dashboard: creator}) do
+  def render("creator.json", %{dashboard: %{user_credentials: user_cred}}) do
     %{
-      email: creator.email,
-      first_name: creator.first_name,
-      last_name: creator.last_name
+      email: user_cred.email,
+      first_name: user_cred.first_name,
+      last_name: user_cred.last_name
     }
   end
 

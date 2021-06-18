@@ -12,8 +12,8 @@ defmodule AcqdatCore.Seed.Widgets.BasicColumn do
     column: %{
       visual: %{
         chart: [type: %{value: "column"}, backgroundColor: %{}, plotBackgroundColor: %{}],
-        title: [text: %{}, align: %{}],
-        subtitle: [text: %{}, align: %{}],
+        title: [text: %{}, align: %{}, style: [color: %{value: "#495057"}, fontSize: %{value: "15px"}]],
+        subtitle: [text: %{}, align: %{}, style: [color: %{value: "#74788d"}, fontSize: %{value: "14px"}]],
         yAxis: [title: [text: %{}]],
         credits: [enabled: %{value: false}],
       },

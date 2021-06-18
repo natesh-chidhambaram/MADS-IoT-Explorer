@@ -37,27 +37,44 @@ defmodule AcqdatApiWeb.RoleManagement.UserController do
     end
   end
 
-  def create(conn, %{"user" => user_params, "org_id" => org_id}) do
+  def create(conn, %{"org_id" => org_id} = params) do
     case conn.status do
       nil ->
         [token | _] = conn |> get_req_header("invitation-token")
 
-        user_params =
-          user_params
-          |> Map.put("token", token)
-          |> Map.put("org_id", org_id)
+        changeset =
+          if params["user"] do
+            user_params =
+              params["user"]
+              |> Map.put("token", token)
+              |> Map.put("org_id", org_id)
 
-        changeset = verify_create_params(user_params)
+            verify_create_params(user_params)
+          else
+            params =
+              params
+              |> Map.put("token", token)
+
+            verify_join_org_params(params)
+          end
 
         with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
              {:create, {:ok, user}} <- {:create, User.create(data)} do
-          Task.start_link(fn ->
-            ElasticSearch.create_user("organisation", user, %{id: user.org_id})
-          end)
+          # TODO: Need to implement this for elasticsearch as per new design
+          # Task.start_link(fn ->
+          #   ElasticSearch.create_user("organisation", user, %{id: user.org_id})
+          # end)
+
+          message =
+            if params["user"] do
+              "Your password has been set, please login"
+            else
+              "You have successfully joined the organisation, please login"
+            end
 
           conn
           |> put_status(200)
-          |> render("user_details_without_user_setting.json", %{user_details: user})
+          |> render("user_creation.json", message: message)
         else
           {:extract, {:error, error}} ->
             error = extract_changeset_error(error)
@@ -159,14 +176,29 @@ defmodule AcqdatApiWeb.RoleManagement.UserController do
   end
 
   def index(conn, params) do
+    changeset = verify_index_params(params)
+
     case conn.status do
       nil ->
-        with {:ok, hits} <- ElasticSearch.user_indexing(params) do
-          conn |> put_status(200) |> render("hits.json", %{hits: hits})
+        with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
+             {:list, users} <-
+               {:list,
+                User.get_all(data, [
+                  :user_credentials,
+                  :role,
+                  :org,
+                  user_group: :user_group,
+                  policies: :policy
+                ])} do
+          conn
+          |> put_status(200)
+          |> render("index.json", users)
         else
-          {:error, message} ->
-            conn
-            |> send_error(404, UserErrorHelper.error_message(:elasticsearch, message))
+          {:extract, {:error, error}} ->
+            send_error(conn, 400, error)
+
+          {:list, {:error, message}} ->
+            send_error(conn, 400, message)
         end
 
       404 ->

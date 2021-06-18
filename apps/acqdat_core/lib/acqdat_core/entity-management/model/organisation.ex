@@ -17,6 +17,12 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     changeset = Organisation.update_changeset(org, params)
     Repo.update(changeset)
   end
+  
+  # TODO: Implement delete
+  @spec delete(any) :: any
+  def delete(_org) do
+    nil
+  end
 
   def get(id) when is_integer(id) do
     case Repo.get(Organisation, id) do
@@ -53,6 +59,12 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     org_data_with_preloads = paginated_org_data.entries |> Repo.preload(preloads)
 
     ModelHelper.paginated_response(org_data_with_preloads, paginated_org_data)
+  end
+
+  def get_all_by_ids(org_ids) do
+    Organisation
+    |> where([org], org.id in ^org_ids)
+    |> Repo.all()
   end
 
   def get(id, project_id) when is_integer(id) do
@@ -102,9 +114,22 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     App |> order_by(:id) |> Repo.all()
   end
 
-  # TODO: Implement delete
-  @spec delete(any) :: any
-  def delete(_org) do
-    nil
+  def fetch_by_url(url) do
+    query =
+      from(org in Organisation,
+        where: org.url == ^url
+      )
+
+    Repo.all(query)
+  end
+
+  def find_or_create_by_url(%{url: url} = params) do
+    case Repo.get_by(Organisation, url: url) do
+      nil ->
+        create(params)
+
+      org ->
+        {:ok, org}
+    end
   end
 end
