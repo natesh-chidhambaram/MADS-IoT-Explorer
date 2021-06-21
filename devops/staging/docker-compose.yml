@@ -134,6 +134,7 @@ services:
       MQTT_EXPOSED_HOSTNAME: ${MQTT_EXPOSED_HOSTNAME}
       USER_EMAIL: ${USER_EMAIL}
       USER_PASSWORD: ${USER_PASSWORD}
+      SENTRY_URL: ${SENTRY_URL}
 
     depends_on:
       - database
