@@ -61,8 +61,8 @@ defmodule AcqdatApi.MixProject do
       {:hackney, "~> 1.8"},
 
       # writer for the MS Excel OpenXML format
-      {:elixlsx, "~> 0.4.2"}
-      {:sentry, "~> 7.0"},
+      {:elixlsx, "~> 0.4.2"},
+      {:sentry, "~> 8.0"},
       {:hackney, "~> 1.8"},
 
       {:poison, "~> 3.1", override: true}
