@@ -68,6 +68,7 @@ config :acqdat_core, AcqdatCore.Repo,
   password: "postgres",
   database: "acqdat_core_dev",
   hostname: "localhost",
+  port: 5431,
   pool_size: 10
 
 config :acqdat_core, :mqtt_broker,
