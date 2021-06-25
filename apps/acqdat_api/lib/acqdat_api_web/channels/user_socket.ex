@@ -20,7 +20,7 @@ defmodule AcqdatApiWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   # socket = new Socket("/socket", {params: {token: window.userToken}})
-  def connect(%{"token" => token}, socket, _connect_info) do
+  def connect(%{"token" => token}, socket, _) do
     case Phoenix.Token.verify(
            socket,
            @secret_key_base,

@@ -15,7 +15,7 @@ defmodule AcqdatApi.DataCruncher.TaskExecuteWorker do
     {:ok, params}
   end
 
-  def handle_cast({:register, task}, _status) do
+  def handle_cast({:register, task}, _) do
     tasks =
       Enum.map(task.workflows, fn workflow ->
         workflow

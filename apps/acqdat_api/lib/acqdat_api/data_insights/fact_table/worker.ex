@@ -17,7 +17,7 @@ defmodule AcqdatApi.DataInsights.FactTableWorker do
   end
 
   @impl GenServer
-  def handle_cast({:register, params}, _status) do
+  def handle_cast({:register, params}, _) do
     output = execute_workflow(params)
 
     fact_table_id = elem(params, 1)[:fact_table_id]

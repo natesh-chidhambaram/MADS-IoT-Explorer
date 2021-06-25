@@ -20,7 +20,7 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
 
   # TODO: Implement delete
   @spec delete(any) :: any
-  def delete(_org) do
+  def delete(_) do
     nil
   end
 
@@ -107,7 +107,7 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     end
   end
 
-  def get_apps(_org) do
+  def get_apps(_) do
     # TODO: Need to filter by organisation, in future
     # org = org |> Repo.preload(:apps)
     # org.apps

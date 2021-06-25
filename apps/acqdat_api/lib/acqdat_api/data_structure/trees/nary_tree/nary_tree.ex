@@ -447,7 +447,7 @@ defmodule AcqdatApi.DataStructure.Trees.NaryTree do
   defp do_print_tree(node, _, _) when is_nil(node),
     do: raise("Expecting %NaryTree.Node(), found nil.")
 
-  defp do_print_tree(%Node{children: children} = node, _nodes, func) when children == [] do
+  defp do_print_tree(%Node{children: children} = node, _, func) when children == [] do
     IO.puts(indent(node.level) <> "- " <> func.(node))
   end
 
@@ -522,7 +522,7 @@ defmodule AcqdatApi.DataStructure.Trees.NaryTree do
 
   defp traverse(node, _, _) when is_nil(node), do: raise("Expecting %NaryTree.Node(), found nil.")
 
-  defp traverse(%Node{children: children} = node, _nodes, acc) when children == [] do
+  defp traverse(%Node{children: children} = node, _, acc) when children == [] do
     [node | acc]
   end
 
@@ -552,7 +552,7 @@ defmodule AcqdatApi.DataStructure.Trees.NaryTree do
     node_to_map(%Node{} = nodes[tree.root], tree, func)
   end
 
-  defp node_to_map(%Node{children: children} = node, _tree, func) when children == [] do
+  defp node_to_map(%Node{children: children} = node, _, func) when children == [] do
     func.(node)
   end
 
@@ -675,9 +675,9 @@ defmodule AcqdatApi.DataStructure.Trees.NaryTree do
       |> reduce_tree(acc, f)
     end
 
-    defp reduce_tree(_, {:halt, acc}, _f), do: {:halted, acc}
+    defp reduce_tree(_, {:halt, acc}, _), do: {:halted, acc}
     defp reduce_tree(nodes, {:suspend, acc}, f), do: {:suspended, acc, &reduce_tree(nodes, &1, f)}
-    defp reduce_tree([], {:cont, acc}, _f), do: {:done, acc}
+    defp reduce_tree([], {:cont, acc}, _), do: {:done, acc}
     defp reduce_tree([h | t], {:cont, acc}, f), do: reduce_tree(t, f.(h, acc), f)
 
     def slice(_) do

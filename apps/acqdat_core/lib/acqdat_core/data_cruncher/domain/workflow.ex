@@ -47,7 +47,7 @@ defmodule AcqdatCore.DataCruncher.Domain.Workflow do
 
   ############################# private functions ###########################
 
-  defp update_temp_table({_request_id, output_data}) do
+  defp update_temp_table({_, output_data}) do
     # TODO: Need to refactor this code to bulk update
     Enum.each(output_data, fn {key, val} ->
       params = %{source_id: Atom.to_string(key)}

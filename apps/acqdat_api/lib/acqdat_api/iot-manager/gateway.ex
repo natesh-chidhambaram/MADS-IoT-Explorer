@@ -22,12 +22,12 @@ defmodule AcqdatApi.IotManager.Gateway do
     Repo.preload(gateway, [:org, :project, :sensors])
   end
 
-  def setup_config(gateway, _channel = "http", params) do
+  def setup_config(gateway, _ = "http", params) do
     %{"commands" => command} = params
     CommandHandler.put(gateway.uuid, command)
   end
 
-  def setup_config(gateway, _channel = "mqtt", params) do
+  def setup_config(gateway, _ = "mqtt", params) do
     %{"commands" => command} = params
     CommandHandler.put(gateway.uuid, command)
     Gateway.send_mqtt_config(gateway, command)

@@ -7,7 +7,7 @@ defmodule AcqdatApiWeb.ApiAccessAuth do
 
   def init(default), do: default
 
-  def call(conn, _params) do
+  def call(conn, _) do
     user_id = Guardian.Plug.current_resource(conn)
 
     user =

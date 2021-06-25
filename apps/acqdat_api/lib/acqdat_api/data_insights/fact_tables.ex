@@ -34,7 +34,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
 
   def delete(fact_table) do
     Multi.new()
-    |> Multi.run(:del_rec_frm_fact_tab, fn _, _changes ->
+    |> Multi.run(:del_rec_frm_fact_tab, fn _, _ ->
       FactTables.delete(fact_table)
     end)
     |> Multi.run(:del_temp_fact_tab, fn _, %{del_rec_frm_fact_tab: _} ->
@@ -264,7 +264,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
     [
       %{
         "id" => id,
-        "name" => _name,
+        "name" => _,
         "metadata_name" => metadata_name,
         "metadata_id" => metadata_id
       }
@@ -874,14 +874,13 @@ defmodule AcqdatApi.DataInsights.FactTables do
 
               [
                 %{
-                  "metadata_name" => _metadata_name,
+                  "metadata_name" => _,
                   "date_to" => date_to,
                   "date_from" => date_from
                 }
                 | _
               ] = sensor_entity
 
-              # parameters = Enum.map(sensor_entity, fn entity -> entity["metadata_name"] end)
               parameter_ids = Enum.map(sensor_entity, fn entity -> entity["metadata_id"] end)
 
               date_from = from_unix(date_from)
@@ -945,14 +944,13 @@ defmodule AcqdatApi.DataInsights.FactTables do
 
                   [
                     %{
-                      "metadata_name" => _metadata_name,
+                      "metadata_name" => _,
                       "date_to" => date_to,
                       "date_from" => date_from
                     }
                     | _
                   ] = sensor_entity
 
-                  # parameters = Enum.map(sensor_entity, fn entity -> entity["metadata_name"] end)
                   parameter_ids = Enum.map(sensor_entity, fn entity -> entity["metadata_id"] end)
 
                   date_from = from_unix(date_from)
@@ -1104,7 +1102,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
       {:ok, result} ->
         {:ok, result[:del_rec_frm_fact_tab]}
 
-      {:error, _failed_operation, failed_value, _changes_so_far} ->
+      {:error, _, failed_value, _} ->
         {:error, failed_value}
     end
   end
