@@ -8,7 +8,6 @@ defmodule AcqdatApi.RoleManagement.User do
   import AcqdatApiWeb.Helpers
   import Tirexs.HTTP
   import AcqdatApiWeb.ResMessages
-  import Ecto.Query
 
   # NOTE: Currently, setting the token expiration time to be of 2 days(172800 secs)
   @token_expiration_max_age 172_800

@@ -60,7 +60,7 @@ defmodule AcqdatApiWeb.RoleManagement.UserController do
           end
 
         with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
-             {:create, {:ok, user}} <- {:create, User.create(data)} do
+             {:create, {:ok, _}} <- {:create, User.create(data)} do
           # TODO: Need to implement this for elasticsearch as per new design
           # Task.start_link(fn ->
           #   ElasticSearch.create_user("organisation", user, %{id: user.org_id})

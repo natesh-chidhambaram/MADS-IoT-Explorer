@@ -1,7 +1,6 @@
 defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
   use AcqdatCore.Schema
   import AcqdatCore.DataInsights.Domain.DataFilter
-  alias AcqdatApi.DataInsights.Visualizations
 
   @behaviour AcqdatCore.DataInsights.Schema.Visualizations
   @visualization_type "PivotTables"
@@ -100,7 +99,6 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     rows_data = rows_data |> Enum.map_join(",", &"\"#{&1}\"")
 
     values_data = pivot_values_col_data(values, rows_data)
-    [value | _] = values
 
     if filters != [] do
       """
@@ -185,58 +183,57 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
         do: rows_data |> Enum.join(","),
         else: rows_data |> Enum.map_join(",", &"\"#{&1}\"")
 
-    crosstab_query =
-      if column["action"] == "group" do
-        inner_select_qry =
-          aggregate_data_sub_query(
-            value["action"],
-            rows_data,
-            column["name"],
-            value,
-            fact_table_name,
-            column["group_interval"],
-            column["group_by"],
-            filter_data1
-          )
-
-        """
-          SELECT * FROM CROSSTAB ($$
-            #{inner_select_qry}
-          $$,$$
-           #{col_query}
-          $$
-        ) AS (
-            #{columns_data}
+    if column["action"] == "group" do
+      inner_select_qry =
+        aggregate_data_sub_query(
+          value["action"],
+          rows_data,
+          column["name"],
+          value,
+          fact_table_name,
+          column["group_interval"],
+          column["group_by"],
+          filter_data1
         )
+
+      """
+        SELECT * FROM CROSSTAB ($$
+          #{inner_select_qry}
+        $$,$$
+         #{col_query}
+        $$
+      ) AS (
+          #{columns_data}
+      )
+      """
+    else
+      selected_data =
+        rows_data <>
+          "," <>
+          column_name <> "," <> value_data_string(value)
+
+      if filter_data1 do
+        """
+          SELECT *
+          FROM crosstab('SELECT #{selected_data} FROM #{fact_table_name} #{filter_data1}
+          group by #{rows_data}, #{column_name} order by #{rows_data}, #{column_name}',
+          'select distinct #{column_name} from #{fact_table_name} #{filter_data1} order by 1')
+          AS final_result(#{columns_data})
         """
       else
-        selected_data =
-          rows_data <>
-            "," <>
-            column_name <> "," <> value_data_string(value)
-
-        if filter_data1 do
-          """
-            SELECT *
-            FROM crosstab('SELECT #{selected_data} FROM #{fact_table_name} #{filter_data1}
-            group by #{rows_data}, #{column_name} order by #{rows_data}, #{column_name}',
-            'select distinct #{column_name} from #{fact_table_name} #{filter_data1} order by 1')
-            AS final_result(#{columns_data})
-          """
-        else
-          """
-            SELECT *
-            FROM crosstab('SELECT #{selected_data} FROM #{fact_table_name} where \"#{
-            value["name"]
-          }\" is not null and #{column_name} is not null
-            group by #{rows_data}, #{column_name} order by #{rows_data}, #{column_name}',
-            'select distinct #{column_name} from #{fact_table_name} where #{column_name} is not null and length(#{
-            column_name
-          }) > 0 order by 1')
-            AS final_result(#{columns_data})
-          """
-        end
+        """
+          SELECT *
+          FROM crosstab('SELECT #{selected_data} FROM #{fact_table_name} where \"#{value["name"]}\" is not null and #{
+          column_name
+        } is not null
+          group by #{rows_data}, #{column_name} order by #{rows_data}, #{column_name}',
+          'select distinct #{column_name} from #{fact_table_name} where #{column_name} is not null and length(#{
+          column_name
+        }) > 0 order by 1')
+          AS final_result(#{columns_data})
+        """
       end
+    end
   end
 
   defp aggregate_data_sub_query(
@@ -411,7 +408,7 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
         col_name
       }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
              ROUND(MAX(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
-            FROM #{fact_table_name} 
+            FROM #{fact_table_name}
             #{filter_data1}
             GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
       """

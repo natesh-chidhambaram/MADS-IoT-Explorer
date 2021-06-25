@@ -165,7 +165,7 @@ defmodule AcqdatCore.Seed.Helpers.WidgetHelpers do
     end)
   end
 
-  def do_update_settings(%{data: settings}, :data, vendor_struct) do
+  def do_update_settings(%{data: settings}, :data, _) do
     Enum.map(settings, fn {key, value} ->
       set_mapped_data_keys(key, value)
     end)

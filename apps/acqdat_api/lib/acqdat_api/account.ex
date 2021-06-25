@@ -7,7 +7,7 @@ defmodule AcqdatApi.Account do
   alias AcqdatApiWeb.Guardian
   alias AcqdatCore.Model.EntityManagement.Organisation
   alias AcqdatCore.Model.RoleManagement.Requests
-  alias AcqdatCore.Model.RoleManagement.{UserCredentials, User}
+  alias AcqdatCore.Model.RoleManagement.User
 
   @access_time_hours 5
   @refresh_time_weeks 1
