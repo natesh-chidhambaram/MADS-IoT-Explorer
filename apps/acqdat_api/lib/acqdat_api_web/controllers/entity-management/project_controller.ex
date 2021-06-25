@@ -246,10 +246,10 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
   end
 
   defp modify_params(conn, params) do
-      params
-      |> Map.put_new("creator_id", String.to_integer(Guardian.Plug.current_resource(conn)))
-      |> parse_metadata_params()
-      |> Map.put("avatar", "")
+    params
+    |> Map.put_new("creator_id", String.to_integer(Guardian.Plug.current_resource(conn)))
+    |> parse_metadata_params()
+    |> Map.put("avatar", "")
   end
 
   defp extract_image(conn, project, params) do

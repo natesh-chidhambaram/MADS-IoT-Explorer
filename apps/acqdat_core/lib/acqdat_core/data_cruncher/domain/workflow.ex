@@ -61,27 +61,27 @@ defmodule AcqdatCore.DataCruncher.Domain.Workflow do
 
   defp generate_graph_data(%{input_data: input_data, id: workflow_id} = _) do
     # TODO: Needs to refactor and test it out for multiple input data and nodes
-      Enum.reduce(input_data, %{}, fn data, acc ->
-        stream_data = %Token{data: fetch_data_stream(data), data_type: :query_stream}
+    Enum.reduce(input_data, %{}, fn data, acc ->
+      stream_data = %Token{data: fetch_data_stream(data), data_type: :query_stream}
 
-        int_nodes =
-          Enum.reduce(data["nodes"], %{}, fn node, acc1 ->
-            module = node |> fetch_function_module()
-            node_from = module |> gen_node(node)
+      int_nodes =
+        Enum.reduce(data["nodes"], %{}, fn node, acc1 ->
+          module = node |> fetch_function_module()
+          node_from = module |> gen_node(node)
 
-            res = [
-              {
-                workflow_id,
-                String.to_atom(node["inports"]),
-                stream_data
-              }
-            ]
+          res = [
+            {
+              workflow_id,
+              String.to_atom(node["inports"]),
+              stream_data
+            }
+          ]
 
-            Map.put(acc1, node_from, res)
-          end)
+          Map.put(acc1, node_from, res)
+        end)
 
-        Map.merge(acc, int_nodes)
-      end)
+      Map.merge(acc, int_nodes)
+    end)
   end
 
   defp fetch_data_stream(

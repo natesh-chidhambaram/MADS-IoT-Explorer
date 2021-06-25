@@ -67,7 +67,6 @@ defmodule AcqdatApi.DataInsights.Visualizations do
   end
 
   def export(visualization, %{"panel_id" => panel_id, "title" => title}) do
-
     case fetch_widget(visualization) do
       {:ok, widget} ->
         visual_properties =
