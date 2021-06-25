@@ -12,7 +12,7 @@ defmodule AcqdatApi.DataInsights.FactTableWorker do
   end
 
   @impl GenServer
-  def init(_args) do
+  def init(_) do
     {:ok, nil}
   end
 

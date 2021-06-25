@@ -194,11 +194,11 @@ defmodule AcqdatApi.RoleManagement.Invitation do
     |> Mailer.deliver_now()
   end
 
-  defp show_message_to_user(_invitation_details) do
+  defp show_message_to_user(_) do
     {:ok, resp_msg(:invited_success)}
   end
 
-  defp show_reinvitation_success_message_to_user(_invitation_details) do
+  defp show_reinvitation_success_message_to_user(_) do
     {:ok, resp_msg(:reinvitation_success)}
   end
 end

@@ -59,9 +59,8 @@ defmodule AcqdatCore.DataCruncher.Domain.Workflow do
     end)
   end
 
-  defp generate_graph_data(%{input_data: input_data, id: workflow_id} = _workflow) do
+  defp generate_graph_data(%{input_data: input_data, id: workflow_id} = _) do
     # TODO: Needs to refactor and test it out for multiple input data and nodes
-    _nodes =
       Enum.reduce(input_data, %{}, fn data, acc ->
         stream_data = %Token{data: fetch_data_stream(data), data_type: :query_stream}
 
@@ -91,7 +90,7 @@ defmodule AcqdatCore.DataCruncher.Domain.Workflow do
            "parameter_id" => parameter_id,
            "start_date" => start_date,
            "end_date" => end_date
-         } = _data
+         } = _
        ) do
     date_to = parse_date(end_date)
     date_from = parse_date(start_date)
@@ -104,7 +103,7 @@ defmodule AcqdatCore.DataCruncher.Domain.Workflow do
     })
   end
 
-  defp gen_node(module, %{"id" => id} = _graph_node) do
+  defp gen_node(module, %{"id" => id} = _) do
     %Node{module: module, id: id}
   end
 

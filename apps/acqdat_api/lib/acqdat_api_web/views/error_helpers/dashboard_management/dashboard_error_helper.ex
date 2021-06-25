@@ -15,7 +15,7 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardErrorHelper do
     }
   end
 
-  def error_message(:redis_error, _message) do
+  def error_message(:redis_error, _) do
     %{
       title: "Problem reading from Redis",
       error: "Either redis instance is not up or there is problem reading from redis.",

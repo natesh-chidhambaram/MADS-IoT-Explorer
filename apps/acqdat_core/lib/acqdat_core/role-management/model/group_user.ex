@@ -39,7 +39,7 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUser do
       {:ok, %{add_user_to_group: user, remove_user_from_group: _panel}} ->
         {:ok, user |> Repo.preload([:user_group, :policies])}
 
-      {:error, _failed_operation, failed_value, _changes_so_far} ->
+      {:error, _, failed_value, _} ->
         {:error, failed_value}
     end
   end

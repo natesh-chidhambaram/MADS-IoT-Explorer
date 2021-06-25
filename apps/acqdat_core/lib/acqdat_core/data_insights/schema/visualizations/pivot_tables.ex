@@ -101,7 +101,6 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
 
     values_data = pivot_values_col_data(values, rows_data)
     [value | _] = values
-    _value_name = "\"#{value["name"]}\""
 
     if filters != [] do
       """

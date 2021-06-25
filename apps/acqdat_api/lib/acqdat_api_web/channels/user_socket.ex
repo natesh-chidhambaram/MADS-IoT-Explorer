@@ -36,7 +36,7 @@ defmodule AcqdatApiWeb.UserSocket do
 
         {:ok, socket}
 
-      {:error, _reason} ->
+      {:error, _} ->
         :error
     end
   end
@@ -51,5 +51,5 @@ defmodule AcqdatApiWeb.UserSocket do
   #     AcqdatApiWeb.Endpoint.broadcast("user_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
-  def id(_socket), do: nil
+  def id(_), do: nil
 end

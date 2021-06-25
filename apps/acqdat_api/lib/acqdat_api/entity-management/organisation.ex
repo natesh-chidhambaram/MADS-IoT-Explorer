@@ -4,7 +4,6 @@ defmodule AcqdatApi.EntityManagement.Organisation do
   alias AcqdatCore.Model.RoleManagement.Role
   alias AcqdatCore.Model.RoleManagement.UserCredentials
   alias Ecto.Multi
-  # alias AcqdatCore.ElasticSearch
   import Tirexs.HTTP
   import AcqdatApiWeb.Helpers
   alias AcqdatCore.Repo

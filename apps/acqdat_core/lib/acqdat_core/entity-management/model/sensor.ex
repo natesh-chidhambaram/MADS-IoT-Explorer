@@ -318,7 +318,6 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
 
     gateway_data = Gateway.get_names_by_ids(gateway_ids)
 
-    _output =
       Enum.reduce(data_grouped_by_gateway, workbook, fn {gateway_id, value}, acc ->
         {:ok, workbook} = acc
 
@@ -352,7 +351,6 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
 
                 res =
                   Enum.reduce(sensor_data, [], fn {sensor_id, params}, _acc ->
-                    _res =
                       Enum.reduce(params, empty_row, fn param, acc1 ->
                         indx_pos =
                           Enum.find_index(header_uuids, fn x ->

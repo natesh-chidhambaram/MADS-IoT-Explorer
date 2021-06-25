@@ -49,7 +49,7 @@ defmodule AcqdatApi.ToolManagement do
     Tool.get(%{uuid: tool_uuid})
   end
 
-  def employees(_facotry_id) do
+  def employees(_) do
     Employee.get_all()
   end
 

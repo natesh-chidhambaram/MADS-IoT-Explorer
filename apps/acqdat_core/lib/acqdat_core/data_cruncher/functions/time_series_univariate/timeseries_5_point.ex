@@ -26,7 +26,6 @@ defmodule AcqdatCore.DataCruncher.Functions.TSFivepointSummary do
 
   # """
   use Virta.Component
-  # alias AcqdatCore.Repo
 
   @impl true
   # TODO: Need to implement run method of ts_five_point_summary

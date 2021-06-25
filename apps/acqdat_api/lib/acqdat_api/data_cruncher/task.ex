@@ -37,7 +37,7 @@ defmodule AcqdatApi.DataCruncher.Task do
     {:ok, task |> Repo.preload(workflows: :temp_output)}
   end
 
-  defp validate_res(:error, _task) do
+  defp validate_res(:error, _) do
     {:error, "something went wrong!"}
   end
 

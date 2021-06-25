@@ -70,7 +70,7 @@ defmodule AcqdatCore.Seed.DataInsights.Topology do
       playground_asset_type: playground_asset_type
     } = asset_types
 
-    %{id: _asset_type_id, org_id: org_id, project_id: project_id} = building_asset_type
+    %{id: _, org_id: org_id, project_id: project_id} = building_asset_type
 
     {:ok, energy_mtr_sensor_type} = SensorType.create(%{name: "Energy Meter", project_id: project_id, org_id: org_id, parameters: gen_sensor_type_params("Energy Meter")})
 
@@ -406,7 +406,7 @@ defmodule AcqdatCore.Seed.DataInsights.Topology do
         result = create_parameter_struct(params, energy)
         Map.put(acc, "Energy", result)
     end)
-    |> Enum.map(fn {_key, value} ->
+    |> Enum.map(fn {_, value} ->
       value
     end)
   end

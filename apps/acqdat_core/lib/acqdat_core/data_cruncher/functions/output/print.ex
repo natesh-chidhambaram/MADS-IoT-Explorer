@@ -27,13 +27,9 @@ defmodule AcqdatCore.DataCruncher.Functions.Print do
 
     {:ok, value} =
       Repo.transaction(fn ->
-        {:ok, _value} = TempOutput.create(params)
+        {:ok, _} = TempOutput.create(params)
       end)
 
     value
   end
-
-  # defp process_data(_) do
-  #   0
-  # end
 end

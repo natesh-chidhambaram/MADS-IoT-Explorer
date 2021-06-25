@@ -56,8 +56,8 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
         subquery,
         param_uuid,
         aggregator,
-        _grp_interval,
-        _group_interval_type
+        _,
+        _
       )
       when aggregator == "no" and is_binary(param_uuid) do
     from(
@@ -222,8 +222,8 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
         subquery,
         param_uuids,
         aggregator,
-        _grp_interval,
-        _group_interval_type,
+        _,
+        _,
         limit_elem
       )
       when aggregator == "no" and is_list(param_uuids) do
