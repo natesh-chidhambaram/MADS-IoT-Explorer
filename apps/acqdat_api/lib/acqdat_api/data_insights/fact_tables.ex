@@ -210,7 +210,6 @@ defmodule AcqdatApi.DataInsights.FactTables do
           [[key] ++ List.flatten(Enum.map(metadatas, fn metadata -> Map.values(metadata) end))]
       end)
 
-    _output =
       if data != [] do
         headers_metadata = %{
           "#{asset_type_id}" =>

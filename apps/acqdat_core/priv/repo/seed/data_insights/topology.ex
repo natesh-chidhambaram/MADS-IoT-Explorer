@@ -361,7 +361,9 @@ defmodule AcqdatCore.Seed.DataInsights.Topology do
     Enum.map(iterator, fn time ->
       time = time |> DateTime.from_naive!("Etc/UTC") |> DateTime.truncate(:second)
       %{
-        sensor_id: sensor.id, project_id: sensor.project_id, org_id: sensor.org_id,
+        sensor_id: sensor.id,
+        project_id: sensor.project_id,
+        org_id: sensor.org_id,
         inserted_at: time,
         inserted_timestamp: time,
         parameters: occupancy_parameters(sensor)
@@ -377,7 +379,9 @@ defmodule AcqdatCore.Seed.DataInsights.Topology do
     Enum.map(iterator, fn time ->
       time = time |> DateTime.from_naive!("Etc/UTC") |> DateTime.truncate(:second)
       %{
-        sensor_id: sensor.id, project_id: sensor.project_id, org_id: sensor.org_id,
+        sensor_id: sensor.id,
+        project_id: sensor.project_id,
+        org_id: sensor.org_id,
         inserted_at: time,
         inserted_timestamp: time,
         parameters: heat_parameters(sensor)
@@ -406,9 +410,7 @@ defmodule AcqdatCore.Seed.DataInsights.Topology do
         result = create_parameter_struct(params, energy)
         Map.put(acc, "Energy", result)
     end)
-    |> Enum.map(fn {_, value} ->
-      value
-    end)
+    |> Map.values()
   end
 
   defp heat_parameters(sensor) do
