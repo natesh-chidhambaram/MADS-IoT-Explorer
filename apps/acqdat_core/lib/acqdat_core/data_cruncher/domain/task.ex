@@ -27,9 +27,9 @@ defmodule AcqdatCore.DataCruncher.Domain.Task do
 
   defp create_graph(%{graph: graph} = _) do
     edge_list =
-	  graph
-	  |> Map.get("edge_list")
-	  |> Enum.map(&gen_edge/1)
+      graph
+      |> Map.get("edge_list")
+      |> Enum.map(&gen_edge/1)
 
     # NOTE: added outer edges for handling of multiple outputs in our graph
     out_node_id = UUID.uuid1(:hex)

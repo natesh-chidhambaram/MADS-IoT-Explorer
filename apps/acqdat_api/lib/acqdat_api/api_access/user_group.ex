@@ -33,7 +33,7 @@ defmodule AcqdatApi.ApiAccess.UserGroup do
   end
 
   def update(group, params) do
-    params = Map.new(params, fn {key, val} -> {String.to_atom("#{key}", val})
+    params = Map.new(params, fn {key, val} -> {String.to_atom("#{key}"), val} end)
     verify_group(UserGroup.normal_update(group, params))
   end
 
