@@ -9,6 +9,7 @@ defmodule AcqdatApi.ApiAccess.UserGroup do
 
   defdelegate get_all(data, preloads), to: UserGroup
   defdelegate get(id), to: UserGroup
+
   @spec delete(AcqdatCore.Schema.RoleManagement.UserGroup.t()) ::
           {:error, any} | {:ok, nil | [%{optional(atom) => any}] | %{optional(atom) => any}}
   defdelegate delete(user_group), to: UserGroup
