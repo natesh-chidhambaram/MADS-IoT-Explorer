@@ -79,7 +79,7 @@ defmodule AcqdatUmbrella.MixProject do
 
   defp aliases do
     [
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run apps/acqdat_core/priv/repo/seeds.exs"],
+      "ecto.setup": ["ecto.create", "ecto.migrate"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate", "test"],
       quality: ["format", "credo --strict", "sobelow --verbose", "dialyzer", "test"],
