@@ -184,6 +184,7 @@ defmodule AcqdatApiWeb.Router do
         get("/gateways/", DashboardController, :all_gateways)
       end
 
+
       get("/widgets/filtered", DashboardController, :fetch_widgets)
       resources "/widgets", WidgetController, only: [:show]
     end
