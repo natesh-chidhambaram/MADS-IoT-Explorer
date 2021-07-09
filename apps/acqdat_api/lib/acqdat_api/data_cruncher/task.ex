@@ -29,8 +29,11 @@ defmodule AcqdatApi.DataCruncher.Task do
 
   def update(%{"id" => id, "action" => action} = params)
       when action == "register" do
-    {id, _} = Integer.parse(id)
-    verify_task(TaskModel.get(id), params)
+    id
+    |> Integer.parse()
+    |> elem(0)
+    |> TaskModel.get()
+    |> verify_task(params)
   end
 
   defp validate_res(:ok, task) do
