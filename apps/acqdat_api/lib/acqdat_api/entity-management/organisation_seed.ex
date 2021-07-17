@@ -33,31 +33,49 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
     "Building Green" => %{"floors" => "3"},
     "Building Yellow" => %{"floors" => "1"},
     "Building White" => %{"floors" => "2"},
-    "Building Brown" => %{"floors" => "3"},
+    "Building Brown" => %{"floors" => "3"}
   }
 
   # configures how many apartments per floor
   @building_apartment_Per_floor 2
 
   def seed_data(org, creator) do
-    Repo.transaction(fn ->
-      {:ok, project} = Project.create(%{name: "DataInsights Demo", org_id:
-        org.id, creator_id: creator.id, lead_ids: [], user_ids: []})
+    Repo.transaction(
+      fn ->
+        {:ok, project} =
+          Project.create(%{
+            name: "DataInsights Demo",
+            org_id: org.id,
+            creator_id: creator.id,
+            lead_ids: [],
+            user_ids: []
+          })
+
         ElasticSearch.create_project("org", project, org)
 
-      asset_types = %{
-        building_asset_type: seed_asset_type(org.id, project.id, "Building"),
-        apartment_asset_type: seed_asset_type(org.id, project.id, "Apartment"),
-        playground_asset_type: seed_asset_type(org.id, project.id, "PlayGround")
-      }
+        asset_types = %{
+          building_asset_type: seed_asset_type(org.id, project.id, "Building"),
+          apartment_asset_type: seed_asset_type(org.id, project.id, "Apartment"),
+          playground_asset_type: seed_asset_type(org.id, project.id, "PlayGround")
+        }
 
-      build_topology(asset_types, creator, org)
-    end, timeout: :infinity)
+        build_topology(asset_types, creator, org)
+      end,
+      timeout: :infinity
+    )
   end
 
   def seed_asset_type(org_id, project_id, asset_type) do
     metadata = fetch_asset_type_metadata(asset_type)
-    {:ok, data} = AssetType.create(%{name: asset_type, metadata: metadata, org_id: org_id, project_id: project_id})
+
+    {:ok, data} =
+      AssetType.create(%{
+        name: asset_type,
+        metadata: metadata,
+        org_id: org_id,
+        project_id: project_id
+      })
+
     data
   end
 
@@ -81,6 +99,7 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
             unit: ""
           }
         ]
+
       "Apartment" ->
         [
           %{
@@ -104,6 +123,7 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
             unit: ""
           }
         ]
+
       _ ->
         []
     end
@@ -118,16 +138,35 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
 
     %{id: asset_type_id, org_id: org_id, project_id: project_id} = building_asset_type
 
-    {:ok, energy_mtr_sensor_type} = SensorType.create(%{name: "Energy Meter", project_id: project_id, org_id: org_id, parameters: gen_sensor_type_params("Energy Meter")})
+    {:ok, energy_mtr_sensor_type} =
+      SensorType.create(%{
+        name: "Energy Meter",
+        project_id: project_id,
+        org_id: org_id,
+        parameters: gen_sensor_type_params("Energy Meter")
+      })
 
-    {:ok, heat_mtr_sensor_type} = SensorType.create(%{name: "Heat Meter", project_id: project_id, org_id: org_id, parameters: gen_sensor_type_params("Heat Meter")})
+    {:ok, heat_mtr_sensor_type} =
+      SensorType.create(%{
+        name: "Heat Meter",
+        project_id: project_id,
+        org_id: org_id,
+        parameters: gen_sensor_type_params("Heat Meter")
+      })
 
-    {:ok, occupancy_sensor_type} = SensorType.create(%{name: "Occupancy Sensor", project_id: project_id, org_id: org_id, parameters: gen_sensor_type_params("Occupancy Sensor")})
+    {:ok, occupancy_sensor_type} =
+      SensorType.create(%{
+        name: "Occupancy Sensor",
+        project_id: project_id,
+        org_id: org_id,
+        parameters: gen_sensor_type_params("Occupancy Sensor")
+      })
 
     buildings = ["Red", "Green", "Blue", "Yellow", "White", "Brown"]
 
     Enum.each(buildings, fn ele ->
-      {:ok, building} = build_root_asset(
+      {:ok, building} =
+        build_root_asset(
           "Building #{ele}",
           org_id,
           org.name,
@@ -138,21 +177,22 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
 
       no_of_floors = fetch_metadata_val("No of Floors", "Building #{ele}")
 
-      playground = build_asset_map("PlayGround #{ele}", org_id, project_id, user.id, playground_asset_type)
+      playground =
+        build_asset_map("PlayGround #{ele}", org_id, project_id, user.id, playground_asset_type)
 
       {:ok, playground} = Asset.add_as_child(building, playground, :child)
 
       occup_sensor =
-      build_sensor_map(
-        "Occupancy Sensor #{ele}",
-        org_id,
-        project_id,
-        occupancy_sensor_type.id,
-        playground.id
-      )
+        build_sensor_map(
+          "Occupancy Sensor #{ele}",
+          org_id,
+          project_id,
+          occupancy_sensor_type.id,
+          playground.id
+        )
 
       {:ok, occup_sensor} = Sensor.create(occup_sensor)
-      occup_sensor = struct(occup_sensor, [sensor_type: occupancy_sensor_type])
+      occup_sensor = struct(occup_sensor, sensor_type: occupancy_sensor_type)
       data = gen_sensor_type_data("occupancy", occup_sensor)
       Repo.insert_all(SensorsData, data)
 
@@ -163,6 +203,7 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
           apt_name = "Apt #{ele} #{floor_no}#{apt_no}"
           apt = build_asset_map(apt_name, org_id, project_id, user.id, apartment_asset_type)
           {:ok, apt} = Asset.add_as_child(building, apt, :child)
+
           energy_sensor =
             build_sensor_map(
               "Energy Mtr #{ele} #{floor_no}#{apt_no}",
@@ -172,7 +213,7 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
               apt.id
             )
 
-            heat_sensor =
+          heat_sensor =
             build_sensor_map(
               "Heat Mtr #{ele} #{floor_no}#{apt_no}",
               org_id,
@@ -181,14 +222,14 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
               apt.id
             )
 
-            {:ok, energy_sensor} = Sensor.create(energy_sensor)
-            energy_sensor = struct(energy_sensor, [sensor_type: energy_mtr_sensor_type])
-            energy_data = gen_sensor_type_data("energy", energy_sensor)
-            Repo.insert_all(SensorsData, energy_data)
-            {:ok, heat_mtr_sen} = Sensor.create(heat_sensor)
-            heat_mtr_sen = struct(heat_mtr_sen, [sensor_type: heat_mtr_sensor_type])
-            heat_data = gen_sensor_type_data("heat", heat_mtr_sen)
-            Repo.insert_all(SensorsData, heat_data)
+          {:ok, energy_sensor} = Sensor.create(energy_sensor)
+          energy_sensor = struct(energy_sensor, sensor_type: energy_mtr_sensor_type)
+          energy_data = gen_sensor_type_data("energy", energy_sensor)
+          Repo.insert_all(SensorsData, energy_data)
+          {:ok, heat_mtr_sen} = Sensor.create(heat_sensor)
+          heat_mtr_sen = struct(heat_mtr_sen, sensor_type: heat_mtr_sensor_type)
+          heat_data = gen_sensor_type_data("heat", heat_mtr_sen)
+          Repo.insert_all(SensorsData, heat_data)
         end)
       end)
     end)
@@ -256,14 +297,19 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
   end
 
   def gen_sensor_type_data("energy", sensor) do
-    duration = @months * 30 # duration in months
-    interval = 10 # interval in minutes
+    # duration in months
+    duration = @months * 30
+    # interval in minutes
+    interval = 10
     iterator = get_time_iterator(duration, interval)
 
     Enum.map(iterator, fn time ->
       time = time = time |> DateTime.from_naive!("Etc/UTC") |> DateTime.truncate(:second)
+
       %{
-        sensor_id: sensor.id, project_id: sensor.project_id, org_id: sensor.org_id,
+        sensor_id: sensor.id,
+        project_id: sensor.project_id,
+        org_id: sensor.org_id,
         inserted_at: time,
         inserted_timestamp: time,
         parameters: energy_parameters(sensor, interval)
@@ -277,18 +323,21 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
       %Parameters{name: "Voltage"} = params, acc ->
         result = create_parameter_struct(params, Enum.random(230..240))
         Map.put(acc, "Voltage", result)
+
       %Parameters{name: "Current"} = params, acc ->
         result = create_parameter_struct(params, Enum.random(1..10))
         Map.put(acc, "Current", result)
+
       %Parameters{name: "Power"} = params, acc ->
         voltage = Map.get(acc, "Voltage") |> Map.get(:value)
         current = Map.get(acc, "Current") |> Map.get(:value)
         power = voltage * current * 0.9
         result = create_parameter_struct(params, power)
         Map.put(acc, "Power", result)
+
       %Parameters{name: "Energy"} = params, acc ->
         power = Map.get(acc, "Power") |> Map.get(:value)
-        energy = (power * duration) / 60
+        energy = power * duration / 60
         result = create_parameter_struct(params, energy)
         Map.put(acc, "Energy", result)
     end)
@@ -300,12 +349,10 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
   defp create_parameter_struct(param, value) do
     struct(
       Sparameters,
-      [
-        uuid: param.uuid,
-        name: param.name,
-        data_type: param.data_type,
-        value: value
-      ]
+      uuid: param.uuid,
+      name: param.name,
+      data_type: param.data_type,
+      value: value
     )
   end
 
@@ -341,12 +388,11 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
 
   defp get_time_iterator(duration, interval) do
     time_from = Timex.shift(Timex.now(), days: -duration)
-    Timex.Interval.new(from: time_from, until: [days: duration],
-      step: [minutes: interval])
+    Timex.Interval.new(from: time_from, until: [days: duration], step: [minutes: interval])
   end
 
   defp generate_asset_metadata(asset_type, asset_name) do
-    Enum.map(asset_type.metadata, fn  metadata ->
+    Enum.map(asset_type.metadata, fn metadata ->
       %{
         name: metadata.name,
         data_type: metadata.data_type,
@@ -363,30 +409,40 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
 
   defp fetch_metadata_val(metadata_name, asset_name) do
     IO.inspect({asset_name, metadata_name})
+
     case {asset_name, metadata_name} do
       {"Building Red", "No of Floors"} ->
         @building_metadata[asset_name]["floors"]
+
       {"Building Green", "No of Floors"} ->
         @building_metadata[asset_name]["floors"]
+
       {"Building Blue", "No of Floors"} ->
         @building_metadata[asset_name]["floors"]
+
       {"Building Yellow", "No of Floors"} ->
         @building_metadata[asset_name]["floors"]
+
       {"Building White", "No of Floors"} ->
         @building_metadata[asset_name]["floors"]
+
       {"Building Brown", "No of Floors"} ->
         @building_metadata[asset_name]["floors"]
+
       {_, "Date Of Construction"} ->
         "#{Enum.random(Date.range(~D[1999-01-01], ~D[2000-01-01]))}"
+
       {_, "No of Rooms"} ->
         "#{Enum.random(2..4)}"
+
       {_, "Race"} ->
         Enum.random(["American", "Indian", "African", "Korean", "Japanese", "Chinese"])
+
       {_, "Painted"} ->
         "#{Enum.random([true, false])}"
+
       {_, "No of Kids"} ->
         "#{Enum.random(0..3)}"
     end
   end
-
 end

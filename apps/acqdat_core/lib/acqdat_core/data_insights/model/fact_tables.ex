@@ -20,9 +20,7 @@ defmodule AcqdatCore.Model.DataInsights.FactTables do
 
   def get_fact_table_headers(fact_table_id) do
     query =
-      "SELECT column_name, data_type FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = 'fact_table_#{
-        fact_table_id
-      }'"
+      "SELECT column_name, data_type FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = 'fact_table_#{fact_table_id}'"
 
     columns = Ecto.Adapters.SQL.query!(Repo, query, [], timeout: :infinity)
 
