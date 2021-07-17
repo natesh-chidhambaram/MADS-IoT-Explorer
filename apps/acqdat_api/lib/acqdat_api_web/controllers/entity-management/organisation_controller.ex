@@ -5,6 +5,7 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationController do
   alias AcqdatApi.Image
   alias AcqdatApi.ImageDeletion
   alias AcqdatApi.EntityManagement.Organisation
+  alias AcqdatApi.EntityManagement.OrganisationSeed
   alias AcqdatApiWeb.EntityManagement.OrganisationErrorHelper
   alias AcqdatCore.Model.EntityManagement.Organisation, as: OrgModel
 
@@ -36,6 +37,7 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationController do
 
         with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
              {:create, {:ok, organisation}} <- {:create, Organisation.create(data)} do
+              # OrganisationSeed.seed_data(organisation, Guardian.Plug.current_resource())
           conn
           |> put_status(200)
           |> render("org.json", %{organisation: organisation})
