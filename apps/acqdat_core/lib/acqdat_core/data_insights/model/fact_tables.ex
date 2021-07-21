@@ -72,11 +72,11 @@ defmodule AcqdatCore.Model.DataInsights.FactTables do
 
   # params = %{project_id: 6, entity_type: "SensorType", entity_id: "name"}
   def fetch_fetch_tables_id_by_columns_metadata(%{
-    "project_id" => project_id,
-    "entity_type" => entity_type,
-    "entity_name" => entity_name,
-    "metadata_id" => metadata_id
-  }) do
+        "project_id" => project_id,
+        "entity_type" => entity_type,
+        "entity_name" => entity_name,
+        "metadata_id" => metadata_id
+      }) do
     # select: %{fact_table_id: ft.id, entity_id: fragment("?->>'metadata_id'", c), entity_type: ^entity_type}
     from(ft in FactTables,
       where: ft.project_id == ^project_id,
