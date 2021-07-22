@@ -218,16 +218,13 @@ defmodule AcqdatCore.Model.IotManager.GatewayTest do
       assert sensor4.gateway_id == gateway.id
     end
 
-    @tag timeout: :infinity
-    test "modification of nesteed parameter mapping when a sensor is already attached to a gateway",
+    test "modification of nested parameter mapping when a sensor is already attached to a gateway",
          context do
       %{sensors: [sensor1, sensor2, sensor3, sensor4], gateway: gateway} = context
       gateway = gateway |> Repo.preload([:sensors])
       mapped_parameters = create_nested_parameters(sensor2, sensor3, sensor4)
       params = %{"mapped_parameters" => mapped_parameters}
       {:ok, gateway} = Gateway.update(gateway, params)
-      require IEx
-      IEx.pry()
       Gateway.associate_sensors(gateway, [sensor1.id, sensor2.id, sensor3.id])
       gateway = Repo.get!(GSchema, gateway.id) |> Repo.preload([:sensors])
       sensor1 = Repo.get!(Sensor, sensor1.id)
@@ -238,6 +235,37 @@ defmodule AcqdatCore.Model.IotManager.GatewayTest do
       assert sensor2.gateway_id == gateway.id
       assert sensor3.gateway_id == gateway.id
       assert sensor4.gateway_id !== gateway.id
+    end
+
+    test "modification of nested parameter mapping when a sensor is already attached to a gateway so we have to remove the mapped parameter of that gateway",
+         context do
+      %{sensors: [sensor1, sensor2, sensor3, sensor4], gateway: gateway1} = context
+      gateway1 = gateway1 |> Repo.preload([:sensors])
+      mapped_parameters = create_nested_parameters(sensor2, sensor3, sensor4)
+      params = %{"mapped_parameters" => mapped_parameters}
+      {:ok, gateway1} = Gateway.update(gateway1, params)
+      org = insert(:organisation)
+      project = insert(:project, org: org)
+      gateway2 = insert(:gateway, org: org, project: project)
+      [sensor5, sensor6] = insert_list(2, :sensor, org: org, project: project)
+      mapped_parameters = create_nested_parameters(sensor2, sensor5, sensor6)
+      params = %{"mapped_parameters" => mapped_parameters}
+      {:ok, gateway2} = Gateway.update(gateway2, params)
+      # Gateway.associate_sensors(gateway, [sensor1.id, sensor2.id, sensor3.id])
+      gateway1 = Repo.get!(GSchema, gateway1.id) |> Repo.preload([:sensors])
+      gateway2 = Repo.get!(GSchema, gateway2.id) |> Repo.preload([:sensors])
+      sensor1 = Repo.get!(Sensor, sensor1.id)
+      sensor2 = Repo.get!(Sensor, sensor2.id)
+      sensor3 = Repo.get!(Sensor, sensor3.id)
+      sensor4 = Repo.get!(Sensor, sensor4.id)
+      sensor5 = Repo.get!(Sensor, sensor5.id)
+      sensor6 = Repo.get!(Sensor, sensor6.id)
+      assert sensor2.gateway_id !== gateway1.id
+      assert sensor3.gateway_id == gateway1.id
+      assert sensor2.gateway_id == gateway2.id
+      assert sensor4.gateway_id == gateway1.id
+      assert sensor5.gateway_id == gateway2.id
+      assert sensor6.gateway_id == gateway2.id
     end
   end
 

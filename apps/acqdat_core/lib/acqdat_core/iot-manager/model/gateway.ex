@@ -75,6 +75,13 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     end
   end
 
+  def get_gateways(gateway_ids) when is_list(gateway_ids) do
+    from(gateway in Gateway,
+      where: gateway.id in ^gateway_ids
+    )
+    |> Repo.all()
+  end
+
   def get(data) when is_map(data) do
     case Repo.get_by(Gateway, data) do
       nil ->
@@ -352,11 +359,6 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
           MapSet.to_list(MapSet.difference(requested_sensors, attached_sensors)),
           gateway
         )
-
-        modify_mapped_parameters(
-          gateway,
-          MapSet.to_list(MapSet.difference(attached_sensors, requested_sensors))
-        )
       end)
 
     case result do
@@ -368,39 +370,54 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     end
   end
 
-  defp modify_mapped_parameters(gateway, detached_sensor_ids) do
-    mapped_parameters =
-      remove_sensor_from_parameters(gateway.mapped_parameters, detached_sensor_ids)
-    require IEx
-    IEx.pry
+  def modify_mapped_parameters(gateway_ids, detached_sensor_ids) do
+    gateways = GModel.get_gateways(gateway_ids)
 
+    Enum.each(gateways, fn gateway ->
+      mapped_parameters =
+        remove_sensor_from_parameters(gateway.mapped_parameters, detached_sensor_ids)
+
+      GModel.update(gateway, %{mapped_parameters: mapped_parameters})
+    end)
   end
 
   defp remove_sensor_from_parameters(mapped_parameters, detached_sensor_ids) do
     Enum.reduce(mapped_parameters, %{}, fn {key, value}, acc ->
       case filter_for_sensors(value, detached_sensor_ids) do
-        nil -> acc
-        rparams -> Map.put_new(acc, key, rparams)
+        nil ->
+          acc
+
+        rparams ->
+          Map.put_new(acc, key, rparams)
       end
     end)
   end
 
   defp filter_for_sensors(%{"type" => "object", "value" => parameters}, detached_sensor_ids) do
-    Enum.reduce(parameters, %{}, fn {key, value}, accumulator ->
-      case filter_for_sensors(value, detached_sensor_ids) do
-        nil -> accumulator
-        rparams -> Map.put_new(accumulator, key, rparams)
-      end
-    end)
+    value =
+      Enum.reduce(parameters, %{}, fn {key, value}, accumulator ->
+        case filter_for_sensors(value, detached_sensor_ids) do
+          nil ->
+            accumulator
+
+          rparams ->
+            Map.put_new(accumulator, key, rparams)
+        end
+      end)
+
+    %{"type" => "object", "value" => value}
   end
 
   defp filter_for_sensors(%{"type" => "list", "value" => value}, detached_sensor_ids) do
-    Enum.reduce(value, [], fn value, accumulator ->
-      case filter_for_sensors(value, detached_sensor_ids) do
-        nil -> accumulator
-        rparams -> accumulator ++ [rparams]
-      end
-    end)
+    value =
+      Enum.reduce(value, [], fn value, accumulator ->
+        case filter_for_sensors(value, detached_sensor_ids) do
+          nil -> accumulator
+          rparams -> accumulator ++ [rparams]
+        end
+      end)
+
+    %{"type" => "list", "value" => value}
   end
 
   defp filter_for_sensors(

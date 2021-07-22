@@ -102,12 +102,28 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
   end
 
   def add_sensor(sensor_ids, gateway) do
-    query =
+    query1 =
+      from(sensor in Sensor,
+        where: sensor.id in ^sensor_ids,
+        select: sensor.gateway_id
+      )
+
+    gateway_ids = Repo.all(query1)
+
+    query2 =
       from(sensor in Sensor,
         where: sensor.id in ^sensor_ids
       )
 
-    Repo.update_all(query, set: [gateway_id: gateway.id])
+    case List.first(gateway_ids) do
+      nil ->
+        :ok
+
+      _ ->
+        Gateway.modify_mapped_parameters(gateway_ids, sensor_ids)
+    end
+
+    Repo.update_all(query2, set: [gateway_id: gateway.id])
   end
 
   def get(query) when is_map(query) do
