@@ -16,7 +16,9 @@ defmodule AcqdatApi.Application do
       AcqdatApi.DataInsights.FactTableSupervisor,
       # AcqdatApi.DataInsights.FactTableGenWorker,
       AcqdatApi.DataInsights.PivotTableGenWorker,
-      {Task.Supervisor, name: Datakrew.TaskSupervisor}
+      {Task.Supervisor, name: Datakrew.TaskSupervisor},
+      AcqdatApi.DataInsights.FactTable.DataSynchingPipeline,
+      AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline
       # Starts a worker by calling: AcqdatApi.Worker.start_link(arg)
       # {AcqdatApi.Worker, arg},
     ]

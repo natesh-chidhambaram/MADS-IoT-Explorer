@@ -3,6 +3,7 @@ defmodule AcqdatCore.Model.DataInsights.FactTables do
   alias AcqdatCore.Model.Helper, as: ModelHelper
   alias AcqdatCore.Repo
   import Ecto.Query
+  import Ecto.Query.API
 
   def create(params) do
     changeset = FactTables.changeset(%FactTables{}, params)
