@@ -7,7 +7,7 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
     declare: [durable: true],
     on_failure: :reject
   ]
-  
+
   def start_link(_args) do
     options = [
       name: AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline,
@@ -16,26 +16,28 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
         default: []
       ],
       batchers: [
-        fact_tables: [concurrency: System.schedulers_online() * 2],
+        fact_tables: [concurrency: System.schedulers_online() * 2]
       ]
     ]
+
     Broadway.start_link(__MODULE__, options)
   end
 
   def handle_message(_processor, message, _context) do
-    IO.inspect("inside handle_message 123")
-    IO.inspect(message)
     data = Poison.decode!(message.data)
-    IO.inspect("fact_tables:#{data["fact_tables_id"]}")
+
     message
     |> Broadway.Message.put_batcher(:fact_tables)
     |> Broadway.Message.put_batch_key("fact_tables:#{data["fact_tables_id"]}")
   end
 
-  def handle_batch(_batcher, messages, batch_info, _context) do
-    IO.puts("#{inspect(self())} Batch #{batch_info.batcher}
-    #{batch_info.batch_key}")
-    IO.inspect("inside batch dunction")
+  def handle_batch(batcher, messages, batch_info, _context) do
+    # IO.puts("#{inspect(self())} Batch #{batch_info.batcher}
+    # #{batch_info.batch_key}")
+    IO.inspect("inside batch function of FactTableProcessPipeline")
+    IO.inspect(batcher)
+    IO.inspect(batch_info.batch_key)
+    IO.inspect(messages)
     messages
   end
 end
