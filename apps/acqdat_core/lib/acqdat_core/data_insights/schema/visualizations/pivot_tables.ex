@@ -135,7 +135,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
         if filter_data1 do
           """
             select
-              time_bucket('#{column["group_interval"]} #{column["group_by"]}'::VARCHAR::INTERVAL, to_timestamp(cast("#{column["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))
+              time_bucket('#{column["group_interval"]} #{column["group_by"]}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+            column["name"]
+          }" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))
               from #{fact_table_name}
               #{filter_data1}
               group by 1
@@ -144,7 +146,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
         else
           """
             select
-              time_bucket('#{column["group_interval"]} #{column["group_by"]}'::VARCHAR::INTERVAL, to_timestamp(cast("#{column["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))
+              time_bucket('#{column["group_interval"]} #{column["group_by"]}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+            column["name"]
+          }" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))
               from #{fact_table_name}
               where #{column_name} is not null
               group by 1
@@ -223,9 +227,13 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
         else
           """
             SELECT *
-            FROM crosstab('SELECT #{selected_data} FROM #{fact_table_name} where \"#{value["name"]}\" is not null and #{column_name} is not null
+            FROM crosstab('SELECT #{selected_data} FROM #{fact_table_name} where \"#{
+            value["name"]
+          }\" is not null and #{column_name} is not null
             group by #{rows_data}, #{column_name} order by #{rows_data}, #{column_name}',
-            'select distinct #{column_name} from #{fact_table_name} where #{column_name} is not null and length(#{column_name}) > 0 order by 1')
+            'select distinct #{column_name} from #{fact_table_name} where #{column_name} is not null and length(#{
+            column_name
+          }) > 0 order by 1')
             AS final_result(#{columns_data})
           """
         end
@@ -248,16 +256,24 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     if filter_data1 do
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             COUNT(#{value_name}) as \"#{value["title"]}\"
-            FROM #{fact_table_name} #{filter_data1} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
+            FROM #{fact_table_name} #{filter_data1} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
+        rows_data
+      }", "datetime_data"
       """
     else
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             COUNT(#{value_name}) as \"#{value["title"]}\"
-            FROM #{fact_table_name} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{rows_data}", "datetime_data"
+            FROM #{fact_table_name} GROUP BY "#{rows_data}", "datetime_data" ORDER BY "#{
+        rows_data
+      }", "datetime_data"
       """
     end
   end
@@ -278,7 +294,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     if filter_data1 do
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(AVG(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
             FROM #{fact_table_name}
             #{filter_data1}
@@ -287,7 +305,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     else
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(AVG(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
             FROM #{fact_table_name}
             where #{value_name} is not null
@@ -312,7 +332,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     if filter_data1 do
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(SUM(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
             FROM #{fact_table_name}
             #{filter_data1}
@@ -321,7 +343,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     else
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(SUM(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
             FROM #{fact_table_name}
             where #{value_name} is not null
@@ -346,7 +370,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     if filter_data1 do
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(MIN(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
             FROM #{fact_table_name}
             #{filter_data1}
@@ -355,7 +381,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     else
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(MIN(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
             FROM #{fact_table_name}
             where #{value_name} is not null
@@ -380,7 +408,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     if filter_data1 do
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
              ROUND(MAX(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
             FROM #{fact_table_name} 
             #{filter_data1}
@@ -389,7 +419,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
     else
       """
         SELECT "#{rows_data}",
-            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{col_name}" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
+            time_bucket('#{group_int} #{group_by}'::VARCHAR::INTERVAL, to_timestamp(cast("#{
+        col_name
+      }" as TEXT), 'YYYY-MM-DD hh24:mi:ss')) as "datetime_data",
             ROUND(MAX(CAST(#{value_name} as NUMERIC)), 2) as \"#{value["title"]}\"
             FROM #{fact_table_name}
             where #{value_name} is not null
@@ -403,7 +435,9 @@ defmodule AcqdatCore.DataInsights.Schema.Visualizations.PivotTables do
       if Enum.member?(["sum", "avg", "min", "max"], value["action"]) do
         rows_data <>
           "," <>
-          "ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) as \"#{value["title"]}\""
+          "ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) as \"#{
+            value["title"]
+          }\""
       else
         rows_data <>
           "," <> "#{value["action"]}(\"#{value["name"]}\") as \"#{value["title"]}\""

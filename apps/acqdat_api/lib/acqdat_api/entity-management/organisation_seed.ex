@@ -297,10 +297,10 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
   end
 
   def gen_sensor_type_data("energy", sensor) do
-    # duration in months
+    # duration in months in terms of days
     duration = @months * 30
     # interval in minutes
-    interval = 10
+    interval = 30
     iterator = get_time_iterator(duration, interval)
 
     Enum.map(iterator, fn time ->

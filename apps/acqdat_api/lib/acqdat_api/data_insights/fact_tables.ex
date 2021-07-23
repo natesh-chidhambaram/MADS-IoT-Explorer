@@ -162,7 +162,9 @@ defmodule AcqdatApi.DataInsights.FactTables do
         columns =
           Ecto.Adapters.SQL.query!(
             Repo,
-            "select column_name, data_type from information_schema.columns where table_name = \'#{fact_table_name}\'",
+            "select column_name, data_type from information_schema.columns where table_name = \'#{
+              fact_table_name
+            }\'",
             [],
             timeout: :infinity
           )
@@ -240,7 +242,9 @@ defmodule AcqdatApi.DataInsights.FactTables do
         columns =
           Ecto.Adapters.SQL.query!(
             Repo,
-            "select column_name, data_type from information_schema.columns where table_name = \'#{fact_table_name}\'",
+            "select column_name, data_type from information_schema.columns where table_name = \'#{
+              fact_table_name
+            }\'",
             [],
             timeout: :infinity
           )
@@ -314,7 +318,9 @@ defmodule AcqdatApi.DataInsights.FactTables do
         columns =
           Ecto.Adapters.SQL.query!(
             Repo,
-            "select column_name, data_type from information_schema.columns where table_name = \'#{fact_table_name}\'",
+            "select column_name, data_type from information_schema.columns where table_name = \'#{
+              fact_table_name
+            }\'",
             [],
             timeout: :infinity
           )
@@ -401,7 +407,9 @@ defmodule AcqdatApi.DataInsights.FactTables do
         columns =
           Ecto.Adapters.SQL.query!(
             Repo,
-            "select column_name, data_type from information_schema.columns where table_name = \'#{fact_table_name}\'",
+            "select column_name, data_type from information_schema.columns where table_name = \'#{
+              fact_table_name
+            }\'",
             [],
             timeout: :infinity
           )
@@ -503,7 +511,9 @@ defmodule AcqdatApi.DataInsights.FactTables do
       columns =
         Ecto.Adapters.SQL.query!(
           Repo,
-          "select column_name, data_type from information_schema.columns where table_name = \'#{fact_table_name}\'",
+          "select column_name, data_type from information_schema.columns where table_name = \'#{
+            fact_table_name
+          }\'",
           [],
           timeout: :infinity
         )

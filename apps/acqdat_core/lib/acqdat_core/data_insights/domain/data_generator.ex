@@ -44,7 +44,6 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
         case {x_axis["action"], y_axis["action"]} do
           {"group", "group"} ->
             """
-
               TO_CHAR((time_bucket('#{x_axis["group_interval"]} #{x_axis["group_by"]}'::VARCHAR::INTERVAL,
               to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))),'YYYY-MM-DD HH24:MI:SS') as \"#{
               x_axis["title"]
@@ -195,7 +194,9 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
       """
         select #{legend_name},
         EXTRACT(EPOCH FROM (time_bucket('#{x_axis["group_interval"]} #{x_axis["group_by"]}'::VARCHAR::INTERVAL,
-        to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{x_axis["title"]}\",
+        to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{
+        x_axis["title"]
+      }\",
         #{values_data}
         from #{fact_table_name}
         #{filters_query(filters)}
@@ -224,7 +225,9 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
 
       """
         select EXTRACT(EPOCH FROM (time_bucket('#{x_axis["group_interval"]} #{x_axis["group_by"]}'::VARCHAR::INTERVAL,
-        to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{x_axis["title"]}\",
+        to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{
+        x_axis["title"]
+      }\",
         #{values_data}
         from #{fact_table_name}
         #{filters_query(filters)}
@@ -247,7 +250,9 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
   defp y_axes_data(y_axes) do
     Enum.reduce(y_axes, "", fn value, _acc ->
       if Enum.member?(["sum", "avg", "min", "max"], value["action"]) do
-        "CAST(ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) AS FLOAT) as \"#{value["title"]}\""
+        "CAST(ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) AS FLOAT) as \"#{
+          value["title"]
+        }\""
       else
         "#{value["action"]}(distinct(\"#{value["name"]}\")) as \"#{value["title"]}\""
       end
@@ -259,7 +264,9 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
       if Enum.member?(["sum", "avg", "min", "max"], value["action"]) do
         x_axes <>
           "," <>
-          "CAST(ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) AS FLOAT) as \"#{value["title"]}\""
+          "CAST(ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) AS FLOAT) as \"#{
+            value["title"]
+          }\""
       else
         x_axes <>
           "," <> "#{value["action"]}(distinct(\"#{value["name"]}\")) as \"#{value["title"]}\""
@@ -274,7 +281,9 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
           "," <>
           x_axes <>
           "," <>
-          "CAST(ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) AS FLOAT) as \"#{value["title"]}\""
+          "CAST(ROUND(#{value["action"]}(CAST(\"#{value["name"]}\" AS NUMERIC)), 2) AS FLOAT) as \"#{
+            value["title"]
+          }\""
       else
         legend <>
           "," <>

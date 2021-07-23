@@ -31,7 +31,9 @@ defmodule AcqdatCore.DataInsights.Domain.DataFilter do
         [innerbound, outerbound] = filter["values"]
 
         if filter["type"] == "timestamp without time zone" do
-          "\"#{filter["name"]}\" >= CAST ( \'#{innerbound}\' AS timestamptz ) AND \"#{filter["name"]}\" <= CAST ( \'#{outerbound}\' AS timestamptz )"
+          "\"#{filter["name"]}\" >= CAST ( \'#{innerbound}\' AS timestamptz ) AND \"#{
+            filter["name"]
+          }\" <= CAST ( \'#{outerbound}\' AS timestamptz )"
         else
           "\"#{filter["name"]}\" >= #{innerbound} AND \"#{filter["name"]}\" <= #{outerbound}"
         end
@@ -69,13 +71,17 @@ defmodule AcqdatCore.DataInsights.Domain.DataFilter do
         interval = "\'#{filter["values_by"]} #{filter["values"]}\'"
 
         "(DATE_TRUNC ( 'hour', \"#{filter["name"]}\" ) < DATE_TRUNC ( 'hour', CURRENT_TIMESTAMP )) AND
-        (DATE_TRUNC ( 'hour', \"#{filter["name"]}\" ) >= DATE_TRUNC ( 'hour', CURRENT_TIMESTAMP - INTERVAL #{interval} ))"
+        (DATE_TRUNC ( 'hour', \"#{filter["name"]}\" ) >= DATE_TRUNC ( 'hour', CURRENT_TIMESTAMP - INTERVAL #{
+          interval
+        } ))"
 
       "next" ->
         interval = "\'#{filter["values_by"]} #{filter["values"]}\'"
 
         "(DATE_TRUNC ( 'hour', \"#{filter["name"]}\" ) > DATE_TRUNC ( 'hour', CURRENT_TIMESTAMP )) AND
-        (DATE_TRUNC ( 'hour', \"#{filter["name"]}\" ) <= DATE_TRUNC ( 'hour', CURRENT_TIMESTAMP + INTERVAL #{interval} ))"
+        (DATE_TRUNC ( 'hour', \"#{filter["name"]}\" ) <= DATE_TRUNC ( 'hour', CURRENT_TIMESTAMP + INTERVAL #{
+          interval
+        } ))"
     end
   end
 end
