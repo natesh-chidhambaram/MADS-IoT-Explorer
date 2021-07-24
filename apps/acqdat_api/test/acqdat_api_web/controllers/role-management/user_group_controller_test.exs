@@ -4,7 +4,7 @@ defmodule AcqdatApiWeb.RoleManagement.UserGroupControllerTest do
   use AcqdatCore.DataCase
   import AcqdatCore.Support.Factory
 
-  describe "create/2 " do
+  describe "create/2" do
     setup :setup_conn
     setup :setup_request
 

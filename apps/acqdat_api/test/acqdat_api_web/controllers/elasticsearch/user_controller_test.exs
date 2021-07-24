@@ -103,7 +103,7 @@ defmodule AcqdatApiWeb.ElasticSearch.UserControllerTest do
     end
   end
 
-  describe "index users/2" do
+  describe "index/2" do
     setup :setup_conn
 
     setup do
