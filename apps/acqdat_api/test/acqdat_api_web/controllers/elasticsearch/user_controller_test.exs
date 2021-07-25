@@ -63,7 +63,8 @@ defmodule AcqdatApiWeb.ElasticSearch.UserControllerTest do
         "name" => user.org.name,
         "type" => "Organisation",
         "uuid" => user.org.uuid,
-        "url" => nil
+        "url" => nil,
+        "avatar" => nil
       }
 
       assert result == %{

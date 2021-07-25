@@ -12,13 +12,11 @@ defmodule AcqdatApi.RoleManagement.UserCredentials do
       UserCredentials.update(cred, params)
     end)
     |> Multi.run(:update_settings, fn _, %{update_credentials: cred} ->
-      case cred.user_setting != nil do
-        true ->
-          UserSetting.update(cred.user_setting, user_settings)
-
-        false ->
-          user_settings = Map.put_new(user_settings, "user_credentials_id", id)
-          UserSetting.create(user_settings)
+      if cred.user_setting != nil do
+        UserSetting.update(cred.user_setting, user_settings)
+      else
+        user_settings = Map.put_new(user_settings, "user_credentials_id", cred.id)
+        UserSetting.create(user_settings)
       end
     end)
     |> run_transaction()
