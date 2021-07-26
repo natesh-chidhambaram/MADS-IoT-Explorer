@@ -317,6 +317,50 @@ defmodule AcqdatApi.EntityManagement.OrganisationSeed do
     end)
   end
 
+  def gen_sensor_type_data("heat", sensor) do
+    duration = @months * 30 # duration in months
+    interval = 10 # interval in minutes
+    iterator = get_time_iterator(duration, interval)
+
+    Enum.map(iterator, fn time ->
+      time = time = time |> DateTime.from_naive!("Etc/UTC") |> DateTime.truncate(:second)
+      %{
+        sensor_id: sensor.id, project_id: sensor.project_id, org_id: sensor.org_id,
+        inserted_at: time,
+        inserted_timestamp: time,
+        parameters: heat_parameters(sensor)
+      }
+    end)
+  end
+
+  defp heat_parameters(sensor) do
+    [param] = sensor.sensor_type.parameters
+    result = create_parameter_struct(param, Enum.random(20..35))
+    [result]
+  end
+
+  def gen_sensor_type_data("occupancy", sensor) do
+    duration = @months * 30 # duration in months
+    interval = 10 # interval in minutes
+    iterator = get_time_iterator(duration, interval)
+
+    Enum.map(iterator, fn time ->
+      time = time |> DateTime.from_naive!("Etc/UTC") |> DateTime.truncate(:second)
+      %{
+        sensor_id: sensor.id, project_id: sensor.project_id, org_id: sensor.org_id,
+        inserted_at: time,
+        inserted_timestamp: time,
+        parameters: occupancy_parameters(sensor)
+      }
+    end)
+  end
+
+  defp occupancy_parameters(sensor) do
+    [param] = sensor.sensor_type.parameters
+    result = create_parameter_struct(param, (:rand.uniform 10)/10)
+    [result]
+  end
+
   defp energy_parameters(sensor, duration) do
     sensor.sensor_type.parameters
     |> Enum.reduce(%{}, fn

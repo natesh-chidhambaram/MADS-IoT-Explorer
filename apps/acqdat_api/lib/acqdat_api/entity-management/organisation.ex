@@ -3,6 +3,7 @@ defmodule AcqdatApi.EntityManagement.Organisation do
   alias AcqdatCore.Model.RoleManagement.User, as: UserModel
   alias AcqdatCore.Model.RoleManagement.Role
   alias AcqdatCore.Model.RoleManagement.UserCredentials
+  alias AcqdatApi.EntityManagement.OrganisationSeed
   alias Ecto.Multi
   alias AcqdatCore.ElasticSearch
   import Tirexs.HTTP
@@ -78,6 +79,9 @@ defmodule AcqdatApi.EntityManagement.Organisation do
          create_organisation: organisation
        }} ->
         user_create_es(user)
+        Task.start_link(fn ->
+          OrganisationSeed.seed_data(organisation, user)
+        end)
         {:ok, organisation}
 
       {:error, _failed_operation, failed_value, _changes_so_far} ->
