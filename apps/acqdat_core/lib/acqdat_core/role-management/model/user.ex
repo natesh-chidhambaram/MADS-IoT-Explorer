@@ -94,8 +94,23 @@ defmodule AcqdatCore.Model.RoleManagement.User do
 
   def load_user(org_id) do
     query =
-      from(user in User,
-        where: user.org_id == ^org_id and user.role_id == 1 and user.is_deleted == false
+      from(user_cred in UserCredentials,
+        join: user in User,
+        where:
+          user.org_id == ^org_id and user.role_id == 1 and user.is_deleted == false and
+            user.user_credentials_id == user_cred.id
+      )
+
+    Repo.all(query)
+  end
+
+  def load_org_admin_user(org_id) do
+    query =
+      from(user_cred in UserCredentials,
+        join: user in User,
+        where:
+          user.org_id == ^org_id and user.role_id == 2 and user.is_deleted == false and
+            user.user_credentials_id == user_cred.id
       )
 
     Repo.all(query)

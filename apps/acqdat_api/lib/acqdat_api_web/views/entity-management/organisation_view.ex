@@ -44,21 +44,24 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationView do
   end
 
   def render("org_with_preloads.json", %{organisation: organisation}) do
-    admin_user = User.load_user(organisation.id)
+    org_admin = User.load_org_admin_user(organisation.id)
 
     %{
       type: "Organisation",
       id: organisation.id,
       name: organisation.name,
       url: organisation.url,
-      admin: render_many(admin_user, OrganisationView, "admin.json"),
-      apps: render_many(organisation.apps, AppView, "app.json")
+      apps: render_many(organisation.apps, AppView, "app.json"),
+      org_admin: render_many(org_admin, OrganisationView, "admin.json")
     }
   end
 
   def render("admin.json", %{organisation: user_details}) do
     %{
-      id: user_details.id
+      id: user_details.id,
+      first_name: user_details.first_name,
+      last_name: user_details.last_name,
+      email: user_details.email
     }
   end
 end
