@@ -104,7 +104,12 @@ defmodule AcqdatCore.MixProject do
 
       # redis
       {:redix, ">= 0.0.0"},
-      {:elixlsx, "~> 0.4.2"}
+
+      # writer for the MS Excel OpenXML format
+      {:elixlsx, "~> 0.4.2"},
+
+      # logger
+      {:gen_retry, "~> 1.2.0"}
     ]
   end
 

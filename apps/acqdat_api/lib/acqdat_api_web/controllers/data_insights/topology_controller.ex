@@ -10,7 +10,7 @@ defmodule AcqdatApiWeb.DataInsights.TopologyController do
   plug AcqdatApiWeb.Plug.LoadProject when action in [:index, :entities]
   plug :put_view, AcqdatApiWeb.EntityManagement.ProjectView when action in [:fetch_projects]
 
-  def index(conn, %{"org_id" => org_id, "project_id" => project_id}) do
+  def index(conn, %{"org_id" => org_id, "project_id" => _}) do
     case conn.status do
       nil ->
         with {:index, topology} <-
