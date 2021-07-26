@@ -113,7 +113,7 @@ defmodule AcqdatApiWeb.ElasticSearch.AssetControllerTest do
     end
   end
 
-  describe "index assets/2" do
+  describe "index/2" do
     setup :setup_conn
 
     setup do

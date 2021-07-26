@@ -24,7 +24,7 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesController do
           |> render("alert_rules.json", %{alert_rules: alert_rules})
         else
           {:extract, {:error, error}} ->
-            error = extract_changeset_error(error)
+            # error = extract_changeset_error(error)
             send_error(conn, 400, error)
 
           {:create, {:error, message}} ->

@@ -103,7 +103,8 @@ defmodule AcqdatCore.MixProject do
       {:virta, in_umbrella: true},
 
       # redis
-      {:redix, ">= 0.0.0"}
+      {:redix, ">= 0.0.0"},
+      {:elixlsx, "~> 0.4.2"}
     ]
   end
 

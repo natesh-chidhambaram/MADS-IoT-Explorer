@@ -91,7 +91,7 @@ defmodule AcqdatApiWeb.ElasticSearch.GatewayControllerTest do
     end
   end
 
-  describe "index gateways/2" do
+  describe "index/2" do
     setup :setup_conn
 
     setup do

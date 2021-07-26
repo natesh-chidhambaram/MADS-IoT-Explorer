@@ -103,7 +103,7 @@ defmodule AcqdatCore.Seed.Widgets.Line do
       properties: %{},
       uuid: UUID.uuid1(:hex),
       classification: "standard",
-      image_url: "https://assets.highcharts.com/images/demo-thumbnails/highcharts/line-basic-default.png",
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/line.png",
       category: ["chart", "line"],
       policies: %{},
       widget_type_id: widget_type.id,

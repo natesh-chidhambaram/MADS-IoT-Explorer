@@ -58,14 +58,14 @@ defmodule AcqdatCore.Seed.Widgets.GaugeSeries do
           properties: %{
             name: %{data_type: :string, value: %{}, properties: %{}},
             color: %{data_type: :color, value: %{data: "#000000"}, properties: %{}},
-            multiple: %{data_type: :boolean, value: %{data: true}, properties: %{}}
+            multiple: %{data_type: :boolean, value: %{data: false}, properties: %{}}
           }
         },
         axes: %{
           data_type: :object,
           value: %{},
           properties: %{
-            multiple: %{data_type: :boolean, value: %{data: true}, properties: %{}},
+            multiple: %{data_type: :boolean, value: %{data: false}, properties: %{}},
             y: %{data_type: :list, value: %{}, properties: %{}}
           }
         }
@@ -145,8 +145,8 @@ defmodule AcqdatCore.Seed.Widgets.GaugeSeries do
       label: to_string(key),
       properties: %{},
       uuid: UUID.uuid1(:hex),
-      classification: "latest",
-      image_url: "https://assets.highcharts.com/images/demo-thumbnails/highcharts/gauge-speedometer-default.png",
+      classification: "gauge",
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/gauge-series.png",
       category: ["chart", "gauge"],
       policies: %{},
       widget_type_id: widget_type.id,

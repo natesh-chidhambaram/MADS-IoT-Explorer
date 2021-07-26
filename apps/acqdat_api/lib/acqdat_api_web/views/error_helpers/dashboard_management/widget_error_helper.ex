@@ -1,8 +1,8 @@
-defmodule AcqdatApiWeb.RoleManagement.RequestsErrorHelper do
+defmodule AcqdatApiWeb.DashboardManagement.WidgetErrorHelper do
   def error_message(:resource_not_found) do
     %{
-      title: "Invalid Request ID",
-      error: "Request with this ID doesn't exists",
+      title: "Invalid entity ID",
+      error: "Widget with this ID does not exists",
       source: nil
     }
   end

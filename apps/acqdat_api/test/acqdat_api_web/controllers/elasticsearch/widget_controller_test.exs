@@ -77,7 +77,7 @@ defmodule AcqdatApiWeb.ElasticSearch.WidgetControllerTest do
     end
   end
 
-  describe "index widgets/2" do
+  describe "index/2" do
     setup :setup_conn
 
     setup do

@@ -111,7 +111,7 @@ defmodule AcqdatCore.Seed.Widgets.Area do
       properties: %{},
       uuid: UUID.uuid1(:hex),
       classification: "standard",
-      image_url: "https://assets.highcharts.com/images/demo-thumbnails/highcharts/area-basic-default.png",
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/area.png",
       category: ["chart", "area"],
       policies: %{},
       widget_type_id: widget_type.id,

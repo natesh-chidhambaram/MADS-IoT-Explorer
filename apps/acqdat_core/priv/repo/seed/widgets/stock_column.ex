@@ -90,7 +90,7 @@ defmodule AcqdatCore.Seed.Widgets.StockColumn do
       label: "Stock Column",
       properties: %{},
       uuid: UUID.uuid1(:hex),
-      image_url: "https://www.highcharts.com/demo/images/samples/stock/demo/column/thumbnail.png",
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/stock-column.png",
       category: ["stock_chart", "column"],
       policies: %{},
       widget_type_id: widget_type.id,
