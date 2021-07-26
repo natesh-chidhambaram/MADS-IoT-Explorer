@@ -13,6 +13,9 @@ mqtt_host = System.fetch_env!("MQTT_HOST")
 mqtt_port = System.fetch_env!("MQTT_PORT")
 twilio_account_sid = System.fetch_env!("TWILIO_ACCOUNT_SID")
 twilio_auth_token = System.fetch_env!("TWILIO_AUTH_TOKEN")
+aws_s3_bucket=System.fetch_env!("AWS_S3_BUCKET")
+aws_region=System.fetch_env!("AWS_REGION")
+
 
 config :acqdat_iot, AcqdatIotWeb.Endpoint, server: true
 
@@ -38,7 +41,7 @@ config :acqdat_iot, AcqdatIotWeb.Guardian,
 
 # AWS configuration for Image storage.
 config :arc,
-  asset_host: "https://datakrew-image.s3.ap-south-1.amazonaws.com",
+  asset_host: "https://#{aws_s3_bucket}.s3.#{aws_region}.amazonaws.com",
   storage: Arc.Storage.S3,
   bucket: {:system, "AWS_S3_BUCKET"}
 
@@ -46,7 +49,7 @@ config :arc,
 config :ex_aws,
   access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
-  region: "ap-south-1"
+  region: "#{aws_region}"
 
 config :acqdat_iot,
   app_port: app_iot_port
@@ -70,18 +73,6 @@ config :acqdat_core, AcqdatCore.Repo,
   pool_size: 40
 
 config :tirexs, :uri, elastic_search_host
-
-config :arc,
-  asset_host: "https://datakrew-image.s3.ap-south-1.amazonaws.com",
-  storage: Arc.Storage.S3,
-  bucket: {:system, "AWS_S3_BUCKET"}
-
-# virtual_host: true
-
-config :ex_aws,
-  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
-  secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
-  region: "ap-south-1"
 
 config :google_maps,
   api_key: System.get_env("GOOGLE_SECRET_KEY")
