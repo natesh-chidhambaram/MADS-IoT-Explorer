@@ -109,10 +109,11 @@ defmodule AcqdatCore.DashboardManagement.Schema.WidgetInstance.SeriesData do
   embedded_schema do
     field(:name, :string)
     field(:color, :string)
+    field(:unit, :string)
     embeds_many(:axes, Axes)
   end
 
-  @permitted ~w(name color)a
+  @permitted ~w(name color unit)a
 
   def changeset(%__MODULE__{} = series, params) do
     series

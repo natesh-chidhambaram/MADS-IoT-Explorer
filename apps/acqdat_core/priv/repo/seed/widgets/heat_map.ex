@@ -76,7 +76,7 @@ defmodule AcqdatCore.Seed.Widgets.HeatMap do
       properties: %{},
       uuid: UUID.uuid1(:hex),
       classification: "standard",
-      image_url: "https://i.imgur.com/ix0Agv4.png",
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/heat-map.png",
       category: ["anychart", "heat_map"],
       policies: %{},
       widget_type_id: widget_type.id,

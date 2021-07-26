@@ -75,7 +75,7 @@ defmodule AcqdatCore.Seed.Widgets.PivotTable do
       properties: %{},
       uuid: UUID.uuid1(:hex),
       classification: "standard",
-      image_url: "https://i.imgur.com/KfHsf0S.png",
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/pivot-table.png",
       category: ["pivot_table"],
       policies: %{},
       widget_type_id: widget_type.id,

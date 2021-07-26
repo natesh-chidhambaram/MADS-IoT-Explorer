@@ -3,7 +3,8 @@ defmodule AcqdatCore.Seed.Widget do
   Holds seeds for initial widgets.
   """
   alias AcqdatCore.Seed.Widgets.{Line, Area, Pie, Bar, LineTimeseries, AreaTimeseries, GaugeSeries, SolidGauge,
-        StockSingleLine, DynamicCard, ImageCard, StaticCard, BasicColumn, StackedColumn, StockColumn, HeatMap, PivotTable}
+        StockSingleLine, DynamicCard, ImageCard, StaticCard, BasicColumn, StackedColumn, StockColumn, HeatMap, PivotTable,
+        DataCard, PercentageCard, UserCard, TableTimeseries}
   alias AcqdatCore.Seed.Helpers.WidgetHelpers
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Widgets.Widget, as: WidgetModel
@@ -27,12 +28,50 @@ defmodule AcqdatCore.Seed.Widget do
     StockColumn.seed()
     HeatMap.seed()
     PivotTable.seed()
+    DataCard.seed()
+    PercentageCard.seed()
+    UserCard.seed()
+    TableTimeseries.seed()
     WidgetHelpers.seed_in_elastic()
+  end
+
+  def update_image_urls() do
+    charts = %{
+      "Area Range" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/area-range.png",
+      "area" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/area.png",
+      "bar" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/bar.png",
+      "Basic Column" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/basic-column.png",
+      "gauge" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/gauge-series.png",
+      "Line Timeseries" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/line-timeseries.png",
+      "line" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/line.png",
+      "pie" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/pie.png",
+      "solidgauge" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/solid-gauge.png",
+      "Stacked Column" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/stacked-column.png",
+      "Stock Single line series" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/stock-single-line.png",
+      "Dynamic Card" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/dynamic-card.png",
+      "Image Card" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/image-card.png",
+      "Static Card" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/static-card.png",
+      "Stock Column" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/stock-column.png",
+      "HeatMap" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/heat-map.png",
+      "Data Card" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/data-card.png",
+      "Percentage Card" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/percentage-card.png",
+      "User Card" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/user-card.png",
+      "Table Timeseries" => "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/table-timeseries.png"
+    }
+
+    Enum.each(charts, fn {label, image} ->
+      case WidgetModel.get_by_label(label) do
+        {:ok, widget} ->
+          WidgetModel.update(widget, %{image_url: image})
+        _ ->
+          label
+      end
+    end)
   end
 
   def update_classifications() do
     Repo.transaction(fn ->
-      card_widgets = ["Image Card", "Static Card", "Dynamic Card"]
+      card_widgets = ["Image Card", "Static Card", "Dynamic Card", "Data Card", "Percentage Card", "User Card"]
       update_classifications_of_widgets(card_widgets, "cards")
 
       gauge_widgets = ["solidgauge", "gauge"]
@@ -40,6 +79,8 @@ defmodule AcqdatCore.Seed.Widget do
 
       pie_widget = ["pie"]
       update_classifications_of_widgets(pie_widget, "standard")
+
+      update_classifications_of_widgets(["Table Timeseries"], "timeseries")
     end)
   end
 
@@ -60,7 +101,11 @@ defmodule AcqdatCore.Seed.Widget do
       "Image Card" => {ImageCard, :card},
       "Static Card" => {StaticCard, :card},
       "Stock Column" => {StockColumn, :column},
-      "HeatMap" => {HeatMap, :heat_map}
+      "HeatMap" => {HeatMap, :heat_map},
+      "Data Card" => {DataCard, :card},
+      "Percentage Card" => {PercentageCard, :card},
+      "User Card" => {UserCard, :card},
+      "Table Timeseries" => {TableTimeseries, :card}
     }
 
     Enum.each(charts, fn {label, value} ->
@@ -71,7 +116,9 @@ defmodule AcqdatCore.Seed.Widget do
 
   def update_data_settings() do
     chart_mappings = %{
-      "Stock Single line series" => {StockSingleLine, :line}
+      "Stock Single line series" => {StockSingleLine, :line},
+      "solidgauge" => {SolidGauge, :solidgauge},
+      "gauge" => {GaugeSeries, :gauge}
     }
 
     Enum.each(chart_mappings, fn {label, value} ->

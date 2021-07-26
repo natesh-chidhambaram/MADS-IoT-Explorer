@@ -207,7 +207,6 @@ defmodule AcqdatCore.Seed.DataInsights.Topology do
   end
 
   defp fetch_metadata_val(metadata_name, asset_name) do
-    IO.inspect({asset_name, metadata_name})
     case {asset_name, metadata_name} do
       {"Building Red", "No of Floors"} ->
         @building_metadata[asset_name]["floors"]

@@ -48,7 +48,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
   def get_for_view(user_ids) do
     query =
       from(user in User,
-        where: user.id in ^user_ids,
+        where: user.id in ^user_ids and user.is_deleted == false,
         preload: [:user_credentials, :org, :role, user_group: :user_group, policies: :policy],
         order_by: [desc: :inserted_at]
       )
@@ -57,7 +57,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
   end
 
   def get_by_email(email) when is_binary(email) do
-    case Repo.get_by(User, email: email) do
+    case Repo.get_by(UserCredentials, email: email) do
       nil ->
         {:error, "not found"}
 

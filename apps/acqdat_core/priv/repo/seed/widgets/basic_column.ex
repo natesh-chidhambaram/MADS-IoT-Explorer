@@ -93,7 +93,7 @@ defmodule AcqdatCore.Seed.Widgets.BasicColumn do
       properties: %{},
       uuid: UUID.uuid1(:hex),
       classification: "standard",
-      image_url: "https://assets.highcharts.com/images/demo-thumbnails/highcharts/column-basic-default.png",
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/basic-column.png",
       category: ["chart", "column"],
       policies: %{},
       widget_type_id: widget_type.id,

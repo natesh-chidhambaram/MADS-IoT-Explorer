@@ -272,6 +272,74 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardControllerTest do
     end
   end
 
+  describe "fetch_all_hierarchy/2" do
+    setup :setup_conn
+
+    setup do
+      asset = insert(:asset)
+      [asset: asset]
+    end
+
+    test "fails if invalid token in authorization header", %{conn: conn} do
+      bad_access_token = "qwerty1234567qwerty12"
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
+
+      conn = get(conn, Routes.dashboard_path(conn, :fetch_all_hierarchy, 1))
+      result = conn |> json_response(403)
+
+      assert result == %{
+               "detail" => "You are not allowed to perform this action.",
+               "source" => nil,
+               "status_code" => 403,
+               "title" => "Unauthorized"
+             }
+    end
+
+    test "fails if invalid Organisation_id provided", %{conn: conn} do
+      conn = get(conn, Routes.dashboard_path(conn, :fetch_all_hierarchy, -1))
+
+      result = conn |> json_response(404)
+
+      assert result == %{
+               "detail" => "Dashboard with this ID does not exists",
+               "source" => nil,
+               "status_code" => 404,
+               "title" => "Invalid entity ID"
+             }
+    end
+
+    test "shows hirerachy tree of the respective project", %{conn: conn, asset: asset} do
+      conn = get(conn, Routes.dashboard_path(conn, :fetch_all_hierarchy, asset.org_id))
+      result = conn |> json_response(200)
+
+      assert result["id"] == asset.org_id
+      assert result["type"] == "Organisation"
+    end
+  end
+
+  describe "all_gateways/2 " do
+    setup :setup_conn
+
+    setup do
+      org = insert(:organisation)
+      project_1 = insert(:project, org: org)
+      project_2 = insert(:project, org: org)
+      insert(:gateway, project: project_1, org: org)
+      insert(:gateway, project: project_2, org: org)
+      [org: org]
+    end
+
+    test "returns a list of all gateways", context do
+      %{org: org, conn: conn} = context
+
+      result = get(conn, Routes.dashboard_path(conn, :all_gateways, org.id)) |> json_response(200)
+      assert length(result["gateways"]) == 2
+    end
+  end
+
   describe "index/2" do
     setup :setup_conn
 
@@ -494,8 +562,7 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardControllerTest do
 
     test "recent dashboard with valid dashboard id", %{
       conn: conn,
-      dashboard: dashboard,
-      user: user
+      dashboard: dashboard
     } do
       get(
         conn,

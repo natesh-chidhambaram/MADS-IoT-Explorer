@@ -490,7 +490,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
       SensorData.get_latest_by_multi_parameters(entity_ids, param_ids, axes_len, filter_metadata)
 
     metadata = map_sensor_data(res, sen_dets)
-    [%{name: series.name, color: series.color, data: metadata}]
+    [%{name: series.name, color: series.color, unit: series.unit, data: metadata}]
   end
 
   defp arrange_series_structure(
@@ -501,7 +501,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
        when classification == "timeseries" do
     Enum.reduce(series_data, [], fn series, acc_data ->
       metadata = fetch_axes_specific_data(series.axes, filter_metadata)
-      acc_data ++ [%{name: series.name, color: series.color, data: metadata}]
+      acc_data ++ [%{name: series.name, color: series.color, unit: series.unit, data: metadata}]
     end)
   end
 
@@ -515,7 +515,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
       nil
       metadata = fetch_latest_axes_spec_data(series.axes, filter_metadata)
 
-      acc_data ++ [%{name: series.name, color: series.color, data: metadata}]
+      acc_data ++ [%{name: series.name, color: series.color, unit: series.unit, data: metadata}]
     end)
   end
 
@@ -587,8 +587,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
        when entity_type == "sensor" and type == "latest" do
     data = SensorData.get_latest_by_parameters(entity_id, parameter, filter_metadata)
 
-    data = (data || %{}) |> Map.delete(:x)
-    [data]
+    if data, do: [Map.delete(data, :x)], else: []
   end
 
   defp map_sensor_data(res, sen_data) do

@@ -90,7 +90,7 @@ defmodule AcqdatCore.Seed.Widgets.StockSingleLine do
       label: "Stock Single line series",
       properties: %{},
       uuid: UUID.uuid1(:hex),
-      image_url: "https://www.highcharts.com/demo/images/samples/stock/demo/basic-line/thumbnail.png",
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/stock-single-line.png",
       category: ["stock_chart", "line"],
       policies: %{},
       widget_type_id: widget_type.id,

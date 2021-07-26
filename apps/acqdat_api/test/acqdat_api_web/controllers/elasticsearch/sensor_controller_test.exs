@@ -115,7 +115,7 @@ defmodule AcqdatApiWeb.ElasticSearch.SensorControllerTest do
     end
   end
 
-  describe "index sensors/2" do
+  describe "index/2" do
     setup :setup_conn
 
     setup do

@@ -56,6 +56,13 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.CustomCards do
                 }
               }
             },
+            percentage_bar: %{
+              data_type: :list,
+              user_controlled: false,
+              properties: %{
+                max: %{data_type: :integer, default_value: 0, user_controlled: false}
+              }
+            },
             description: %{
               data_type: :object,
               user_controlled: false,

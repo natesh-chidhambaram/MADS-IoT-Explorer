@@ -22,6 +22,7 @@ defmodule AcqdatCore.Schema.EntityManagement.Organisation do
     field(:metadata, :map)
     field(:description, :string)
     field(:url, :string)
+    field(:avatar, :string)
 
     # associations
     has_many(:projects, Project, foreign_key: :org_id)
@@ -36,7 +37,7 @@ defmodule AcqdatCore.Schema.EntityManagement.Organisation do
   end
 
   @required_params ~w(name uuid url)a
-  @optional_params ~w(description metadata)a
+  @optional_params ~w(description metadata avatar)a
 
   @permitted @required_params ++ @optional_params
 
@@ -56,7 +57,6 @@ defmodule AcqdatCore.Schema.EntityManagement.Organisation do
   def update_changeset(%__MODULE__{} = organisation, params) do
     organisation
     |> cast(params, @permitted)
-    |> validate_required(@required_params)
     |> common_changeset()
     |> add_apps_changeset(params[:app_ids] || [])
   end

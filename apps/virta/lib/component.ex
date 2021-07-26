@@ -166,7 +166,6 @@ defmodule Virta.Component do
   ```elixir
   def run(request_id, inport_args, _outport_args, _instance_pid) do
     value = Map.get(inport_args, :data)
-    IO.inspect(value)
     { request_id, :noreply }
   end
   ```

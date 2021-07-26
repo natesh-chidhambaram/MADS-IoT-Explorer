@@ -17,10 +17,22 @@ defmodule AcqdatApiWeb.RoleManagement.UserCredentialsView do
   end
 
   def render("user_setting.json", setting) do
+    visual_setting =
+      case !is_nil(setting.user_credentials.visual_settings) do
+        true -> Map.from_struct(setting.user_credentials.visual_settings)
+        false -> nil
+      end
+
+    data_settings =
+      case !is_nil(setting.user_credentials.data_settings) do
+        true -> Map.from_struct(setting.user_credentials.data_settings)
+        false -> nil
+      end
+
     %{
       user_setting_id: setting.user_credentials.id,
-      visual_settings: Map.from_struct(setting.user_credentials.visual_settings),
-      data_settings: Map.from_struct(setting.user_credentials.data_settings)
+      visual_settings: visual_setting,
+      data_settings: data_settings
     }
   end
 end

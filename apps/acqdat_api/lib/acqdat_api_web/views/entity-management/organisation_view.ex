@@ -21,7 +21,8 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationView do
       id: org.id,
       url: org.url,
       name: org.name,
-      uuid: org.uuid
+      uuid: org.uuid,
+      avatar: org.avatar
     }
   end
 
