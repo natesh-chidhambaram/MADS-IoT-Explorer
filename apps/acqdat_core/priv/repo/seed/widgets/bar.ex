@@ -101,7 +101,7 @@ defmodule AcqdatCore.Seed.Widgets.Bar do
       properties: %{},
       uuid: UUID.uuid1(:hex),
       classification: "standard",
-      image_url: "https://assets.highcharts.com/images/demo-thumbnails/highcharts/bar-basic-default.png",
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/bar.png",
       category: ["chart", "bar"],
       policies: %{},
       widget_type_id: widget_type.id,

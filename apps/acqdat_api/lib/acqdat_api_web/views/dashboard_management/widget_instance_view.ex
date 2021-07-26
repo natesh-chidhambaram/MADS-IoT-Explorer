@@ -46,6 +46,7 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceView do
     %{
       name: series.name,
       color: series.color,
+      unit: series.unit,
       axes: render_many(series.axes, WidgetInstanceView, "axes.json")
     }
   end

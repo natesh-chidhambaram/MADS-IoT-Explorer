@@ -1,6 +1,6 @@
-defmodule AcqdatCore.Seed.Widgets.ImageCard do
+defmodule AcqdatCore.Seed.Widgets.UserCard do
   @moduledoc """
-  Holds seeds for DynamicCard widgets.
+  Holds seeds for UserCard widgets.
   """
   use AcqdatCore.Seed.Helpers.CustomCardUpdateHelpers
   alias AcqdatCore.Repo
@@ -11,11 +11,10 @@ defmodule AcqdatCore.Seed.Widgets.ImageCard do
   @custom_card_key_widget_settings %{
     card: %{
       visual: %{
-        card: [type: %{value: "image card"}, backgroundColor: %{}, fontColor: %{}],
-        title: [text: %{}, align: %{}, fontSize: %{value: "15px"}, fontColor: %{value: "#495057"}],
-        image: [url: %{}, align: %{}],
-        description: [text: %{}, fontSize: %{value: "14px"}, fontColor: %{value: "#212529"}, align: %{}],
-        subtitle: [text: %{}, fontSize: %{value: "14px"}, fontColor: %{value: "#74788d"}, align: %{}]
+        card: [type: %{value: "user card"}, backgroundColor: %{}, fontColor: %{}],
+        image: [url: %{}, align: %{value: ["left", "right", "center", "top", "bottom"]}],
+        title: [text: %{}, align: %{value: ["left", "right", "center", "top", "bottom"]}, fontSize: %{value: "15px"}, fontColor: %{value: "#495057"}],
+        subtitle: [text: %{}, fontSize: %{value: "12px"}, fontColor: %{value: "#74788d"}, align: %{value: ["left", "right", "center", "top", "bottom"]}]
       }
     }
   }
@@ -23,8 +22,7 @@ defmodule AcqdatCore.Seed.Widgets.ImageCard do
   @custom_card_value_settings %{
     card: %{
       visual_setting_values: %{
-        title: %{text: "Higchart Image"},
-        icon: %{text: "https://assets.highcharts.com/images/demo-thumbnails/highcharts/line-basic-default.png"}
+        title: %{text: "temp"}
       }
     }
   }
@@ -47,12 +45,12 @@ defmodule AcqdatCore.Seed.Widgets.ImageCard do
 
   def set_widget_data(_key, widget_settings, data, widget_type) do
     %WidgetSchema{
-      label: "Image Card",
+      label: "User Card",
       properties: %{},
       uuid: UUID.uuid1(:hex),
       classification: "cards",
-      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/image-card.png",
-      category: ["card", "image_card"],
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/user-card.png",
+      category: ["card", "user_card"],
       policies: %{},
       widget_type_id: widget_type.id,
       visual_settings: WidgetHelpers.do_settings(widget_settings, :visual, %CustomCards{}),

@@ -1,6 +1,6 @@
-defmodule AcqdatCore.Seed.Widgets.DynamicCard do
+defmodule AcqdatCore.Seed.Widgets.PercentageCard do
   @moduledoc """
-  Holds seeds for DynamicCard widgets.
+  Holds seeds for PercentageCard widgets.
   """
   use AcqdatCore.Seed.Helpers.CustomCardUpdateHelpers
   alias AcqdatCore.Repo
@@ -11,12 +11,11 @@ defmodule AcqdatCore.Seed.Widgets.DynamicCard do
   @custom_card_key_widget_settings %{
     card: %{
       visual: %{
-        card: [type: %{value: "dynamic card"}, backgroundColor: %{}, fontColor: %{}],
-        title: [text: %{}, align: %{}, fontSize: %{value: "15px"}, fontColor: %{value: "#495057"}],
+        card: [type: %{value: "percentage card"}, backgroundColor: %{}, fontColor: %{}],
+        title: [text: %{}, align: %{value: ["left", "right", "center", "top", "bottom"]}, fontSize: %{value: "15px"}, fontColor: %{value: "#495057"}],
         unit: [text: %{}, align: %{}],
-        image: [url: %{}, align: %{}],
-        description: [text: %{}, fontSize: %{value: "14px"}, fontColor: %{value: "#212529"}, align: %{}],
-        subtitle: [text: %{}, fontSize: %{value: "14px"}, fontColor: %{value: "#74788d"}, align: %{}]
+        image: [url: %{}, align: %{value: ["left", "right", "center", "top", "bottom"]}],
+        percentage_bar: [max: %{value: 100}]
       },
       data: %{
         series: %{
@@ -41,8 +40,7 @@ defmodule AcqdatCore.Seed.Widgets.DynamicCard do
   @custom_card_value_settings %{
     card: %{
       visual_setting_values: %{
-        title: %{text: "temp"},
-        unit: %{text: "Celsius"}
+        title: %{text: "temp"}
       },
       data_settings_values: %{
         series: [
@@ -72,12 +70,12 @@ defmodule AcqdatCore.Seed.Widgets.DynamicCard do
 
   def set_widget_data(_key, widget_settings, data, widget_type) do
     %WidgetSchema{
-      label: "Dynamic Card",
+      label: "Percentage Card",
       properties: %{},
       uuid: UUID.uuid1(:hex),
       classification: "cards",
-      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/dynamic-card.png",
-      category: ["card", "dynamic_card"],
+      image_url: "https://mads-image.s3.ap-southeast-1.amazonaws.com/widgets/percentage-card.png",
+      category: ["card", "percentage_card"],
       policies: %{},
       widget_type_id: widget_type.id,
       visual_settings: WidgetHelpers.do_settings(widget_settings, :visual, %CustomCards{}),

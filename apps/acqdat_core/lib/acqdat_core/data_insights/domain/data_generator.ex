@@ -44,12 +44,12 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
         case {x_axis["action"], y_axis["action"]} do
           {"group", "group"} ->
             """
-              EXTRACT(EPOCH FROM (time_bucket('#{x_axis["group_interval"]} #{x_axis["group_by"]}'::VARCHAR::INTERVAL,
-              to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{
+              TO_CHAR((time_bucket('#{x_axis["group_interval"]} #{x_axis["group_by"]}'::VARCHAR::INTERVAL,
+              to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))),'YYYY-MM-DD HH24:MI:SS') as \"#{
               x_axis["title"]
             }\",
-              EXTRACT(EPOCH FROM (time_bucket('#{y_axis["group_interval"]} #{y_axis["group_by"]}'::VARCHAR::INTERVAL,
-              to_timestamp(cast("#{y_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{
+              TO_CHAR((time_bucket('#{y_axis["group_interval"]} #{y_axis["group_by"]}'::VARCHAR::INTERVAL,
+              to_timestamp(cast("#{y_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))), 'YYYY-MM-DD HH24:MI:SS') as \"#{
               y_axis["title"]
             }\",
               #{values_data}
@@ -57,8 +57,8 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
 
           {"group", _} ->
             """
-              EXTRACT(EPOCH FROM (time_bucket('#{x_axis["group_interval"]} #{x_axis["group_by"]}'::VARCHAR::INTERVAL,
-              to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{
+              TO_CHAR((time_bucket('#{x_axis["group_interval"]} #{x_axis["group_by"]}'::VARCHAR::INTERVAL,
+              to_timestamp(cast("#{x_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))), 'YYYY-MM-DD HH24:MI:SS') as \"#{
               x_axis["title"]
             }\",
               #{y_axis_col} as \"#{y_axis["title"]}\",
@@ -68,8 +68,8 @@ defmodule AcqdatCore.DataInsights.Domain.DataGenerator do
           {_, "group"} ->
             """
               #{x_axis_col},
-              EXTRACT(EPOCH FROM (time_bucket('#{y_axis["group_interval"]} #{y_axis["group_by"]}'::VARCHAR::INTERVAL,
-              to_timestamp(cast("#{y_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))))*1000 as \"#{
+              TO_CHAR((time_bucket('#{y_axis["group_interval"]} #{y_axis["group_by"]}'::VARCHAR::INTERVAL,
+              to_timestamp(cast("#{y_axis["name"]}" as TEXT), 'YYYY-MM-DD hh24:mi:ss'))), 'YYYY-MM-DD HH24:MI:SS') as \"#{
               y_axis["title"]
             }\",
               #{values_data}
