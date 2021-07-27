@@ -114,8 +114,8 @@ defmodule AcqdatApi.Account do
     end
   end
 
-  def validate_credentials(params, %{password: password, org_id: org_id}) do
-    Account.authenticate(params.user_credentials.email, password, org_id)
+  def validate_credentials(params, %{password: password}) do
+    Account.authenticate(params.user_credentials.email, password)
   end
 
   ############## private functions #####################

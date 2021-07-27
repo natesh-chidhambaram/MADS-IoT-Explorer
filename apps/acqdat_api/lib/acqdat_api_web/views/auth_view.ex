@@ -53,10 +53,10 @@ defmodule AcqdatApiWeb.AuthView do
     %{ok: true}
   end
 
-  def render("user.json", user) do
+  def render("user.json", user_credentials) do
     %{
-      id: user.id,
-      email: user.user_credentials.email
+      id: user_credentials.id,
+      email: user_credentials.email
     }
   end
 end
