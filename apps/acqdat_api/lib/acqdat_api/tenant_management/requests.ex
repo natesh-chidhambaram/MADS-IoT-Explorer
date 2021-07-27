@@ -37,6 +37,8 @@ defmodule AcqdatApi.TenantManagement.Requests do
         type: "new_org_admin",
         org_id: org.id,
         role_id: role_id,
+        group_ids: [],
+        policies: [],
         metadata: Map.merge(metadata, request.user_metadata)
       }
 
