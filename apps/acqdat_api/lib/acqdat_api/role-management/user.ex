@@ -244,6 +244,7 @@ defmodule AcqdatApi.RoleManagement.User do
         {:ok, user |> Repo.preload([:user_credentials])}
 
       {:ok, %{update_user_cred: _, update_user: user, delete_invitation: _delete_invitation}} ->
+        user_create_es(user)
         {:ok, user |> Repo.preload([:user_credentials])}
 
       {:ok, %{delete_invitation: _delete_invitation}} ->
@@ -269,21 +270,18 @@ defmodule AcqdatApi.RoleManagement.User do
   def user_create_es(params) do
     {:ok, user_cred} = UserCredentials.get(params.user_credentials_id)
 
-    create_function = fn ->
-      post("organisation/_doc/#{params.id}?routing=#{params.org_id}",
-        id: params.id,
-        email: user_cred.email,
-        first_name: user_cred.first_name,
-        last_name: user_cred.last_name,
-        org_id: params.org_id,
-        is_invited: params.is_invited,
-        role_id: params.role_id,
-        inserted_at: DateTime.to_unix(params.inserted_at),
-        join_field: %{name: "user", parent: params.org_id}
-      )
-    end
-
-    retry(create_function)
+    post("organisation/_doc/#{params.id}?routing=#{params.org_id}",
+      id: params.id,
+      email: user_cred.email,
+      first_name: user_cred.first_name,
+      last_name: user_cred.last_name,
+      org_id: params.org_id,
+      is_invited: params.is_invited,
+      is_deleted: params.is_deleted,
+      inserted_at: DateTime.to_unix(params.inserted_at),
+      role_id: params.role_id,
+      join_field: %{name: "user", parent: params.org_id}
+    )
   end
 
   defp verify_user({:ok, user_data}) do
