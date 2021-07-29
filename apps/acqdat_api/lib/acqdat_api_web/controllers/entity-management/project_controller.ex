@@ -4,6 +4,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
   alias AcqdatApi.Image
   alias AcqdatApi.ImageDeletion
   alias AcqdatCore.ElasticSearch
+  alias AcqdatCore.Repo
   alias AcqdatApiWeb.EntityManagement.ProjectErrorHelper
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.EntityManagement.Project
@@ -109,6 +110,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
 
         case Project.update(project, params) do
           {:ok, project} ->
+            project = project |> Repo.preload(leads: :user_credentials, users: :user_credentials)
             ElasticSearch.update_project("org", project, project.org_id)
 
             conn
@@ -149,7 +151,7 @@ defmodule AcqdatApiWeb.EntityManagement.ProjectController do
 
           conn
           |> put_status(200)
-          |> render("show.json", %{project: project})
+          |> render("create.json", %{project: project})
         else
           {:extract, {:error, error}} ->
             send_error(conn, 400, error)

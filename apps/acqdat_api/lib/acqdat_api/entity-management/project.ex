@@ -50,7 +50,14 @@ defmodule AcqdatApi.EntityManagement.Project do
   end
 
   defp verify_project({:ok, project}) do
-    project = project |> Repo.preload(leads: :user_credentials, users: :user_credentials)
+    project =
+      project
+      |> Repo.preload(
+        creator: :user_credentials,
+        leads: :user_credentials,
+        users: :user_credentials
+      )
+
     {:ok, project}
   end
 
