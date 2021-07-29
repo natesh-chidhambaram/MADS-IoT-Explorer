@@ -150,8 +150,11 @@ defmodule AcqdatCore.Model.RoleManagement.User do
     changeset = User.update_changeset(user, params)
 
     case Repo.update(changeset) do
-      {:ok, user} -> {:ok, user |> Repo.preload([:role, :org])}
-      {:error, message} -> {:error, message}
+      {:ok, user} ->
+        {:ok, user |> Repo.preload([:role, :org, user_group: :user_group, policies: :policy])}
+
+      {:error, message} ->
+        {:error, message}
     end
   end
 
@@ -164,7 +167,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
 
         case Repo.update(changeset) do
           {:ok, user} ->
-            {:ok, user |> Repo.preload([:role, :org])}
+            {:ok, user |> Repo.preload([:role, :org, user_group: :user_group, policies: :policy])}
 
           {:error, message} ->
             {:error, message}

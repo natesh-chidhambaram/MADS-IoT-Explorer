@@ -9,6 +9,7 @@ defmodule AcqdatApi.RoleManagement.Invitation do
   alias AcqdatCore.Repo
 
   defdelegate get_by_token(token), to: InvitationModel
+  defdelegate get_by_email_n_org(email, org_id), to: InvitationModel
 
   def create(
         %{email: email, org_id: org_id, group_ids: group_ids, policies: policies} = attrs,
@@ -165,11 +166,14 @@ defmodule AcqdatApi.RoleManagement.Invitation do
            email: email,
            org_id: org_id,
            role_id: role_id,
-           token: token
+           token: token,
+           type: type
          },
-         type,
+         reinvite_type,
          current_user
        ) do
+    type = type || reinvite_type
+
     invitation = %{
       "email" => email,
       "app_ids" => app_ids,
@@ -180,7 +184,8 @@ defmodule AcqdatApi.RoleManagement.Invitation do
       "inviter_id" => current_user.id,
       "org_id" => org_id,
       "role_id" => role_id,
-      "token" => token
+      "token" => token,
+      "type" => type
     }
 
     if type == "existing_user", do: Map.put(invitation, "type", "existing_user"), else: invitation
