@@ -22,7 +22,8 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationView do
       url: org.url,
       name: org.name,
       uuid: org.uuid,
-      avatar: org.avatar
+      avatar: org.avatar,
+      description: org.description
     }
   end
 
@@ -51,6 +52,7 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationView do
       id: organisation.id,
       name: organisation.name,
       url: organisation.url,
+      description: organisation.description,
       apps: render_many(organisation.apps, AppView, "app.json"),
       org_admin: render_many(org_admin, OrganisationView, "admin.json")
     }
