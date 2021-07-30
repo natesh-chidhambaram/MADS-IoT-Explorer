@@ -50,7 +50,7 @@ defmodule AcqdatCore.Schema.RoleManagement.UserGroup do
   end
 
   defp put_group_users(changeset, user_ids) do
-    case is_nil(user_ids) do
+    case user_ids == [] do
       false ->
         users = Repo.all(from(user in User, where: user.id in ^user_ids))
         put_assoc(changeset, :users, Enum.map(users, &change/1))
@@ -61,7 +61,7 @@ defmodule AcqdatCore.Schema.RoleManagement.UserGroup do
   end
 
   defp put_group_policies(changeset, policy_ids) do
-    case is_nil(policy_ids) do
+    case policy_ids == [] do
       false ->
         policies = Repo.all(from(policy in Policy, where: policy.id in ^policy_ids))
         put_assoc(changeset, :policies, Enum.map(policies, &change/1))
