@@ -109,7 +109,16 @@ defmodule AcqdatApiWeb.RoleManagement.UserView do
       last_name: user_credentials.last_name,
       phone_number: user_credentials.phone_number,
       metadata: user_credentials.metadata && Map.from_struct(user_credentials.metadata),
-      avatar: user_credentials.avatar
+      avatar: user_credentials.avatar,
+      user_setting: render_one(user_credentials.user_setting, UserView, "user_setting.json")
+    }
+  end
+
+  def render("user_setting.json", %{user: setting}) do
+    %{
+      id: setting.id,
+      visual_settings: Map.from_struct(setting.visual_settings),
+      data_settings: Map.from_struct(setting.data_settings)
     }
   end
 
