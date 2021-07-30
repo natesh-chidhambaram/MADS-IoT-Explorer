@@ -9,7 +9,10 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
     test "adds UserGroup for valid params" do
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group_id = user_group.id
       result = Repo.all(UserGroup)
 
@@ -26,7 +29,6 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
   end
 
   describe "update/2" do
-
     test "succeeds with addition" do
       Ecto.Adapters.SQL.Sandbox.checkout(AcqdatCore.Repo)
 
@@ -38,9 +40,16 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       policy_id2 = policy2.id
 
       org_id = user.org_id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
 
-      {:ok, result1} = UserGroupModel.update(user_group, %{user_ids: [user_id], policy_ids: [policy_id1, policy_id2]})
+      {:ok, user_group} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, result1} =
+        UserGroupModel.update(user_group, %{
+          user_ids: [user_id],
+          policy_ids: [policy_id1, policy_id2]
+        })
+
       [pol1, pol2] = result1.policies
       assert pol1.id == policy_id1
       assert pol2.id == policy_id2
@@ -58,9 +67,16 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       policy_id2 = policy2.id
 
       org_id = user.org_id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
 
-      {:ok, result1} = UserGroupModel.update(user_group, %{user_ids: [user_id], policy_ids: [policy_id1, policy_id2]})
+      {:ok, user_group} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, result1} =
+        UserGroupModel.update(user_group, %{
+          user_ids: [user_id],
+          policy_ids: [policy_id1, policy_id2]
+        })
+
       [pol1, pol2] = result1.policies
       assert pol1.id == policy_id1
       assert pol2.id == policy_id2
@@ -82,25 +98,32 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       policy_id2 = policy2.id
 
       org_id = user.org_id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
 
-      {:ok, result1} = UserGroupModel.update(user_group, %{user_ids: [user_id], policy_ids: [policy_id1]})
+      {:ok, user_group} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, result1} =
+        UserGroupModel.update(user_group, %{user_ids: [user_id], policy_ids: [policy_id1]})
+
       [pol1] = result1.policies
       assert pol1.id == policy_id1
       assert hd(result1.users).id == user_id
 
-      {:ok, result1} = UserGroupModel.update(user_group, %{user_ids: [], policy_ids: [policy_id2]})
+      {:ok, result1} =
+        UserGroupModel.update(user_group, %{user_ids: [], policy_ids: [policy_id2]})
+
       assert hd(result1.policies).id == policy_id2
     end
   end
 
   describe "normal_update/2" do
     test "updates successfully for good params" do
-
       user = insert(:user)
       user_id = user.id
       org_id = user.org_id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
 
       {:ok, updated} = UserGroupModel.normal_update(user_group, %{name: "UpdatedGrp1"})
 
@@ -108,7 +131,8 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
     end
 
     test "raises error for bad usergroup" do
-      assert {:error, _} = UserGroupModel.normal_update(%UserGroup{id: 43, name: "BadGroup", org_id: -1}, %{})
+      assert {:error, _} =
+               UserGroupModel.normal_update(%UserGroup{id: 43, name: "BadGroup", org_id: -1}, %{})
     end
   end
 
@@ -117,14 +141,15 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       user = insert(:user)
       user_id = user.id
       org_id = user.org_id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
 
       {:ok, result} = UserGroupModel.get(user_group.id)
       assert result.id == user_group.id
     end
 
     test "error when not possible" do
-
       assert {:error, _} = UserGroupModel.get(-1)
     end
   end
@@ -132,10 +157,24 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
   describe "extract_groups/1" do
     test "filters invalid groups" do
       org_id = insert(:organisation).id
-      {:ok, user_group1} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
-      {:ok, user_group2} = UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
-      {:ok, user_group3} = UserGroupModel.create(%{name: "Group3", org_id: org_id, user_ids: [], policy_ids: []})
-      assert [user_group1.id, user_group2.id, user_group3.id] == UserGroupModel.extract_groups([user_group1.id, user_group2.id, user_group3.id, 43, 76])
+
+      {:ok, user_group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group2} =
+        UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group3} =
+        UserGroupModel.create(%{name: "Group3", org_id: org_id, user_ids: [], policy_ids: []})
+
+      assert [user_group1.id, user_group2.id, user_group3.id] ==
+               UserGroupModel.extract_groups([
+                 user_group1.id,
+                 user_group2.id,
+                 user_group3.id,
+                 43,
+                 76
+               ])
     end
 
     test "true purpose of function???" do
@@ -154,7 +193,14 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       policy_id2 = policy2.id
 
       org_id = user.org_id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [user_id], policy_ids: [policy_id1, policy_id2]})
+
+      {:ok, user_group} =
+        UserGroupModel.create(%{
+          name: "Group1",
+          org_id: org_id,
+          user_ids: [user_id],
+          policy_ids: [policy_id1, policy_id2]
+        })
 
       assert [policy_id1, policy_id2] == UserGroupModel.policies(user_group.id)
     end
@@ -169,9 +215,15 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       user = insert(:user)
       user_id = user.id
       org_id = user.org_id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
 
-      result = hd(UserGroupModel.get_all(%{page_size: 10, page_number: 1, org_id: org_id}, [:org]).entries)
+      {:ok, user_group} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      result =
+        hd(
+          UserGroupModel.get_all(%{page_size: 10, page_number: 1, org_id: org_id}, [:org]).entries
+        )
+
       assert result.id == user_group.id
       assert result.org.id == org_id
     end
@@ -191,9 +243,21 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       policy_id1 = policy1.id
       policy2 = insert(:policy)
       policy_id2 = policy2.id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: [policy_id1, policy_id2]})
 
-      result = UserGroupModel.return_policies(%{page_size: 10, page_number: 1, org_id: org_id, group_ids: [user_group.id]}, [:org])
+      {:ok, user_group} =
+        UserGroupModel.create(%{
+          name: "Group1",
+          org_id: org_id,
+          user_ids: [],
+          policy_ids: [policy_id1, policy_id2]
+        })
+
+      result =
+        UserGroupModel.return_policies(
+          %{page_size: 10, page_number: 1, org_id: org_id, group_ids: [user_group.id]},
+          [:org]
+        )
+
       # IO.inspect(result)
 
       # Does not have anything to do with policies??
@@ -201,13 +265,17 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
     end
 
     test "error when not possible" do
-      result = UserGroupModel.return_policies(%{page_size: 10, page_number: 1, org_id: -1, group_ids: [-1]}, [])
+      result =
+        UserGroupModel.return_policies(
+          %{page_size: 10, page_number: 1, org_id: -1, group_ids: [-1]},
+          []
+        )
+
       assert result.total_entries == 0
     end
   end
 
   describe "delete/1" do
-
     test "deletes for good input" do
       user = insert(:user)
       user_id = user.id
@@ -216,7 +284,14 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       policy_id1 = policy1.id
       policy2 = insert(:policy)
       policy_id2 = policy2.id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: [policy_id1, policy_id2]})
+
+      {:ok, user_group} =
+        UserGroupModel.create(%{
+          name: "Group1",
+          org_id: org_id,
+          user_ids: [],
+          policy_ids: [policy_id1, policy_id2]
+        })
 
       {:ok, _} = UserGroupModel.delete(user_group)
 
@@ -237,7 +312,14 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       policy_id1 = policy1.id
       policy2 = insert(:policy)
       policy_id2 = policy2.id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: [policy_id1, policy_id2]})
+
+      {:ok, user_group} =
+        UserGroupModel.create(%{
+          name: "Group1",
+          org_id: org_id,
+          user_ids: [],
+          policy_ids: [policy_id1, policy_id2]
+        })
 
       result = hd(UserGroupModel.return_multiple_user_groups([user_group.id]))
 
@@ -250,5 +332,4 @@ defmodule AcqdatCore.Model.RoleManagement.UserGroupTest do
       assert [] == UserGroupModel.return_multiple_user_groups([-1])
     end
   end
-
 end

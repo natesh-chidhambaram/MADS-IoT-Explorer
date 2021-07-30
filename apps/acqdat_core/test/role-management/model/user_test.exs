@@ -11,10 +11,10 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
 
   describe "create/1" do
     test "creates with valid params" do
-
       user_credentials = insert(:user_credentials)
       role = insert(:role)
       org = insert(:organisation)
+
       params = %{
         "user_credentials_id" => user_credentials.id,
         "is_invited" => false,
@@ -31,6 +31,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
     test "raises error for missing parameters" do
       user_credentials = insert(:user_credentials)
       role = insert(:role)
+
       params = %{
         "user_credentials_id" => user_credentials.id,
         "is_invited" => false,
@@ -42,7 +43,6 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
   end
 
   describe "get/1" do
-
     test "gets by id" do
       user = insert(:user)
       {:ok, new_user} = UserModel.get(user.id)
@@ -115,7 +115,9 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
       insert(:user)
       insert(:user)
 
-      result = UserModel.get_all(%{page_size: 10, page_number: 1, org_id: user1.org_id}, [:assets])
+      result =
+        UserModel.get_all(%{page_size: 10, page_number: 1, org_id: user1.org_id}, [:assets])
+
       assert result.total_entries == 1
       assert hd(result.entries).id == user1.id
       assert hd(result.entries).assets == []
@@ -127,6 +129,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
       user_credentials1 = insert(:user_credentials)
       role1 = insert(:role)
       org = insert(:organisation)
+
       params = %{
         "user_credentials_id" => user_credentials1.id,
         "is_invited" => false,
@@ -139,6 +142,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
       user_credentials2 = insert(:user_credentials)
       role2 = insert(:role)
       org = insert(:organisation)
+
       params = %{
         "user_credentials_id" => user_credentials2.id,
         "is_invited" => false,
@@ -165,6 +169,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
       {:ok, result} = UserModel.get(user.id)
       assert result.is_deleted == true
     end
+
     test "raises error for invalid user" do
       assert {:error, _} = UserModel.delete(%User{id: -1})
     end
@@ -191,18 +196,33 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
       user = insert(:user)
       policy1 = insert(:policy)
       policy2 = insert(:policy)
-      {:ok, group1} = UserGroupModel.create(%{name: "Group1", org_id: user.org_id, user_ids: [], policy_ids: []})
-      {:ok, group2} = UserGroupModel.create(%{name: "Group2", org_id: user.org_id, user_ids: [], policy_ids: []})
+
+      {:ok, group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: user.org_id, user_ids: [], policy_ids: []})
+
+      {:ok, group2} =
+        UserGroupModel.create(%{name: "Group2", org_id: user.org_id, user_ids: [], policy_ids: []})
 
       GroupUserModel.create(%{user_id: user.id, user_group_id: group1.id})
       UserPolicyModel.create(%{user_id: user.id, policy_id: policy1.id})
-      result = UserModel.get_all(%{page_size: 10, page_number: 1, org_id: user.org_id}, [:policies, :user_group])
+
+      result =
+        UserModel.get_all(%{page_size: 10, page_number: 1, org_id: user.org_id}, [
+          :policies,
+          :user_group
+        ])
+
       assert hd(hd(result.entries).policies).policy_id == policy1.id
       assert hd(hd(result.entries).user_group).user_group_id == group1.id
 
       UserModel.update_user(user, %{"group_ids" => [group2.id], "policies" => [policy2.id]})
 
-      result = UserModel.get_all(%{page_size: 10, page_number: 1, org_id: user.org_id}, [:policies, :user_group])
+      result =
+        UserModel.get_all(%{page_size: 10, page_number: 1, org_id: user.org_id}, [
+          :policies,
+          :user_group
+        ])
+
       assert hd(hd(result.entries).policies).policy_id == policy2.id
       assert hd(hd(result.entries).user_group).user_group_id == group2.id
     end
@@ -258,7 +278,6 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
   end
 
   describe "fetch_user_orgs_by_email/1" do
-
     test "gets org_id for multiple orgs" do
       user1 = insert(:user)
       org1 = insert(:organisation)
@@ -266,8 +285,11 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
       org2 = insert(:organisation)
       user_cred = insert(:user_credentials)
 
-      {:ok, user1} = UserModel.update_user(user1, %{"user_credentials_id" => user_cred.id, "org_id" => org1.id})
-      {:ok, user2} = UserModel.update_user(user2, %{"user_credentials_id" => user_cred.id, "org_id" => org2.id})
+      {:ok, user1} =
+        UserModel.update_user(user1, %{"user_credentials_id" => user_cred.id, "org_id" => org1.id})
+
+      {:ok, user2} =
+        UserModel.update_user(user2, %{"user_credentials_id" => user_cred.id, "org_id" => org2.id})
 
       [id1, id2] = UserModel.fetch_user_orgs_by_email(user_cred.email)
       assert id1 == org1.id
@@ -280,13 +302,13 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
   end
 
   describe "fetch_user_by_email_n_org/1" do
-
     test "gets user for valid input" do
       user1 = insert(:user)
       org1 = insert(:organisation)
       user_cred = insert(:user_credentials)
 
-      {:ok, user1} = UserModel.update_user(user1, %{"user_credentials_id" => user_cred.id, "org_id" => org1.id})
+      {:ok, user1} =
+        UserModel.update_user(user1, %{"user_credentials_id" => user_cred.id, "org_id" => org1.id})
 
       result1 = UserModel.fetch_user_by_email_n_org(user_cred.email, org1.id)
       assert user1.id == result1.id
@@ -303,7 +325,8 @@ defmodule AcqdatCore.Model.RoleManagement.UserTest do
       org1 = insert(:organisation)
       user_cred = insert(:user_credentials)
 
-      {:ok, user1} = UserModel.update_user(user1, %{"user_credentials_id" => user_cred.id, "org_id" => org1.id})
+      {:ok, user1} =
+        UserModel.update_user(user1, %{"user_credentials_id" => user_cred.id, "org_id" => org1.id})
 
       assert true == UserModel.verify_email(user_cred.email)
     end

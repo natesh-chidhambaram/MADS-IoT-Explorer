@@ -6,16 +6,14 @@ defmodule AcqdatCore.Model.RoleManagement.RequestsTest do
   alias AcqdatCore.Schema.RoleManagement.Requests
 
   describe "create/1" do
-
     test "creates a request with supplied params" do
-
       params = %{
         "first_name" => "Arthur",
         "last_name" => "Dent",
         "email" => "arthurdent@siriuscyber.com",
         "phone_number" => "2267709",
         "org_name" => "Sirius Cybernetics",
-        "org_url" => "siriuscyber@mads.com",
+        "org_url" => "siriuscyber@mads.com"
       }
 
       assert {:ok, _} = RequestsModel.create(params)
@@ -27,7 +25,7 @@ defmodule AcqdatCore.Model.RoleManagement.RequestsTest do
         "last_name" => "Dent",
         "email" => "arthurdent@siriuscyber.com",
         "org_name" => "Sirius Cybernetics",
-        "org_url" => "siriuscyber@mads.com",
+        "org_url" => "siriuscyber@mads.com"
       }
 
       assert {:error, _} = RequestsModel.create(params)
@@ -42,7 +40,7 @@ defmodule AcqdatCore.Model.RoleManagement.RequestsTest do
         "email" => "arthurdent@siriuscyber.com",
         "phone_number" => "2267709",
         "org_name" => "Sirius Cybernetics",
-        "org_url" => "siriuscyber@mads.com",
+        "org_url" => "siriuscyber@mads.com"
       }
 
       assert {:ok, request} = RequestsModel.create(params)
@@ -65,7 +63,7 @@ defmodule AcqdatCore.Model.RoleManagement.RequestsTest do
         "email" => "arthurdent@siriuscyber.com",
         "phone_number" => "2267709",
         "org_name" => "Sirius Cybernetics",
-        "org_url" => "siriuscyber@mads.com",
+        "org_url" => "siriuscyber@mads.com"
       }
 
       assert {:ok, request} = RequestsModel.create(params)
@@ -87,16 +85,14 @@ defmodule AcqdatCore.Model.RoleManagement.RequestsTest do
   end
 
   describe "update/2" do
-
     test "updates an request with supplied params" do
-
       params = %{
         "first_name" => "Arthur",
         "last_name" => "Dent",
         "email" => "arthurdent@siriuscyber.com",
         "phone_number" => "2267709",
         "org_name" => "Sirius Cybernetics",
-        "org_url" => "siriuscyber@mads.com",
+        "org_url" => "siriuscyber@mads.com"
       }
 
       assert {:ok, request} = RequestsModel.create(params)
@@ -107,7 +103,7 @@ defmodule AcqdatCore.Model.RoleManagement.RequestsTest do
         "email" => "fordprefect@siriuscyber.com",
         "phone_number" => "2267709",
         "org_name" => "Sirius Cybernetics",
-        "org_url" => "siriuscyber@mads.com",
+        "org_url" => "siriuscyber@mads.com"
       }
 
       assert {:ok, new_request} = RequestsModel.update(request, params)
@@ -116,14 +112,13 @@ defmodule AcqdatCore.Model.RoleManagement.RequestsTest do
     end
 
     test "fails if request is not present" do
-
       params = %{
         "first_name" => "Arthur",
         "last_name" => "Dent",
         "email" => "arthurdent@siriuscyber.com",
         "phone_number" => "2267709",
         "org_name" => "Sirius Cybernetics",
-        "org_url" => "siriuscyber@mads.com",
+        "org_url" => "siriuscyber@mads.com"
       }
 
       assert {:ok, request} = RequestsModel.create(params)
@@ -135,7 +130,7 @@ defmodule AcqdatCore.Model.RoleManagement.RequestsTest do
         email: "fordprefect@siriuscyber.com",
         phone_number: "2267709",
         org_name: "Sirius Cybernetics",
-        org_url: "siriuscyber@mads.com",
+        org_url: "siriuscyber@mads.com"
       }
 
       assert {:error, _} = RequestsModel.update(request, params)
@@ -150,7 +145,7 @@ defmodule AcqdatCore.Model.RoleManagement.RequestsTest do
         "email" => "arthurdent@siriuscyber.com",
         "phone_number" => "2267709",
         "org_name" => "Sirius Cybernetics",
-        "org_url" => "siriuscyber@mads.com",
+        "org_url" => "siriuscyber@mads.com"
       }
 
       assert {:ok, request} = RequestsModel.create(params)

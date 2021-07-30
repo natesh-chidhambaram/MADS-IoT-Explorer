@@ -11,7 +11,10 @@ defmodule AcqdatCore.Model.RoleManagement.ForgotPasswordTest do
     test "adds password for valid params" do
       user = insert(:user)
       user_id = user.id
-      {:ok, token, _} = Guardian.encode_and_sign(user, %{}, token_type: :access, ttl: {24, :hours})
+
+      {:ok, token, _} =
+        Guardian.encode_and_sign(user, %{}, token_type: :access, ttl: {24, :hours})
+
       params = %{user_id: user_id, token: token}
       ForgotPasswordModel.create(params)
       result = Repo.all(ForgotPassword)
@@ -30,9 +33,12 @@ defmodule AcqdatCore.Model.RoleManagement.ForgotPasswordTest do
     test "returns user credentials for valid params" do
       user = insert(:user)
       user_id = user.id
-      {:ok, token, _} = Guardian.encode_and_sign(user, %{}, token_type: :access, ttl: {24, :hours})
+
+      {:ok, token, _} =
+        Guardian.encode_and_sign(user, %{}, token_type: :access, ttl: {24, :hours})
+
       params = %{user_id: user_id, token: token}
-      ForgotPasswordModel.create(params)
+      {:ok, _} = ForgotPasswordModel.create(params)
       result = Repo.all(ForgotPassword)
       assert Map.fetch(hd(result), :user_id) == {:ok, user_id}
 
@@ -50,7 +56,10 @@ defmodule AcqdatCore.Model.RoleManagement.ForgotPasswordTest do
     test "deletes password for valid params" do
       user = insert(:user)
       user_id = user.id
-      {:ok, token, _} = Guardian.encode_and_sign(user, %{}, token_type: :access, ttl: {24, :hours})
+
+      {:ok, token, _} =
+        Guardian.encode_and_sign(user, %{}, token_type: :access, ttl: {24, :hours})
+
       params = %{user_id: user_id, token: token}
       ForgotPasswordModel.create(params)
       result = Repo.all(ForgotPassword)

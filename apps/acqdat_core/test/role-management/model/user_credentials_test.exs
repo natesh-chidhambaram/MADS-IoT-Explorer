@@ -7,9 +7,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserCredentialsTest do
   alias AcqdatCore.Schema.RoleManagement.UserCredentials
 
   describe "create/1" do
-
     test "creates with supplied params" do
-
       params = %{
         "first_name" => "Ford",
         "email" => "test90@gmail.com",
@@ -30,9 +28,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserCredentialsTest do
   end
 
   describe "update/2" do
-
     test "updates with supplied params" do
-
       params = %{
         "first_name" => "Ford",
         "email" => "test90@gmail.com",
@@ -42,7 +38,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserCredentialsTest do
       assert {:ok, credentials} = UserCredentialsModel.create(params)
 
       params = %{
-        "first_name" => "Prefect",
+        "first_name" => "Prefect"
       }
 
       assert {:ok, new_cred} = UserCredentialsModel.update(credentials, params)
@@ -50,7 +46,6 @@ defmodule AcqdatCore.Model.RoleManagement.UserCredentialsTest do
     end
 
     test "fails if credentials not present" do
-
       credentials = %UserCredentials{
         id: 44,
         first_name: "Ford",
@@ -68,9 +63,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserCredentialsTest do
   end
 
   describe "update_details/2" do
-
     test "updates with supplied params" do
-
       params = %{
         "first_name" => "Ford",
         "email" => "test90@gmail.com",
@@ -80,7 +73,7 @@ defmodule AcqdatCore.Model.RoleManagement.UserCredentialsTest do
       assert {:ok, credentials} = UserCredentialsModel.create(params)
 
       params = %{
-        "first_name" => "Prefect",
+        "first_name" => "Prefect"
       }
 
       assert {:ok, new_cred} = UserCredentialsModel.update_details(credentials.id, params)
@@ -88,7 +81,6 @@ defmodule AcqdatCore.Model.RoleManagement.UserCredentialsTest do
     end
 
     test "fails if credentials not present" do
-
       credentials = %UserCredentials{
         id: 44,
         first_name: "Ford",
@@ -266,7 +258,6 @@ defmodule AcqdatCore.Model.RoleManagement.UserCredentialsTest do
   end
 
   describe "get_by_email_n_org/2" do
-
     test "returns a particular record by email" do
       params = %{
         "first_name" => "Ford",

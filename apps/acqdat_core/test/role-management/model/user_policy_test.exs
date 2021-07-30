@@ -28,7 +28,6 @@ defmodule AcqdatCore.Model.RoleManagement.UserPolicyTest do
   end
 
   describe "update/2" do
-
     test "succeeds with addition" do
       Ecto.Adapters.SQL.Sandbox.checkout(AcqdatCore.Repo)
 

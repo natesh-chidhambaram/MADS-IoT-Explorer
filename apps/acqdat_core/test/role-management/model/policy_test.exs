@@ -22,7 +22,6 @@ defmodule AcqdatCore.Model.RoleManagement.PolicyTest do
   end
 
   describe "create/1" do
-
     setup :setup_request
 
     test "creates policy", %{actions1: actions1, actions2: actions2} do
@@ -39,7 +38,6 @@ defmodule AcqdatCore.Model.RoleManagement.PolicyTest do
   end
 
   describe "extract_policies/1" do
-
     setup :setup_request
 
     test "extracts multiple policies", %{actions1: actions1, actions2: actions2} do

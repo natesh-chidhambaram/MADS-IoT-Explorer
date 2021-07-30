@@ -83,7 +83,6 @@ defmodule AcqdatCore.Model.RoleManagement.InvitationTest do
   end
 
   describe "list_invitations" do
-
     test "lists current invitations" do
       invite1 = insert(:invitation)
       invite2 = insert(:invitation)
@@ -137,10 +136,12 @@ defmodule AcqdatCore.Model.RoleManagement.InvitationTest do
       assert {:ok, invite} = InvitationModel.create_invitation(params)
 
       inviter2 = insert(:user)
+
       params = %{
         "email" => "test91@gmail.com",
         "inviter_id" => inviter2.id
       }
+
       assert {:ok, new_invite} = InvitationModel.update_invitation(invite, params)
       assert Map.fetch(new_invite, :email) == {:ok, "test91@gmail.com"}
       assert Map.fetch(new_invite, :inviter_id) == {:ok, inviter2.id}
@@ -189,12 +190,16 @@ defmodule AcqdatCore.Model.RoleManagement.InvitationTest do
       assert {:ok, invite} = InvitationModel.create_invitation(params)
       token1 = invite.token
 
-      InvitationModel.update_invitation_token(invite, %{"email" => "test90@gmail.com", "org_id" => org.id})
+      InvitationModel.update_invitation_token(invite, %{
+        "email" => "test90@gmail.com",
+        "org_id" => org.id
+      })
+
       assert [new_invite] = InvitationModel.list_invitations()
       assert token1 != new_invite.token
     end
 
-    test "fails if invite is not present", context do
+    test "error if invite is not present", context do
       %{org: org, role: role} = context
       inviter1 = insert(:user)
 

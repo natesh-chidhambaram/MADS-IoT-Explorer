@@ -76,7 +76,8 @@ defmodule AcqdatCore.Model.RoleManagement.UserSettingTest do
     end
 
     test "raises errors for bad input" do
-      assert {:error, _} = UserSettingModel.update(%UserSetting{id: -1, user_credentials_id: -1}, %{})
+      assert {:error, _} =
+               UserSettingModel.update(%UserSetting{id: -1, user_credentials_id: -1}, %{})
     end
   end
 
@@ -96,7 +97,6 @@ defmodule AcqdatCore.Model.RoleManagement.UserSettingTest do
   end
 
   describe "delete/1" do
-
     test "deletes successfully for valid values" do
       user_credentials = insert(:user_credentials)
 
@@ -125,11 +125,9 @@ defmodule AcqdatCore.Model.RoleManagement.UserSettingTest do
     test "raises error for invalid values" do
       assert {:error, _} = UserSettingModel.delete(-1)
     end
-
   end
 
   describe "fetch_user_credentials" do
-
     test "succeeds for valid input" do
       user_credentials = insert(:user_credentials)
 
@@ -145,11 +143,11 @@ defmodule AcqdatCore.Model.RoleManagement.UserSettingTest do
           longitude: 20.22
         }
       }
+
       assert {:ok, setting} = UserSettingModel.create(params)
 
       result = UserSettingModel.fetch_user_credentials()
       assert false
     end
-
   end
 end

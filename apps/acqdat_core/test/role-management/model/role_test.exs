@@ -56,6 +56,7 @@ defmodule AcqdatCore.Model.RoleManagement.RoleTest do
 
     test "fails for bad role" do
       Repo.delete_all(Role)
+
       role = %Role{
         id: 43,
         name: "Role-2",

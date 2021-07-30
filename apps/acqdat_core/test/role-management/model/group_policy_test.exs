@@ -32,14 +32,11 @@ defmodule AcqdatCore.Model.RoleManagement.GroupPolicyTest do
   end
 
   describe "remove_policy_from_group/2" do
-
     setup :setup_request
 
     test "removes policy for valid input", %{group1: group1} do
-
       # Testing requires functionality to add group-policy
       assert 0 == 1
-
     end
 
     test "returns error not found, if apps are not present", %{group1: group1} do

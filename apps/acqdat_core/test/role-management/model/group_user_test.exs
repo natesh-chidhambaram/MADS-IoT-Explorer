@@ -12,7 +12,10 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
       user_id = user.id
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group_id = user_group.id
 
       GroupUserModel.create(%{user_id: user_id, user_group_id: user_group_id})
@@ -35,9 +38,15 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
       user_id = user.id
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group1} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group1_id = user_group1.id
-      {:ok, user_group2} = UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group2} =
+        UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group2_id = user_group2.id
 
       GroupUserModel.create(%{user_id: user_id, user_group_id: user_group1_id})
@@ -52,7 +61,6 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
   end
 
   describe "update/2" do
-
     test "succeeds with addition" do
       Ecto.Adapters.SQL.Sandbox.checkout(AcqdatCore.Repo)
 
@@ -60,9 +68,15 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
       user_id = user.id
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group1} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group1_id = user_group1.id
-      {:ok, user_group2} = UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group2} =
+        UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group2_id = user_group2.id
 
       GroupUserModel.create(%{user_id: user_id, user_group_id: user_group1_id})
@@ -83,9 +97,15 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
       user_id = user.id
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group1} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group1_id = user_group1.id
-      {:ok, user_group2} = UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group2} =
+        UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group2_id = user_group2.id
 
       GroupUserModel.create(%{user_id: user_id, user_group_id: user_group1_id})
@@ -104,9 +124,15 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
       user_id = user.id
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group1} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group1_id = user_group1.id
-      {:ok, user_group2} = UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group2} =
+        UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group2_id = user_group2.id
 
       GroupUserModel.create(%{user_id: user_id, user_group_id: user_group1_id})
@@ -128,9 +154,15 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
       user_id = user.id
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group1} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group1_id = user_group1.id
-      {:ok, user_group2} = UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group2} =
+        UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group2_id = user_group2.id
 
       GroupUserModel.add_user_to_group(user, [user_group1_id, user_group2_id])
@@ -145,7 +177,10 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
       user_id = user.id
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group1} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group1_id = user_group1.id
       GroupUserModel.create(%{user_id: user_id, user_group_id: user_group1_id})
 
@@ -167,9 +202,15 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
       user_id = user.id
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group1} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group1_id = user_group1.id
-      {:ok, user_group2} = UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group2} =
+        UserGroupModel.create(%{name: "Group2", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group2_id = user_group2.id
       GroupUserModel.create(%{user_id: user_id, user_group_id: user_group1_id})
       GroupUserModel.create(%{user_id: user_id, user_group_id: user_group2_id})
@@ -184,7 +225,10 @@ defmodule AcqdatCore.Model.RoleManagement.GroupUserTest do
       user_id = user.id
       org = insert(:organisation)
       org_id = org.id
-      {:ok, user_group1} = UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
+      {:ok, user_group1} =
+        UserGroupModel.create(%{name: "Group1", org_id: org_id, user_ids: [], policy_ids: []})
+
       user_group1_id = user_group1.id
       GroupUserModel.create(%{user_id: user_id, user_group_id: user_group1_id})
 
