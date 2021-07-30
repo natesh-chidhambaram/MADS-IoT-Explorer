@@ -21,7 +21,7 @@ defmodule AcqdatApi.RoleManagement.ForgotPassword do
       email: email
     } = params
 
-    check_user(UserModel.get_by_email(email))
+    check_user(UserModel.active_user(email))
   end
 
   def update(user, params) do
@@ -37,23 +37,23 @@ defmodule AcqdatApi.RoleManagement.ForgotPassword do
     |> render("forgot_password.html", user: user, url: url)
   end
 
-  defp check_user({:ok, user_credentials}) do
+  defp check_user(nil) do
+    {:error, %{error: "No active user with this email"}}
+  end
+
+  defp check_user(user_credentials) do
     token = generate_token({:ok, user_credentials})
 
     verify_forgot_password(
-      ForgotPasswordModel.create(%{
-        token: token,
-        user_id: user_credentials.id
-      }),
+      ForgotPasswordModel.create(%{token: token, user_credentials_id: user_credentials.id}),
       user_credentials
     )
   end
 
-  defp check_user({:error, message}) do
-    {:error, %{error: message}}
-  end
-
-  defp verify_forgot_password({:ok, %{token: token, user_id: _user_id}}, user_credentials) do
+  defp verify_forgot_password(
+         {:ok, %{token: token, user_credentials_id: _user_id}},
+         user_credentials
+       ) do
     url = generate_url(token)
     send_email(url, user_credentials)
     {:ok, url}
