@@ -37,6 +37,8 @@ defmodule AcqdatApi.TenantManagement.Requests do
         type: "new_org_admin",
         org_id: org.id,
         role_id: role_id,
+        group_ids: [],
+        policies: [],
         metadata: Map.merge(metadata, request.user_metadata)
       }
 
@@ -44,6 +46,44 @@ defmodule AcqdatApi.TenantManagement.Requests do
     end)
     |> Multi.run(:update_req_status, fn _, _ ->
       Requests.update(request, %{status: "accepted"})
+    end)
+    |> run_transaction()
+  end
+
+  def validate(%{"status" => status}, current_user, request) when status == "re-approve" do
+    Multi.new()
+    |> Multi.run(:find_or_create_org, fn _, _changes ->
+      Organisation.find_or_create_by_url(%{url: request.org_url, name: request.org_name})
+    end)
+    |> Multi.run(:create_invitation, fn _, %{find_or_create_org: org} ->
+      %{id: role_id} = AcqdatCore.Model.RoleManagement.Role.get_role("orgadmin")
+
+      metadata = %{
+        "first_name" => request.first_name,
+        "last_name" => request.last_name,
+        "phone_number" => request.phone_number
+      }
+
+      attrs = %{
+        email: request.email,
+        type: "new_org_admin",
+        org_id: org.id,
+        role_id: role_id,
+        group_ids: [],
+        policies: [],
+        metadata: Map.merge(metadata, request.user_metadata)
+      }
+
+      case Invitation.get_by_email_n_org(request.email, org.id) do
+        nil ->
+          Invitation.create(attrs, current_user)
+
+        invitation ->
+          Invitation.update(invitation, current_user, [], [])
+      end
+    end)
+    |> Multi.run(:update_req_status, fn _, _ ->
+      Requests.update(request, %{status: "re-approved"})
     end)
     |> run_transaction()
   end

@@ -40,6 +40,32 @@ defmodule AcqdatApiWeb.RoleManagement.UserView do
     }
   end
 
+  def render("user_update.json", %{
+        user_details: %{user_credentials: user_credentials} = user_details
+      }) do
+    %{
+      id: user_details.id,
+      email: user_credentials.email,
+      first_name: user_credentials.first_name,
+      last_name: user_credentials.last_name,
+      image: user_credentials.avatar,
+      is_invited: user_details.is_invited,
+      phone_number: user_credentials.phone_number,
+      role_id: user_details.role_id,
+      avatar: user_credentials.avatar,
+      user_credentials_id: user_credentials.id,
+      metadata: user_credentials.metadata && Map.from_struct(user_credentials.metadata),
+      role: render_one(preload_role(user_details.role_id), RoleView, "role.json"),
+      user_group: render_many(user_details.user_group, UserView, "user_group.json"),
+      org:
+        render_one(
+          preload_org(user_details.org_id),
+          OrganisationView,
+          "org.json"
+        )
+    }
+  end
+
   def render("user_index.json", %{user: %{user_credentials: user_credentials} = user_details}) do
     %{
       id: user_details.id,

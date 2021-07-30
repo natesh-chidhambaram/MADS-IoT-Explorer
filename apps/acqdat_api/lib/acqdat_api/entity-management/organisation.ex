@@ -45,17 +45,21 @@ defmodule AcqdatApi.EntityManagement.Organisation do
           |> Map.put_new("is_invited", false)
           |> Map.replace!("role_id", role_id)
 
-        case UserCredentials.create(user_details) do
-          {:ok, user_cred} ->
-            user_details =
-              user_details
-              |> Map.put_new("user_credentials_id", user_cred.id)
+        case UserCredentials.get(user_details["email"]) do
+          nil ->
+            case UserCredentials.create(user_details) do
+              {:ok, user_cred} ->
+                user_details =
+                  user_details
+                  |> Map.put_new("user_credentials_id", user_cred.id)
 
-            UserModel.create(user_details)
+                UserModel.create(user_details)
 
-          {:error, _} ->
-            {:ok, user_cred} = UserCredentials.get(user_details["email"])
+              {:error, error} ->
+                {:error, error}
+            end
 
+          user_cred ->
             user_details =
               user_details
               |> Map.put_new("user_credentials_id", user_cred.id)

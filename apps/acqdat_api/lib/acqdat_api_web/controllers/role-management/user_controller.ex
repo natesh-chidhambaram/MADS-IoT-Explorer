@@ -208,7 +208,7 @@ defmodule AcqdatApiWeb.RoleManagement.UserController do
 
             conn
             |> put_status(200)
-            |> render("user_details.json", %{user_details: user})
+            |> render("user_update.json", %{user_details: user})
 
           {:error, user} ->
             error = extract_changeset_error(user)

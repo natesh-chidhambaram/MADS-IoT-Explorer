@@ -81,14 +81,15 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     end
   end
 
-  def get(query) when is_map(query) do
-    case Repo.get_by(Sensor, query) do
-      nil ->
-        {:error, "not found"}
+  def return_sensor_gatewap_mapping(org_id, project_id) do
+    query =
+      from(sensor in Sensor,
+        where:
+          sensor.org_id == ^org_id and sensor.project_id == ^project_id and
+            is_nil(sensor.gateway_id) == false
+      )
 
-      sensor ->
-        {:ok, sensor}
-    end
+    Repo.all(query)
   end
 
   def remove_sensor(sensor_ids) do
@@ -101,12 +102,28 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
   end
 
   def add_sensor(sensor_ids, gateway) do
-    query =
+    query1 =
+      from(sensor in Sensor,
+        where: sensor.id in ^sensor_ids,
+        select: sensor.gateway_id
+      )
+
+    gateway_ids = Repo.all(query1)
+
+    query2 =
       from(sensor in Sensor,
         where: sensor.id in ^sensor_ids
       )
 
-    Repo.update_all(query, set: [gateway_id: gateway.id])
+    case List.first(gateway_ids) do
+      nil ->
+        :ok
+
+      _ ->
+        Gateway.modify_mapped_parameters(gateway_ids, sensor_ids)
+    end
+
+    Repo.update_all(query2, set: [gateway_id: gateway.id])
   end
 
   def get_all_by_sensor_type(entity_ids) do

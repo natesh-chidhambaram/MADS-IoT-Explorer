@@ -91,8 +91,23 @@ defmodule AcqdatCore.Model.RoleManagement.User do
 
   def load_user(org_id) do
     query =
-      from(user in User,
-        where: user.org_id == ^org_id and user.role_id == 1 and user.is_deleted == false
+      from(user_cred in UserCredentials,
+        join: user in User,
+        where:
+          user.org_id == ^org_id and user.role_id == 1 and user.is_deleted == false and
+            user.user_credentials_id == user_cred.id
+      )
+
+    Repo.all(query)
+  end
+
+  def load_org_admin_user(org_id) do
+    query =
+      from(user_cred in UserCredentials,
+        join: user in User,
+        where:
+          user.org_id == ^org_id and user.role_id == 2 and user.is_deleted == false and
+            user.user_credentials_id == user_cred.id
       )
 
     Repo.all(query)
@@ -132,8 +147,11 @@ defmodule AcqdatCore.Model.RoleManagement.User do
     changeset = User.update_changeset(user, params)
 
     case Repo.update(changeset) do
-      {:ok, user} -> {:ok, user |> Repo.preload([:role, :org])}
-      {:error, message} -> {:error, message}
+      {:ok, user} ->
+        {:ok, user |> Repo.preload([:role, :org, user_group: :user_group, policies: :policy])}
+
+      {:error, message} ->
+        {:error, message}
     end
   end
 
@@ -146,7 +164,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
 
         case Repo.update(changeset) do
           {:ok, user} ->
-            {:ok, user |> Repo.preload([:role, :org])}
+            {:ok, user |> Repo.preload([:role, :org, user_group: :user_group, policies: :policy])}
 
           {:error, message} ->
             {:error, message}
