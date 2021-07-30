@@ -21,14 +21,14 @@ defmodule AcqdatCore.Model.RoleManagement.ForgotPassword do
         {:error, "Token is invalid"}
 
       details ->
-        UserCredentials.get(details.user_id)
+        UserCredentials.get(details.user_credentials_id)
     end
   end
 
-  def delete(user_id) do
+  def delete(user_credentials_id) do
     query =
       from(details in ForgotPassword,
-        where: details.user_id == ^user_id
+        where: details.user_credentials_id == ^user_credentials_id
       )
 
     Repo.delete(List.first(Repo.all(query)))
