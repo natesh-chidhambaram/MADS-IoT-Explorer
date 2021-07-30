@@ -21,7 +21,7 @@ defmodule AcqdatApiWeb.ElasticSearch.UserControllerTest do
       [new_user: user]
     end
 
-    test "fails if authorization header not found", %{conn: conn, user: user} do
+    test "fails if authorization header not found", %{conn: conn} do
       bad_access_token = "avcbd123489u"
       org = insert(:organisation)
 
@@ -63,6 +63,7 @@ defmodule AcqdatApiWeb.ElasticSearch.UserControllerTest do
         "name" => user.org.name,
         "type" => "Organisation",
         "uuid" => user.org.uuid,
+        "description" => user.org.description,
         "url" => nil,
         "avatar" => nil
       }
@@ -154,8 +155,7 @@ defmodule AcqdatApiWeb.ElasticSearch.UserControllerTest do
       conn: conn,
       user1: user1,
       user2: user2,
-      user3: user3,
-      new_org: org
+      user3: user3
     } do
       conn =
         get(conn, Routes.user_path(conn, :index, user1.org_id), %{

@@ -31,7 +31,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
   @doc """
   Returns a user by the supplied id.
   """
-  def get(id) when is_integer(id) do
+  def get(id) do
     case Repo.get(User, id) |> Repo.preload([:user_credentials]) do
       nil ->
         {:error, "not found"}
@@ -226,6 +226,21 @@ defmodule AcqdatCore.Model.RoleManagement.User do
 
     Repo.one!(query)
     |> Repo.preload([:user_credentials, :org, :role, user_group: :user_group, policies: :policy])
+  end
+
+  def active_user(email) do
+    query =
+      from(
+        user in User,
+        join: cred in UserCredentials,
+        on:
+          cred.id == user.user_credentials_id and cred.email == ^email and
+            user.is_deleted == false,
+        group_by: cred.id,
+        select: cred
+      )
+
+    Repo.one(query)
   end
 
   def fetch_user_orgs_by_email(email) do

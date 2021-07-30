@@ -30,6 +30,7 @@ defmodule AcqdatApiWeb.RoleManagement.UserView do
       avatar: user_credentials.avatar,
       user_credentials_id: user_credentials.id,
       metadata: user_credentials.metadata && Map.from_struct(user_credentials.metadata),
+      user_credentials: render_one(user_credentials, UserView, "user_credentials.json"),
       role: render_one(preload_role(user_details.role_id), RoleView, "role.json"),
       org:
         render_one(

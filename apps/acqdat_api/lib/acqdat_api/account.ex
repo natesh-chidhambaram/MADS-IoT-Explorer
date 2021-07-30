@@ -135,7 +135,13 @@ defmodule AcqdatApi.Account do
         :refresh
       )
 
-    {:ok, %{access_token: access_token, user_id: user.id, refresh_token: refresh_token}}
+    {:ok,
+     %{
+       access_token: access_token,
+       user_id: user.id,
+       org_id: user.org_id,
+       refresh_token: refresh_token
+     }}
   end
 
   defp verify_account({:error, _message}) do
