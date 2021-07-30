@@ -59,6 +59,7 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationControllerTest do
                "name" => org.name,
                "type" => "Organisation",
                "uuid" => org.uuid,
+               "description" => org.description,
                "url" => nil
              }
     end
