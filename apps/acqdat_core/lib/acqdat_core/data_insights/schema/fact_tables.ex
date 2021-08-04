@@ -40,6 +40,8 @@ defmodule AcqdatCore.DataInsights.Schema.FactTables do
     field(:to_date, :utc_datetime, default: DateTime.truncate(DateTime.utc_now(), :second))
     field(:group_interval, :integer)
     field(:group_interval_type, :string)
+    field(:leaf_nodes, {:array, :map}, default: [])
+    field(:subtree, :map)
 
     # virtual field, to load total pivot_tables count per fact_table
     field(:pivot_count, :integer, virtual: true)
@@ -54,7 +56,7 @@ defmodule AcqdatCore.DataInsights.Schema.FactTables do
   end
 
   @required ~w(name project_id org_id creator_id slug uuid)a
-  @optional ~w(group_interval group_interval_type columns_metadata date_range_settings headers_metadata)a
+  @optional ~w(group_interval group_interval_type columns_metadata date_range_settings headers_metadata leaf_nodes subtree)a
   @permitted @required ++ @optional
 
   @spec changeset(
