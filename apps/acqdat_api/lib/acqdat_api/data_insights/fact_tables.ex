@@ -78,7 +78,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
     %{data: List.flatten(res.rows)}
   end
 
-  def compute_sensors(fact_table_id, sensor_types, uniq_sensor_types) do
+  def compute_sensors(%{id: fact_table_id} = fact_table, sensor_types, uniq_sensor_types) do
     [
       %{"id" => sensor_type_id, "date_from" => date_from, "date_to" => date_to, "name" => name}
       | _
@@ -134,8 +134,6 @@ defmodule AcqdatApi.DataInsights.FactTables do
         end)
     }
 
-    {:ok, fact_table} = FactTables.get_by_id(fact_table_id)
-
     {:ok, _} =
       FactTables.update(fact_table, %{
         headers_metadata: %{"rows_len" => length(headers), "headers" => headers_metadata}
@@ -180,7 +178,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
   end
 
   def gen_comp_asset_metadata(%{
-        fact_table_id: fact_table_id,
+        fact_table: %{id: fact_table_id} = fact_table,
         uniq_asset_types: uniq_asset_types,
         asset_types: asset_types
       }) do
@@ -221,8 +219,6 @@ defmodule AcqdatApi.DataInsights.FactTables do
             end)
         }
 
-        {:ok, fact_table} = FactTables.get_by_id(fact_table_id)
-
         {:ok, _} =
           FactTables.update(fact_table, %{
             headers_metadata: %{
@@ -261,7 +257,10 @@ defmodule AcqdatApi.DataInsights.FactTables do
       end
   end
 
-  def gen_comp_asset_data(%{fact_table_id: fact_table_id, asset_types: asset_types}) do
+  def gen_comp_asset_data(%{
+        fact_table: %{id: fact_table_id} = fact_table,
+        asset_types: asset_types
+      }) do
     [
       %{
         "id" => id,
@@ -308,8 +307,6 @@ defmodule AcqdatApi.DataInsights.FactTables do
 
         headers_metadata = %{"#{id}" => %{"#{metadata_id}" => 0}}
 
-        {:ok, fact_table} = FactTables.get_by_id(fact_table_id)
-
         {:ok, _} =
           FactTables.update(fact_table, %{
             headers_metadata: %{"rows_len" => 1, "headers" => headers_metadata}
@@ -337,7 +334,10 @@ defmodule AcqdatApi.DataInsights.FactTables do
       end
   end
 
-  def gen_comp_sensor_data(%{fact_table_id: fact_table_id, sensor_types: sensor_types}) do
+  def gen_comp_sensor_data(%{
+        fact_table: %{id: fact_table_id} = fact_table,
+        sensor_types: sensor_types
+      }) do
     [
       %{
         "id" => id,
@@ -388,8 +388,6 @@ defmodule AcqdatApi.DataInsights.FactTables do
             do: %{"#{id}" => %{"#{metadata_id}" => 0}},
             else: %{"#{id}" => %{"#{metadata_id}" => 0, "#{metadata_id}_dateTime" => 1}}
 
-        {:ok, fact_table} = FactTables.get_by_id(fact_table_id)
-
         {:ok, _} =
           FactTables.update(fact_table, %{
             headers_metadata: %{
@@ -426,8 +424,18 @@ defmodule AcqdatApi.DataInsights.FactTables do
       end
   end
 
-  def fetch_descendants(fact_table_id, parent_tree, root_node, entities_list, node_tracker) do
-    {subtree, node_tracker} = traverse_n_gen_subtree(parent_tree, root_node, entities_list, [])
+  def fetch_descendants(
+        %{id: fact_table_id} = fact_table,
+        parent_tree,
+        root_node,
+        entities_list,
+        node_tracker
+      ) do
+    {subtree, node_tracker, leaves} =
+      traverse_n_gen_subtree(parent_tree, root_node, entities_list, [], [])
+
+    IO.inspect("leaves")
+    IO.inspect(leaves)
 
     if Enum.sort(Enum.uniq(List.flatten(node_tracker))) == Enum.sort(entities_list) do
       subtree = NaryTree.from_map(subtree)
@@ -982,7 +990,7 @@ defmodule AcqdatApi.DataInsights.FactTables do
     end)
   end
 
-  defp traverse_n_gen_subtree(tree, tree_node, entities_list, node_tracker) do
+  defp traverse_n_gen_subtree(tree, tree_node, entities_list, node_tracker, leaves) do
     {data, metadata} =
       Enum.reduce(entities_list, {[], []}, fn x, {acc1, acc2} ->
         if "#{x["id"]}_#{x["name"]}" == tree_node.id && x["type"] == tree_node.type do
@@ -1012,25 +1020,27 @@ defmodule AcqdatApi.DataInsights.FactTables do
 
     case tree_node.children do
       [] ->
-        {subtree_map, node_tracker}
+        {subtree_map, node_tracker, leaves}
 
       _ ->
         res =
-          Enum.reduce(tree_node.children, {subtree_map, node_tracker}, fn child_id,
-                                                                          {acc1, acc2} ->
+          Enum.reduce(tree_node.children, {subtree_map, node_tracker, leaves}, fn child_id,
+                                                                                  {acc1, acc2,
+                                                                                   leaves} ->
             node = NaryTree.get(tree, child_id)
-            res = traverse_n_gen_subtree(tree, node, entities_list, node_tracker)
-            {data, data2} = res
+            res = traverse_n_gen_subtree(tree, node, entities_list, node_tracker, leaves)
+            {data, data2, leaves} = res
 
             if res != nil && acc1 != %{} && acc1 != [] do
+              leaves = if data[:children] == [], do: [data | leaves], else: leaves
               items = acc1[:children] ++ [data]
               acc1 = acc1 |> Map.put(:children, List.flatten(items))
               acc2 = acc2 ++ data2
-              {acc1, acc2}
+              {acc1, acc2, leaves}
             else
               acc2 = acc2 ++ data2
               acc1 = acc1 ++ data
-              {acc1, acc2}
+              {acc1, acc2, leaves}
             end
           end)
     end

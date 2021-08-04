@@ -45,8 +45,8 @@ defmodule AcqdatApi.DataInsights.Topology do
         date_range_settings: date_range_settings
       })
     end)
-    |> Multi.run(:gen_sub_topology, fn _, %{update_to_db: _fact_table} ->
-      parse_entities(id, entities_list, org_id, project)
+    |> Multi.run(:gen_sub_topology, fn _, %{update_to_db: fact_table} ->
+      parse_entities(fact_table, entities_list, org_id, project)
       {:ok, "You'll receive fact table data on channel"}
     end)
     |> run_under_transaction(:gen_sub_topology)
@@ -55,7 +55,7 @@ defmodule AcqdatApi.DataInsights.Topology do
   # NOTE: 1. parse_entities will seperate asset_type_list and sensor_type_list
   #       2. It'll create parent tree from the map stores in ETS table
   #       3. It'll pass the flow to validate_entities
-  defp parse_entities(id, entities_list, org_id, project) do
+  defp parse_entities(fact_table, entities_list, org_id, project) do
     res =
       Enum.reduce(entities_list, {[], []}, fn entity, {acc1, acc2} ->
         acc1 = if entity["type"] == "AssetType", do: acc1 ++ [entity], else: acc1
@@ -66,7 +66,7 @@ defmodule AcqdatApi.DataInsights.Topology do
     topology_map = gen_topology(org_id, project)
     parent_tree = NaryTree.from_map(topology_map)
 
-    validate_entities(id, res, entities_list, parent_tree)
+    validate_entities(fact_table, res, entities_list, parent_tree)
   end
 
   # NOTE: 1. execute_descendants will start a Genserver, which will do the asynchronous computation
@@ -76,31 +76,31 @@ defmodule AcqdatApi.DataInsights.Topology do
   end
 
   # NOTE: this validate_entities will get executed if there is only one sensor_type is present in user input
-  defp validate_entities(fact_table_id, {_, sensor_types}, entities_list, _)
+  defp validate_entities(fact_table, {_, sensor_types}, entities_list, _)
        when length(sensor_types) == 1 and length(sensor_types) == length(entities_list) do
     execute_descendants("one_sensor_type", %{
-      fact_table_id: fact_table_id,
+      fact_table: fact_table,
       sensor_types: sensor_types
     })
   end
 
   # NOTE: this validate_entities will get executed if there is only one asset_type is present in user input
-  defp validate_entities(fact_table_id, {asset_types, _}, entities_list, _)
+  defp validate_entities(fact_table, {asset_types, _}, entities_list, _)
        when length(asset_types) == 1 and length(asset_types) == length(entities_list) do
     execute_descendants("one_asset_type", %{
-      fact_table_id: fact_table_id,
+      fact_table: fact_table,
       asset_types: asset_types
     })
   end
 
   # NOTE: this validate_entities will get executed if there are multiple only sensor_types present in user input
-  defp validate_entities(fact_table_id, {_, sensor_types}, entities_list, _)
+  defp validate_entities(%{id: fact_table_id} = fact_table, {_, sensor_types}, entities_list, _)
        when length(sensor_types) == length(entities_list) do
     uniq_sensor_types = Enum.uniq_by(sensor_types, fn sensor_type -> sensor_type["id"] end)
 
     if length(uniq_sensor_types) == 1 do
       execute_descendants("sensor_params", %{
-        fact_table_id: fact_table_id,
+        fact_table: fact_table,
         entities_list: entities_list,
         uniq_sensor_types: uniq_sensor_types
       })
@@ -113,13 +113,18 @@ defmodule AcqdatApi.DataInsights.Topology do
   end
 
   # NOTE: this validate_entities will get executed if there are multiple only asset_types present in user input
-  defp validate_entities(fact_table_id, {asset_types, _sensor_types}, entities_list, parent_tree)
+  defp validate_entities(
+         %{id: fact_table_id} = fact_table,
+         {asset_types, _sensor_types},
+         entities_list,
+         parent_tree
+       )
        when length(asset_types) == length(entities_list) do
     uniq_asset_types = Enum.uniq_by(asset_types, fn asset_type -> asset_type["id"] end)
 
     if length(uniq_asset_types) == 1 do
       execute_descendants("asset_metadatas", %{
-        fact_table_id: fact_table_id,
+        fact_table: fact_table,
         uniq_asset_types: uniq_asset_types,
         asset_types: asset_types
       })
@@ -146,7 +151,7 @@ defmodule AcqdatApi.DataInsights.Topology do
         node_tracker = Map.put(entity_map, "#{root_entity["type"]}_#{root_entity["id"]}", true)
 
         execute_descendants("hybrid", %{
-          fact_table_id: fact_table_id,
+          fact_table: fact_table,
           parent_tree: parent_tree,
           root_node: root_node,
           entities_list: entities_list,
@@ -158,7 +163,7 @@ defmodule AcqdatApi.DataInsights.Topology do
 
   # NOTE: 1. this validate_entities will find root elem of the user provided input with the help of subtree
   #       2. this'll then call the Genserver flow for further fact_table processing
-  defp validate_entities(id, {asset_types, _sensor_types}, entities_list, parent_tree) do
+  defp validate_entities(fact_table, {asset_types, _sensor_types}, entities_list, parent_tree) do
     {_entity_levels, {root_node, root_entity}, entity_map} =
       Enum.reduce(asset_types, {[], {nil, nil}, %{}}, fn entity, {acc1, {acc2, acc4}, acc3} ->
         node = NaryTree.get(parent_tree, "#{entity["id"]}_#{entity["name"]}")
@@ -174,7 +179,7 @@ defmodule AcqdatApi.DataInsights.Topology do
     node_tracker = Map.put(entity_map, "#{root_entity["type"]}_#{root_entity["id"]}", true)
 
     execute_descendants("hybrid", %{
-      fact_table_id: id,
+      fact_table: fact_table,
       parent_tree: parent_tree,
       root_node: root_node,
       entities_list: entities_list,
