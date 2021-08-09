@@ -6,6 +6,7 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
   alias AcqdatApi.DataStructure.Trees.NaryTree
   alias AcqdatCore.Model.EntityManagement.Asset, as: AssetModel
   alias AcqdatCore.Schema.EntityManagement.{Asset, AssetType}
+  alias AcqdatApi.DataInsights.FactTables, as: FactTablesCon
 
   @producer BroadwayRabbitMQ.Producer
   @producer_config [
@@ -107,7 +108,11 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
     IO.inspect("row lits")
     IO.inspect(row)
 
-    insert_to_fact_table(fact_table_id, row)
+    # insert_to_fact_table(fact_table_id, headers_metadata, row)
+
+    res = insert_to_fact_table(fact_table, row)
+    IO.inspect(res)
+    res
   end
 
   # TODO: Refactor this function
@@ -161,8 +166,29 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
     end
   end
 
-  defp insert_to_fact_table(fact_table_id, row) do
-    # TODO: Insert above made row to the specified fact_table
+  defp insert_to_fact_table(
+         %{
+           id: fact_table_id,
+           headers_metadata: headers_metadata,
+           columns_metadata: columns_metadata
+         },
+         row
+       ) do
+    fact_table_name = "fact_table_#{fact_table_id}"
+    headers_metadata = FactTablesCon.gen_fact_table_headers(columns_metadata, headers_metadata)
+    tab_headers = List.flatten(Enum.map(headers_metadata, fn metadata -> Map.keys(metadata) end))
+
+    tab_headers = tab_headers |> Enum.map_join(",", fn k -> "\"#{k}\"" end)
+    row = row |> Enum.map_join(",", fn k -> "\'#{k}\'" end)
+
+    qry = """
+      INSERT INTO #{fact_table_name}
+      (#{tab_headers})
+      VALUES
+      (#{row});
+    """
+
+    Ecto.Adapters.SQL.query!(Repo, qry, [])
   end
 
   defp is_leaf?(leaf_nodes, event) do
