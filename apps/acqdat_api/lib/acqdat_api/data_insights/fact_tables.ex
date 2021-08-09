@@ -434,17 +434,23 @@ defmodule AcqdatApi.DataInsights.FactTables do
     {subtree, node_tracker, leaves} =
       traverse_n_gen_subtree(parent_tree, root_node, entities_list, [], [])
 
-    IO.inspect("leaves")
-    IO.inspect(leaves)
-
     if Enum.sort(Enum.uniq(List.flatten(node_tracker))) == Enum.sort(entities_list) do
-      subtree = NaryTree.from_map(subtree)
+      case FactTables.update(fact_table, %{
+             subtree: subtree,
+             leaf_nodes: leaves
+           }) do
+        {:ok, _fact_table} ->
+          subtree = NaryTree.from_map(subtree)
 
-      try do
-        build_dynamic_query(fact_table_id, subtree, entities_list)
-      rescue
-        error in Postgrex.Error ->
-          {:error, error.postgres.message}
+          try do
+            build_dynamic_query(fact_table_id, subtree, entities_list)
+          rescue
+            error in Postgrex.Error ->
+              {:error, error.postgres.message}
+          end
+
+        {:error, error} ->
+          {:error, error}
       end
     else
       {:error, "All entities are not directly connected, please connect common parent entity."}

@@ -28,14 +28,19 @@ defmodule AcqdatApi.DataInsights.FactTable.DataSynchingPipeline do
   def prepare_messages(messages, _context) do
     IO.inspect(messages)
 
+    # TODO: Need to refactor, database lookup(bulk fetch)
+    # 1. load all the fact_tables in the memory and perform computation(think about it)
     Enum.map(messages, fn message ->
-      params = Poison.decode!(message.data)
+      # TODO: using json
+      params = Jason.decode!(message.data)
+      IO.inspect("params")
+      IO.inspect(params)
 
       # params = %{project_id: 1, entity_type: "SensorType", entity_id: "Building", metadata_id: "name"}
       fact_tables_ids = FactTables.fetch_fetch_tables_id_by_columns_metadata(params)
 
       Broadway.Message.update_data(message, fn data ->
-        data = Poison.decode!(data)
+        data = Jason.decode!(data)
         Map.put(data, "fact_tables_ids", fact_tables_ids)
       end)
     end)
@@ -61,7 +66,7 @@ defmodule AcqdatApi.DataInsights.FactTable.DataSynchingPipeline do
 
       Enum.each(message.data["fact_tables_ids"], fn fact_tables_id ->
         data = Map.put(message.data, "fact_tables_id", fact_tables_id)
-        data = Poison.encode!(data)
+        data = Jason.encode!(data)
         AMQP.Basic.publish(channel, "", "fact_table_process_queue", data)
       end)
     end)
