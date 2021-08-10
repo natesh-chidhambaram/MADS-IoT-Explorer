@@ -37,6 +37,24 @@ defmodule AcqdatCore.Test.Support.DataDump do
     }
   ]
 
+  def setup_gateway(:object_parameter) do
+    org = insert(:organisation)
+    project = insert(:project, org: org)
+    asset = insert(:asset, org: org, project: project)
+    gateway = insert_gateway(org, project, asset)
+    sensor_type1 = insert(:sensor_type, org: org, project: project, parameters: @parameter_list1)
+    sensor_type2 = insert(:sensor_type, org: org, project: project, parameters: @parameter_list2)
+
+    sensor1 =
+      insert(:sensor, sensor_type: sensor_type1, org: org, project: project, gateway: gateway)
+
+    sensor2 =
+      insert(:sensor, sensor_type: sensor_type2, org: org, project: project, gateway: gateway)
+
+    gateway = insert_mapped_parameters_with_list_object(gateway, sensor1, sensor2)
+    [dump_iot_data(gateway), sensor1, sensor2, gateway]
+  end
+
   def setup_gateway() do
     org = insert(:organisation)
     project = insert(:project, org: org)
@@ -155,6 +173,87 @@ defmodule AcqdatCore.Test.Support.DataDump do
                 "entity" => "sensor",
                 "entity_id" => sensor2.id,
                 "value" => param3.uuid
+              }
+            ]
+          },
+          "lambda" => %{
+            "type" => "object",
+            "value" => %{
+              "alpha" => %{
+                "type" => "value",
+                "entity" => "sensor",
+                "entity_id" => sensor2.id,
+                "value" => param4.uuid
+              },
+              "beta" => %{
+                "type" => "value",
+                "entity" => "gateway",
+                "entity_id" => gateway.id,
+                "value" => param5.uuid
+              }
+            }
+          }
+        }
+      },
+      "y_axis" => %{
+        "type" => "value",
+        "entity" => "gateway",
+        "entity_id" => gateway.id,
+        "value" => param6.uuid
+      }
+    }
+
+    timestamp_mapping = "timestamp"
+
+    {:ok, gateway} =
+      GModel.update(gateway, %{
+        mapped_parameters: mapped_parameters,
+        timestamp_mapping: timestamp_mapping
+      })
+
+    gateway |> Repo.preload([:org, :project])
+  end
+
+  def insert_mapped_parameters_with_list_object(gateway, sensor1, sensor2) do
+    [param1, param2] = sensor1.sensor_type.parameters
+    [param3, param4] = sensor2.sensor_type.parameters
+    [param5, param6] = gateway.streaming_data
+
+    mapped_parameters = %{
+      "axis_object" => %{
+        "type" => "object",
+        "value" => %{
+          "x_axis" => %{
+            "type" => "value",
+            "entity" => "sensor",
+            "entity_id" => sensor1.id,
+            "value" => param1.uuid
+          },
+          "z_axis" => %{
+            "type" => "list",
+            "value" => [
+              %{
+                "type" => "value",
+                "entity" => "sensor",
+                "entity_id" => sensor1.id,
+                "value" => param2.uuid
+              },
+              %{
+                "type" => "value",
+                "entity" => "sensor",
+                "entity_id" => sensor2.id,
+                "value" => param3.uuid
+              },
+              %{
+                "type" => "object",
+                "value" => %{
+                  "alpha-object-list" => %{
+                    "type" => "value",
+                    "entity" => "sensor",
+                    "entity_id" => sensor2.id,
+                    "value" => param4.uuid
+                  }
+                }
               }
             ]
           },
