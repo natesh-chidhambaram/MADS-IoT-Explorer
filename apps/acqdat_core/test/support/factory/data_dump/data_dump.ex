@@ -52,7 +52,7 @@ defmodule AcqdatCore.Test.Support.DataDump do
       insert(:sensor, sensor_type: sensor_type2, org: org, project: project, gateway: gateway)
 
     gateway = insert_mapped_parameters_with_list_object(gateway, sensor1, sensor2)
-    [dump_iot_data(gateway), sensor1, sensor2, gateway]
+    [dump_iot_data_for_nested(gateway), sensor1, sensor2, gateway]
   end
 
   def setup_gateway() do
@@ -125,6 +125,33 @@ defmodule AcqdatCore.Test.Support.DataDump do
         "axis_object" => %{
           "x_axis" => 20,
           "z_axis" => [22, 23],
+          "lambda" => %{"alpha" => 24, "beta" => 25}
+        },
+        "y_axis" => 21,
+        # To test presence of arbitrary entries which are not mapped to anything.
+        "project_id" => 1,
+        "xyz" => %{},
+        # timestamp so it would be picked from here
+        "timestamp" => 1_596_115_581
+      },
+      inserted_at: DateTime.truncate(DateTime.utc_now(), :second),
+      inserted_timestamp: DateTime.truncate(time, :second)
+    }
+  end
+
+  def dump_iot_data_for_nested(gateway) do
+    hour = Enum.random(0..20)
+    minute = Enum.random(0..40)
+    time = Timex.now() |> Timex.set(hour: hour, minute: minute)
+
+    %{
+      gateway_uuid: gateway.uuid,
+      org_uuid: gateway.org.uuid,
+      project_uuid: gateway.project.uuid,
+      data: %{
+        "axis_object" => %{
+          "x_axis" => 20,
+          "z_axis" => [22, 23, %{"alpha-object-list" => 34}],
           "lambda" => %{"alpha" => 24, "beta" => 25}
         },
         "y_axis" => 21,
@@ -250,8 +277,8 @@ defmodule AcqdatCore.Test.Support.DataDump do
                   "alpha-object-list" => %{
                     "type" => "value",
                     "entity" => "sensor",
-                    "entity_id" => sensor2.id,
-                    "value" => param4.uuid
+                    "entity_id" => sensor1.id,
+                    "value" => param2.uuid
                   }
                 }
               }

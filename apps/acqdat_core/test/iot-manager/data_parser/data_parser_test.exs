@@ -64,6 +64,8 @@ defmodule AcqdatIotWeb.DataParserTest do
       sensors_data = Repo.all(SensorsData)
       [gateway_data] = Repo.all(GatewayData)
       %{data: data} = data_dump
+      require IEx
+      IEx.pry()
       # [z_axis_data1, z_axis_data2] = data["axis_object"]["z_axis"]
       # %{"axis_object" => axis_object, "y_axis" => y_axis} = gateway.mapped_parameters
 
