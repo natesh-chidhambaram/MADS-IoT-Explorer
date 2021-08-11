@@ -12,51 +12,51 @@ defmodule AcqdatIotWeb.DataParserTest do
   alias AcqdatCore.Repo
 
   describe "data parser test/1" do
-    # test "data parser" do
-    #   [data_dump, _sensor1, _sensor2, gateway] = DataDump.setup_gateway()
-    #   DataParser.start_parsing(struct(GDD, data_dump))
-    #   sensors_data = Repo.all(SensorsData)
-    #   [gateway_data] = Repo.all(GatewayData)
-    #   %{data: data} = data_dump
-    #   [z_axis_data1, z_axis_data2] = data["axis_object"]["z_axis"]
-    #   %{"axis_object" => axis_object, "y_axis" => y_axis} = gateway.mapped_parameters
+    test "data parser" do
+      [data_dump, _sensor1, _sensor2, gateway] = DataDump.setup_gateway()
+      DataParser.start_parsing(struct(GDD, data_dump))
+      sensors_data = Repo.all(SensorsData)
+      [gateway_data] = Repo.all(GatewayData)
+      %{data: data} = data_dump
+      [z_axis_data1, z_axis_data2] = data["axis_object"]["z_axis"]
+      %{"axis_object" => axis_object, "y_axis" => y_axis} = gateway.mapped_parameters
 
-    #   %{
-    #     "value" => %{
-    #       "lambda" => %{"value" => %{"alpha" => alpha, "beta" => beta}},
-    #       "x_axis" => x_axis,
-    #       "z_axis" => %{"value" => [z_axis1, _z_axis2]}
-    #     }
-    #   } = axis_object
+      %{
+        "value" => %{
+          "lambda" => %{"value" => %{"alpha" => alpha, "beta" => beta}},
+          "x_axis" => x_axis,
+          "z_axis" => %{"value" => [z_axis1, _z_axis2]}
+        }
+      } = axis_object
 
-    #   Enum.each(gateway_data.parameters, fn parameter ->
-    #     if parameter.uuid == y_axis["value"] do
-    #       assert parameter.value == data["y_axis"]
-    #     else
-    #       if parameter.uuid == beta["value"] do
-    #         assert parameter.value == data["axis_object"]["lambda"]["beta"]
-    #       end
-    #     end
-    #   end)
+      Enum.each(gateway_data.parameters, fn parameter ->
+        if parameter.uuid == y_axis["value"] do
+          assert parameter.value == data["y_axis"]
+        else
+          if parameter.uuid == beta["value"] do
+            assert parameter.value == data["axis_object"]["lambda"]["beta"]
+          end
+        end
+      end)
 
-    #   Enum.each(sensors_data, fn sensor_data ->
-    #     Enum.each(sensor_data.parameters, fn parameter ->
-    #       if parameter.uuid == x_axis["value"] do
-    #         assert parameter.value == data["axis_object"]["x_axis"]
-    #       else
-    #         if parameter.uuid == alpha["value"] do
-    #           assert parameter.value == data["axis_object"]["lambda"]["alpha"]
-    #         else
-    #           if parameter.uuid == z_axis1["value"] do
-    #             assert parameter.value == z_axis_data1
-    #           else
-    #             assert parameter.value == z_axis_data2
-    #           end
-    #         end
-    #       end
-    #     end)
-    #   end)
-    # end
+      Enum.each(sensors_data, fn sensor_data ->
+        Enum.each(sensor_data.parameters, fn parameter ->
+          if parameter.uuid == x_axis["value"] do
+            assert parameter.value == data["axis_object"]["x_axis"]
+          else
+            if parameter.uuid == alpha["value"] do
+              assert parameter.value == data["axis_object"]["lambda"]["alpha"]
+            else
+              if parameter.uuid == z_axis1["value"] do
+                assert parameter.value == z_axis_data1
+              else
+                assert parameter.value == z_axis_data2
+              end
+            end
+          end
+        end)
+      end)
+    end
 
     test "data parser with object inside list" do
       [data_dump, _sensor1, _sensor2, gateway] = DataDump.setup_gateway(:object_parameter)
@@ -64,46 +64,47 @@ defmodule AcqdatIotWeb.DataParserTest do
       sensors_data = Repo.all(SensorsData)
       [gateway_data] = Repo.all(GatewayData)
       %{data: data} = data_dump
-      require IEx
-      IEx.pry()
-      # [z_axis_data1, z_axis_data2] = data["axis_object"]["z_axis"]
-      # %{"axis_object" => axis_object, "y_axis" => y_axis} = gateway.mapped_parameters
 
-      # %{
-      #   "value" => %{
-      #     "lambda" => %{"value" => %{"alpha" => alpha, "beta" => beta}},
-      #     "x_axis" => x_axis,
-      #     "z_axis" => %{"value" => [z_axis1, _z_axis2]}
-      #   }
-      # } = axis_object
+      [z_axis_data1, z_axis_data2, %{"alpha-object-list" => z_axis_data3}] =
+        data["axis_object"]["z_axis"]
 
-      # Enum.each(gateway_data.parameters, fn parameter ->
-      #   if parameter.uuid == y_axis["value"] do
-      #     assert parameter.value == data["y_axis"]
-      #   else
-      #     if parameter.uuid == beta["value"] do
-      #       assert parameter.value == data["axis_object"]["lambda"]["beta"]
-      #     end
-      #   end
-      # end)
+      %{"axis_object" => axis_object, "y_axis" => y_axis} = gateway.mapped_parameters
 
-      # Enum.each(sensors_data, fn sensor_data ->
-      #   Enum.each(sensor_data.parameters, fn parameter ->
-      #     if parameter.uuid == x_axis["value"] do
-      #       assert parameter.value == data["axis_object"]["x_axis"]
-      #     else
-      #       if parameter.uuid == alpha["value"] do
-      #         assert parameter.value == data["axis_object"]["lambda"]["alpha"]
-      #       else
-      #         if parameter.uuid == z_axis1["value"] do
-      #           assert parameter.value == z_axis_data1
-      #         else
-      #           assert parameter.value == z_axis_data2
-      #         end
-      #       end
-      #     end
-      #   end)
-      # end)
+      %{
+        "value" => %{
+          "lambda" => %{"value" => %{"alpha" => alpha, "beta" => beta}},
+          "x_axis" => x_axis,
+          "z_axis" => %{"value" => [z_axis1, z_axis2, z_axis3]}
+        }
+      } = axis_object
+
+      Enum.each(gateway_data.parameters, fn parameter ->
+        if parameter.uuid == y_axis["value"] do
+          assert parameter.value == data["y_axis"]
+        else
+          if parameter.uuid == beta["value"] do
+            assert parameter.value == data["axis_object"]["lambda"]["beta"]
+          end
+        end
+      end)
+
+      Enum.each(sensors_data, fn sensor_data ->
+        Enum.each(sensor_data.parameters, fn parameter ->
+          if parameter.uuid == x_axis["value"] do
+            assert parameter.value == data["axis_object"]["x_axis"]
+          else
+            if parameter.uuid == alpha["value"] do
+              assert parameter.value == data["axis_object"]["lambda"]["alpha"]
+            else
+              if parameter.uuid == z_axis1["value"] do
+                assert parameter.value == z_axis_data1 or parameter.value == z_axis_data3
+              else
+                assert parameter.value == z_axis_data2
+              end
+            end
+          end
+        end)
+      end)
     end
   end
 end
