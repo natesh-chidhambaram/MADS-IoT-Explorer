@@ -8,6 +8,9 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorType do
 
   use AcqdatCore.Schema
   alias AcqdatCore.Schema.EntityManagement.{Organisation, Project}
+  alias alias AcqdatCore.Schema.EntityManagement.Sensor
+  alias AcqdatCore.Repo
+  import Ecto.Query
 
   @generated_by ~w(user asset)a
 
@@ -75,10 +78,56 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorType do
   def update_changeset(%__MODULE__{} = sensor_type, params) do
     sensor_type
     |> cast(params, @permitted)
-    |> cast_embed(:parameters, with: &parameters_changeset/2)
-    |> cast_embed(:metadata, with: &metadata_changeset/2)
+    |> prepare_st_parameters(sensor_type, params)
+    |> cast_embed(:parameters, with: &update_parameters_changeset/2)
+    |> check_for_parameter_name_uniqueness(sensor_type)
+    |> prepare_st_metadata(sensor_type, params)
+    |> cast_embed(:metadata, with: &update_metadata_changeset/2)
+    |> check_for_metadata_name_uniqueness(sensor_type)
     |> validate_required(@required_params)
     |> common_changeset()
+  end
+
+  defp prepare_st_parameters(changeset, sensor_type, %{"parameters" => parameters} = params) do
+    case create_params(params, sensor_type, parameters) do
+      {:ok, parameters} ->
+        Map.replace!(changeset, :params, parameters)
+
+      {:error, message} ->
+        case List.first(changeset.errors) do
+          nil ->
+            Ecto.Changeset.add_error(changeset, :parameters, message)
+            |> Map.replace!(:valid?, false)
+
+          _value ->
+            changeset
+        end
+    end
+  end
+
+  defp prepare_st_parameters(changeset, _sensor_type, _params) do
+    changeset
+  end
+
+  defp prepare_st_metadata(changeset, sensor_type, %{"metadata" => metadata} = params) do
+    case create_metadata(params, sensor_type, metadata) do
+      {:ok, parameters} ->
+        Map.replace!(changeset, :params, parameters)
+
+      {:error, message} ->
+        case List.first(changeset.errors) do
+          nil ->
+            Ecto.Changeset.add_error(changeset, :metadata, message)
+            |> Map.replace!(:valid?, false)
+
+          _value ->
+            changeset
+        end
+    end
+  end
+
+  defp prepare_st_metadata(changeset, _sensor_type, _params) do
+    changeset
   end
 
   def common_changeset(changeset) do
@@ -109,5 +158,209 @@ defmodule AcqdatCore.Schema.EntityManagement.SensorType do
     |> cast(params, @permitted_metadata)
     |> add_uuid()
     |> validate_required(@embedded_metadata_required)
+  end
+
+  defp check_for_parameter_name_uniqueness(changeset, sensor_type) do
+    case Map.has_key?(changeset.changes, :parameters) do
+      true -> find_uniqueness(changeset, sensor_type, :parameters)
+      false -> changeset
+    end
+  end
+
+  defp check_for_metadata_name_uniqueness(changeset, sensor_type) do
+    case Map.has_key?(changeset.changes, :metadata) do
+      true -> find_uniqueness(changeset, sensor_type, :metadata)
+      false -> changeset
+    end
+  end
+
+  defp find_uniqueness(changeset, sensor_type, :parameters) do
+    current_mapped_parameters_name =
+      Enum.reduce(sensor_type.parameters, [], fn params, acc ->
+        acc ++ [params.name]
+      end)
+
+    parameters =
+      Enum.reduce(changeset.changes.parameters, [], fn params, acc ->
+        case Map.has_key?(params.changes, :name) do
+          true ->
+            case Enum.member?(current_mapped_parameters_name, params.changes.name) do
+              true ->
+                params =
+                  Ecto.Changeset.add_error(params, :name, "Parameter name already taken")
+                  |> Map.replace!(:valid?, false)
+
+                acc ++ [params]
+
+              false ->
+                acc ++ [params]
+            end
+
+          false ->
+            acc ++ [params]
+        end
+      end)
+
+    valid_flags =
+      Enum.reduce(parameters, [], fn params, acc ->
+        acc ++ [params.valid?]
+      end)
+
+    changes = Map.replace(changeset.changes, :parameters, parameters)
+
+    case Enum.member?(valid_flags, false) do
+      true ->
+        Map.replace!(changeset, :changes, changes) |> Map.replace!(:valid?, false)
+
+      false ->
+        Map.replace!(changeset, :changes, changes)
+    end
+  end
+
+  defp find_uniqueness(changeset, sensor_type, :metadata) do
+    current_mapped_metadata_name =
+      Enum.reduce(sensor_type.metadata, [], fn params, acc ->
+        acc ++ [params.name]
+      end)
+
+    metadata =
+      Enum.reduce(changeset.changes.metadata, [], fn params, acc ->
+        case Map.has_key?(params.changes, :name) do
+          true ->
+            case Enum.member?(current_mapped_metadata_name, params.changes.name) do
+              true ->
+                params =
+                  Ecto.Changeset.add_error(params, :name, "Metadata name already taken")
+                  |> Map.replace!(:valid?, false)
+
+                acc ++ [params]
+
+              false ->
+                acc ++ [params]
+            end
+
+          false ->
+            acc ++ [params]
+        end
+      end)
+
+    valid_flags =
+      Enum.reduce(metadata, [], fn params, acc ->
+        acc ++ [params.valid?]
+      end)
+
+    changes = Map.replace(changeset.changes, :metadata, metadata)
+
+    case Enum.member?(valid_flags, false) do
+      true ->
+        Map.replace!(changeset, :changes, changes) |> Map.replace!(:valid?, false)
+
+      false ->
+        Map.replace!(changeset, :changes, changes)
+    end
+  end
+
+  defp create_params(params, sensor_type, parameters) do
+    # previous already mapped parameters to the sensor
+    previous_parameters =
+      Enum.reduce(sensor_type.parameters, [], fn params, acc ->
+        acc ++ [params.uuid]
+      end)
+      |> MapSet.new()
+
+    # new upcoming parameters which can contain existing already mapped parameters or request to map new parameter
+    current_parameters =
+      Enum.reduce(parameters, [], fn params, acc ->
+        case Map.has_key?(params, "uuid") do
+          true -> acc ++ [params["uuid"]]
+          false -> acc
+        end
+      end)
+      |> MapSet.new()
+
+    deleted_parameters =
+      MapSet.to_list(MapSet.difference(previous_parameters, current_parameters))
+
+    case is_nil(List.first(deleted_parameters)) do
+      false ->
+        case check_dependency(sensor_type) do
+          {:ok, _sensor_type} -> {:ok, Map.replace!(params, "parameters", parameters)}
+          {:error, message} -> {:error, message}
+        end
+
+      true ->
+        {:ok, Map.replace!(params, "parameters", parameters)}
+    end
+  end
+
+  defp create_metadata(params, sensor_type, metadata) do
+    # previous already mapped parameters to the sensor
+    previous_metadata =
+      Enum.reduce(sensor_type.metadata, [], fn params, acc ->
+        acc ++ [params.uuid]
+      end)
+      |> MapSet.new()
+
+    # new upcoming parameters which can contain existing already mapped parameters or request to map new parameter
+    current_metadata =
+      Enum.reduce(metadata, [], fn params, acc ->
+        case Map.has_key?(params, "uuid") do
+          true -> acc ++ [params["uuid"]]
+          false -> acc
+        end
+      end)
+      |> MapSet.new()
+
+    deleted_metadata = MapSet.to_list(MapSet.difference(previous_metadata, current_metadata))
+
+    case is_nil(List.first(deleted_metadata)) do
+      false ->
+        case check_dependency(sensor_type) do
+          {:ok, _sensor_type} -> {:ok, Map.replace!(params, "metadata", metadata)}
+          {:error, message} -> {:error, message}
+        end
+
+      true ->
+        {:ok, Map.replace!(params, "metadata", metadata)}
+    end
+  end
+
+  defp update_parameters_changeset(schema, params) do
+    schema =
+      schema
+      |> cast(params, @permitted_embedded)
+
+    schema = if params["uuid"] == nil, do: add_uuid(schema), else: schema
+
+    validate_required(schema, @embedded_required_params)
+  end
+
+  defp update_metadata_changeset(schema, params) do
+    schema =
+      schema
+      |> cast(params, @permitted_metadata)
+
+    schema = if params["uuid"] == nil, do: add_uuid(schema), else: schema
+
+    validate_required(schema, @embedded_metadata_required)
+  end
+
+  defp check_sensor_relation(sensor_type) do
+    query =
+      from(sensor in Sensor,
+        where: sensor.sensor_type_id == ^sensor_type.id
+      )
+
+    List.first(Repo.all(query))
+  end
+
+  defp check_dependency(sensor_type) do
+    case is_nil(check_sensor_relation(sensor_type)) do
+      true ->
+        {:ok, sensor_type}
+
+      false ->
+        {:error, "Sensor is Associated to this Sensor Type"}
+    end
   end
 end

@@ -23,6 +23,46 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeErrorHelper do
     }
   end
 
+  def error_message(:error_association, %{
+        error: error,
+        source: %{metadata: meta_error, parameters: param_error},
+        title: title
+      }) do
+    %{
+      title: title,
+      error: error,
+      source: %{metadata: from_map_to_list(meta_error), parameters: from_map_to_list(param_error)}
+    }
+  end
+
+  def error_message(:error_association, %{
+        error: error,
+        source: %{parameters: message},
+        title: title
+      }) do
+    %{
+      title: title,
+      error: error,
+      source: %{parameters: from_map_to_list(message)}
+    }
+  end
+
+  def error_message(:error_association, %{
+        error: error,
+        source: %{metadata: message},
+        title: title
+      }) do
+    %{
+      title: title,
+      error: error,
+      source: %{metadata: from_map_to_list(message)}
+    }
+  end
+
+  def error_message(:error_association, message) do
+    message
+  end
+
   def error_message(:elasticsearch, %{error: %{reason: message}}) do
     %{
       title: "ElasticSearch Indexing Problem",
@@ -37,5 +77,24 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeErrorHelper do
       error: message,
       source: nil
     }
+  end
+
+  defp from_map_to_list(errors) when is_list(errors) do
+    error = List.first(errors)
+
+    case is_binary(error) do
+      true ->
+        errors
+
+      false ->
+        Enum.reduce(errors, [], fn error, acc ->
+          acc ++ Map.values(error)
+        end)
+        |> Enum.uniq()
+    end
+  end
+
+  defp from_map_to_list(error) when is_binary(error) do
+    [error]
   end
 end
