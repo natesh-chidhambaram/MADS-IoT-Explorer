@@ -102,7 +102,7 @@ defmodule AcqdatApiWeb.EntityManagement.SensorTypeController do
             error = extract_changeset_error(changeset)
 
             conn
-            |> send_error(400, error)
+            |> send_error(400, SensorTypeErrorHelper.error_message(:error_association, error))
 
           {:error, error} ->
             conn
