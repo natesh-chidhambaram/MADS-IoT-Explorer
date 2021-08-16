@@ -279,6 +279,7 @@ defmodule AcqdatApiWeb.Router do
         end
 
         get("/visualizations/fetch_all_types", VisualizationsController, :fetch_all_types)
+        get("/visualizations/:id/validate_widget", VisualizationsController, :validate_widget)
       end
 
       post("/fetch_token", EntityController, :fetch_token)

@@ -7,7 +7,9 @@ defmodule AcqdatApiWeb.DataInsights.VisualizationsController do
 
   plug AcqdatApiWeb.Plug.LoadCurrentUser
   plug AcqdatApiWeb.Plug.LoadProject
-  plug AcqdatApiWeb.Plug.LoadVisualizations when action in [:update, :delete, :show, :export]
+
+  plug AcqdatApiWeb.Plug.LoadVisualizations
+       when action in [:update, :delete, :show, :export, :validate_widget]
 
   def fetch_all_types(conn, _params) do
     case conn.status do
@@ -94,6 +96,30 @@ defmodule AcqdatApiWeb.DataInsights.VisualizationsController do
             conn
             |> put_status(200)
             |> render("create.json", %{visualization: data})
+        end
+
+      404 ->
+        conn
+        |> send_error(404, VisualizationsErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, VisualizationsErrorHelper.error_message(:unauthorized))
+    end
+  end
+
+  def validate_widget(conn, _params) do
+    case conn.status do
+      nil ->
+        case Visualizations.validate_widget(conn.assigns.visualizations) do
+          {:error, message} ->
+            conn
+            |> send_error(400, VisualizationsErrorHelper.error_message(:validate_widget, message))
+
+          {:ok, _data} ->
+            conn
+            |> put_status(200)
+            |> json(%{is_valid: true})
         end
 
       404 ->

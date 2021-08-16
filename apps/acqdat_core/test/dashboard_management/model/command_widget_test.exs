@@ -26,7 +26,7 @@ defmodule AcqdatCore.Model.DashboardManagement.CommandWidgetTest do
         label: "LED Control Panel"
       }
 
-      assert {:ok, command_widget} = CommandWidget.create(params)
+      assert {:ok, _command_widget} = CommandWidget.create(params)
     end
   end
 

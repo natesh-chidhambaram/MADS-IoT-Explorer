@@ -99,10 +99,10 @@ defmodule AcqdatCore.DashboardManagement.Schema.Panel.FilterMetadata do
     field(:from_date, :integer, default: DateTime.to_unix(DateTime.utc_now(), :millisecond))
     field(:to_date, :integer, default: DateTime.to_unix(DateTime.utc_now(), :millisecond))
     field(:aggregate_func, :string, default: "max")
-    field(:group_interval, :integer, default: 1)
-    field(:group_interval_type, :string, default: "hour")
-    field(:last, :string, default: "30_day")
-    field(:type, :string, default: "historical")
+    field(:group_interval, :integer, default: 15)
+    field(:group_interval_type, :string, default: "second")
+    field(:last, :string, default: "2_hour")
+    field(:type, :string, default: "realtime")
   end
 
   @permitted ~w(from_date to_date aggregate_func group_interval group_interval_type type last)a

@@ -26,6 +26,25 @@ defmodule AcqdatCore.Model.DashboardManagement.WidgetInstance do
     end
   end
 
+  def get_by_panel_n_src(panel_id, %{source_type: source_type, source_id: source_id}) do
+    from(widget_instance in WidgetInstance,
+      where:
+        widget_instance.panel_id == ^panel_id and
+          fragment("source_metadata->>'source_type'=?", ^source_type) and
+          fragment("source_metadata->>'source_id'=?", ^source_id)
+    )
+    |> Repo.all()
+  end
+
+  def get_by_src(%{source_type: source_type, source_id: source_id}) do
+    from(widget_instance in WidgetInstance,
+      where:
+        fragment("source_metadata->>'source_type'=?", ^source_type) and
+          fragment("source_metadata->>'source_id'=?", ^source_id)
+    )
+    |> Repo.all()
+  end
+
   def get_all_by_panel_id(panel_id, filter_params) do
     widget_instances =
       from(widget_instance in WidgetInstance,

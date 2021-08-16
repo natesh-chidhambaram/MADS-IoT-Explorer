@@ -118,12 +118,12 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
 
   defp parse_filtered_params(_panel) do
     %{
-      from_date: Timex.shift(Timex.now(), months: -1),
+      from_date: Timex.shift(Timex.now(), hours: -2),
       to_date: Timex.now(),
       aggregate_func: "max",
-      group_interval: 1,
-      group_interval_type: "hour",
-      last: "30_day"
+      group_interval: 15,
+      group_interval_type: "second",
+      last: "2_hour"
     }
   end
 

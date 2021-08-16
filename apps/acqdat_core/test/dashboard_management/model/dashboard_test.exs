@@ -95,7 +95,7 @@ defmodule AcqdatCore.Model.DashboardManagement.DashboardTest do
       assert {:ok, _dashboard} = DashboardModel.create(params)
     end
 
-    test "fails if organisation_id is not present", context do
+    test "fails if organisation_id is not present" do
       user = insert(:user)
 
       params = %{
