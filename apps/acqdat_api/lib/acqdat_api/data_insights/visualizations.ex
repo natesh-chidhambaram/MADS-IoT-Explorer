@@ -67,36 +67,68 @@ defmodule AcqdatApi.DataInsights.Visualizations do
     end
   end
 
+  def validate_widget(%{id: visualization_id}) do
+    case WidgetInstance.get_by_src(%{
+           source_type: "AcqdatApi.DataInsights.Visualizations",
+           source_id: "#{visualization_id}"
+         }) do
+      [] ->
+        {:ok, true}
+
+      _ ->
+        {:error,
+         "Updating this Visualizations will change it to all the dashboards, where is it exported"}
+    end
+  end
+
   def export(visualization, %{"panel_id" => panel_id, "title" => title}) do
     data = %{
       label: title,
       panel_id: panel_id
     }
 
-    case fetch_widget(visualization) do
-      {:ok, widget} ->
-        visual_properties =
-          Map.merge(HighCharts.parse_properties(widget.visual_settings), %{
-            "title" => %{"text" => "#{title}"}
-          })
+    with {:validate, {:ok, true}} <- {:validate, valid_export?(panel_id, visualization.id)},
+         {:fetch_widget, {:ok, widget}} <- {:fetch_widget, fetch_widget(visualization)} do
+      visual_properties =
+        Map.merge(HighCharts.parse_properties(widget.visual_settings), %{
+          "title" => %{"text" => "#{title}"}
+        })
 
-        data = %{
-          label: title,
-          panel_id: panel_id,
-          widget_id: widget.id,
-          source_app: "data_insights",
-          visual_properties: Map.merge(visual_properties, visualization.visual_settings || %{}),
-          source_metadata: %{
-            source_type: "AcqdatApi.DataInsights.Visualizations",
-            source_id: visualization.id
-          }
+      data = %{
+        label: title,
+        panel_id: panel_id,
+        widget_id: widget.id,
+        source_app: "data_insights",
+        visual_properties: Map.merge(visual_properties, visualization.visual_settings || %{}),
+        source_metadata: %{
+          source_type: "AcqdatApi.DataInsights.Visualizations",
+          source_id: visualization.id
         }
+      }
 
-        AcqdatApi.DashboardManagement.WidgetInstance.create(data)
+      AcqdatApi.DashboardManagement.WidgetInstance.create(data)
+    else
+      {:validate, {:error, error}} ->
+        {:error, error}
 
-      {:error, _} ->
+      {:fetch_widget, {:error, error}} ->
         {:error, "widget not found for the respective visualization"}
     end
+  end
+
+  def valid_export?(panel_id, visualization_id) do
+    widget_inst =
+      WidgetInstance.get_by_panel_n_src(
+        panel_id,
+        %{
+          source_type: "AcqdatApi.DataInsights.Visualizations",
+          source_id: "#{visualization_id}"
+        }
+      )
+
+    if widget_inst == [],
+      do: {:ok, true},
+      else: {:error, "Visualization already exported to this Panel"}
   end
 
   defp fetch_widget(visualization) do

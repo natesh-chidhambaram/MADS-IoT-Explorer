@@ -22,4 +22,12 @@ defmodule AcqdatApiWeb.DataInsights.VisualizationsErrorHelper do
       source: nil
     }
   end
+
+  def error_message(:validate_widget, message) do
+    %{
+      title: "Problem while building visualizations",
+      error: message,
+      source: nil
+    }
+  end
 end

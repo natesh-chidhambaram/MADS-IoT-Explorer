@@ -408,7 +408,7 @@ defmodule AcqdatCore.ElasticSearch do
               [parent_id: [type: "user", id: org_id]],
               [
                 match_phrase_prefix: [
-                  first_name: [
+                  name: [
                     query: "#{label}",
                     _name: "firstQuery"
                   ]
@@ -438,7 +438,7 @@ defmodule AcqdatCore.ElasticSearch do
               [parent_id: [type: "user", id: org_id]],
               [
                 match_phrase_prefix: [
-                  first_name: [
+                  name: [
                     query: "#{label}",
                     _name: "firstQuery"
                   ]
@@ -894,6 +894,7 @@ defmodule AcqdatCore.ElasticSearch do
       first_name: user_cred.first_name,
       last_name: user_cred.last_name,
       org_id: params.org_id,
+      name: "#{user_cred.first_name} #{user_cred.last_name}",
       is_invited: params.is_invited,
       is_deleted: params.is_deleted,
       inserted_at: DateTime.to_unix(params.inserted_at),

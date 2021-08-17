@@ -39,6 +39,7 @@ defmodule AcqdatCore.Seed.RoleManagement.User do
         last_name: user_cred.last_name,
         org_id: params.org_id,
         is_invited: params.is_invited,
+        name: "#{user_cred.first_name} #{user_cred.last_name}",
         is_deleted: params.is_deleted,
         role_id: params.role_id,
         inserted_at: DateTime.to_unix(params.inserted_at),

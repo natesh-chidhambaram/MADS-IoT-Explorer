@@ -106,6 +106,6 @@ defmodule AcqdatApi.DashboardManagement.Dashboard do
   end
 
   defp from_date do
-    DateTime.to_unix(Timex.shift(DateTime.utc_now(), months: -1), :millisecond)
+    DateTime.to_unix(Timex.shift(DateTime.utc_now(), hours: -2), :millisecond)
   end
 end

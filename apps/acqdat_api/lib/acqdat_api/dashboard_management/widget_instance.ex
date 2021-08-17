@@ -199,11 +199,11 @@ defmodule AcqdatApi.DashboardManagement.WidgetInstance do
 
   defp parse_filtered_params(%{panel: panel}) do
     %{
-      from_date: Timex.shift(Timex.now(), months: -1),
+      from_date: Timex.shift(Timex.now(), hours: -2),
       to_date: Timex.now(),
       aggregate_func: "max",
-      group_interval: 1,
-      group_interval_type: "hour"
+      group_interval: 15,
+      group_interval_type: "second"
     }
   end
 

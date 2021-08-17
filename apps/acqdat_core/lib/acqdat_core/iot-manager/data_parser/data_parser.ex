@@ -101,8 +101,14 @@ defmodule AcqdatCore.IotManager.DataParser do
     mapped_parameters
     |> Enum.zip(value)
     |> Enum.reduce(acc, fn {rule, value}, acc ->
-      %{"entity" => entity, "entity_id" => entity_id, "value" => parameter_uuid} = rule
-      create_data_struct(entity, entity_id, parameter_uuid, value, acc)
+      case rule["type"] == "value" do
+        true ->
+          %{"entity" => entity, "entity_id" => entity_id, "value" => parameter_uuid} = rule
+          create_data_struct(entity, entity_id, parameter_uuid, value, acc)
+
+        false ->
+          parse_data(rule["value"], value, acc)
+      end
     end)
   end
 
