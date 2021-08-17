@@ -38,6 +38,7 @@ defmodule AcqdatCore.Seed.DataFeeder.OrgAndUser do
         email: user_cred.email,
         first_name: user_cred.first_name,
         last_name: user_cred.last_name,
+        name: "#{user_cred.first_name} #{user_cred.last_name}",
         org_id: params.org_id,
         is_invited: params.is_invited,
         role_id: params.role_id,
