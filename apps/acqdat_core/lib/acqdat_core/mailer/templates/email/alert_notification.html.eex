@@ -525,7 +525,7 @@
 
                         <td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
 
-                            <h3>Hello <%= @user.first_name %>,</h3>
+                            <h3>Hello <%= @user.user_credentials.first_name %>,</h3>
 &nbsp;
 
 <p>An alert has been generated in your MADS workspace of organisation <%= @user.org.name %> on <%=@alert.inserted_at.day%>th <%=Timex.month_name(@alert.inserted_at.month)%>,<%=@alert.inserted_at.year%> at <%=@alert.inserted_at.hour%>:<%=@alert.inserted_at.minute%>:<%=@alert.inserted_at.second%>. Below are the details.</p>
