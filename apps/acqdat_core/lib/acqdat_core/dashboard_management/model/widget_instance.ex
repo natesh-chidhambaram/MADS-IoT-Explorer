@@ -52,19 +52,6 @@ defmodule AcqdatCore.Model.DashboardManagement.WidgetInstance do
         where: widget_instance.panel_id == ^panel_id
       )
       |> Repo.all()
-
-    Enum.reduce(widget_instances, [], fn widget, acc ->
-      widget =
-        if widget.source_app != nil do
-          module = Module.safe_concat([widget.source_metadata["source_type"]])
-
-          module.fetch_series_data(widget)
-        else
-          widget |> HighCharts.fetch_highchart_details(filter_params)
-        end
-
-      acc ++ [widget]
-    end)
   end
 
   def get_by_filter(id, filter_params) when is_integer(id) do
@@ -75,7 +62,14 @@ defmodule AcqdatCore.Model.DashboardManagement.WidgetInstance do
       widget_instance ->
         filtered_params = parse_filtered_params(filter_params, widget_instance.panel)
 
-        widget_instance = widget_instance |> HighCharts.fetch_highchart_details(filtered_params)
+        widget_instance =
+          if widget_instance.source_app != nil do
+            module = Module.safe_concat([widget_instance.source_metadata["source_type"]])
+
+            module.fetch_series_data(widget_instance)
+          else
+            widget_instance |> HighCharts.fetch_highchart_details(filtered_params)
+          end
 
         {:ok, widget_instance}
     end

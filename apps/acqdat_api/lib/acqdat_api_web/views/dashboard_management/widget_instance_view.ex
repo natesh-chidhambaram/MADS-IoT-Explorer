@@ -17,6 +17,20 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceView do
     }
   end
 
+  def render("show_without_data.json", %{widget_instance: widget}) do
+    %{
+      id: widget.id,
+      widget_id: widget.widget_id,
+      label: widget.label,
+      uuid: widget.uuid,
+      series_data: render_many(widget.series_data, WidgetInstanceView, "series_data.json"),
+      visual_properties: widget.visual_properties,
+      widget_settings: widget.widget_settings,
+      widget_category: widget.widget.category,
+      source_app: widget.source_app
+    }
+  end
+
   def render("create.json", %{widget_instance: widget}) do
     %{
       id: widget.id,

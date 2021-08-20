@@ -6,7 +6,6 @@ defmodule AcqdatApi.DashboardManagement.WidgetInstance do
   alias AcqdatCore.Model.DashboardManagement.Panel, as: PanelModel
   alias AcqdatCore.Widgets.Schema.Vendors.HighCharts
 
-  defdelegate delete(widget_instance), to: WidgetInstanceModel
   defdelegate get_by_filter(widget_id, params), to: WidgetInstanceModel
 
   def create(attrs) do
@@ -30,6 +29,20 @@ defmodule AcqdatApi.DashboardManagement.WidgetInstance do
     |> verify_widget()
   end
 
+  def delete(widget_instance) do
+    widget_instance = widget_instance |> Repo.preload([:panel])
+
+    Multi.new()
+    |> Multi.run(:delete_widget, fn _, _changes ->
+      WidgetInstanceModel.delete(widget_instance)
+    end)
+    |> Multi.run(:delete_widget_layouts, fn _, %{delete_widget: _widget_instance} ->
+      widget_layouts = Map.delete(widget_instance.panel.widget_layouts, "#{widget_instance.id}")
+      PanelModel.update(widget_instance.panel, %{widget_layouts: widget_layouts})
+    end)
+    |> run_transaction()
+  end
+
   ############################# private functions ###########################
 
   defp run_transaction(multi_query) do
@@ -39,10 +52,15 @@ defmodule AcqdatApi.DashboardManagement.WidgetInstance do
       {:ok, %{create_widget: widget_instance, update_panel_widget_layout: _panel}} ->
         verify_widget({:ok, widget_instance})
 
+      {:ok, %{delete_widget: widget_instance, delete_widget_layouts: _panel}} ->
+        {:ok, widget_instance}
+
       {:error, failed_operation, failed_value, _changes_so_far} ->
         case failed_operation do
           :create_widget -> verify_error_changeset({:error, failed_value})
           :update_panel_widget_layout -> verify_error_changeset({:error, failed_value})
+          :delete_widget -> verify_error_changeset({:error, failed_value})
+          :delete_widget_layouts -> verify_error_changeset({:error, failed_value})
         end
     end
   end
