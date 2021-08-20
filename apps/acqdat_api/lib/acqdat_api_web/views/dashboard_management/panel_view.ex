@@ -44,7 +44,7 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelView do
       uuid: panel.uuid,
       settings: panel.settings,
       widget_layouts: panel.widget_layouts,
-      widgets: render_many(panel.widgets, WidgetInstanceView, "show.json"),
+      widgets: render_many(panel.widgets, WidgetInstanceView, "show_without_data.json"),
       command_widgets: render_many(panel.command_widgets, CommandWidgetView, "show.json"),
       filter_metadata: render_one(panel.filter_metadata, PanelView, "filter_metadata.json")
     }

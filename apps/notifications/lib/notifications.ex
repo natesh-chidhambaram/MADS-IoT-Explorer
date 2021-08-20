@@ -24,7 +24,7 @@ defmodule Notifications do
       if recipient != 0 do
         user = User.extract_email(recipient)
 
-        AlertNotification.email(user.email, alert, user)
+        AlertNotification.email(user.user_credentials.email, alert, user)
         |> Mailer.deliver_now()
       end
     end)
@@ -86,7 +86,7 @@ defmodule Notifications do
       Enum.reduce(alert_rule.recepient_ids, [], fn recipient, acc ->
         if recipient != 0 do
           user = User.extract_email(recipient)
-          acc ++ [user.phone_number]
+          acc ++ [user.user_credentials.phone_number]
         end
       end)
 
