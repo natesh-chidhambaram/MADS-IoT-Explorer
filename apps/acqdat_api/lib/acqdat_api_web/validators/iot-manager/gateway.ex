@@ -30,10 +30,10 @@ defmodule AcqdatApiWeb.Validators.IotManager.Gateway do
   )
 
   defparams(
-    verify_index_data_dump_params(%{
-      org_id!: :integer,
-      project_id!: :integer,
-      gateway_id!: :integer
+    verify_error_params(%{
+      page_size: :integer,
+      page_number: :integer,
+      gateway_uuid!: :integer
     })
   )
 end

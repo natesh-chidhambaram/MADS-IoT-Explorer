@@ -121,6 +121,8 @@ defmodule AcqdatApiWeb.Router do
         delete "/gateways/:gateway_id/delete_data_dump", GatewayController, :delete_data_dump
       end
 
+      get "/gateways/:gateway_uuid/errors", IotManager.GatewayController, :gateway_error_index
+
       scope "/", Alerts do
         resources "/policies", PolicyController, only: [:index]
         get "/grouping_rules", AlertRulesController, :grouping_rules

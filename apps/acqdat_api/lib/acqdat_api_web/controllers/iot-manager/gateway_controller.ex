@@ -511,6 +511,24 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
     end
   end
 
+  def gateway_error_index(conn, params) do
+    changeset = verify_error_params(params)
+
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        {:list, errors} = {:list, GatewayDataDump.get_error(data, [:gateway])}
+
+        conn
+        |> put_status(200)
+        |> render("error_index.json", errors)
+
+      404 ->
+        conn
+        |> send_error(403, "Unauthorized")
+    end
+  end
+
   defp add_meta(conn, data) do
     data
     |> Map.put(:org_uuid, conn.assigns.org.uuid)

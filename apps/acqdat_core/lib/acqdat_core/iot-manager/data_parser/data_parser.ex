@@ -2,6 +2,7 @@ defmodule AcqdatCore.IotManager.DataParser do
   alias AcqdatCore.Model.IotManager.Gateway, as: GModel
   alias AcqdatCore.Repo
   alias AcqdatCore.Alerts.AlertCreation
+  alias AcqdatCore.Schema.IoTManager.SensorDataError
   alias AcqdatCore.Schema.EntityManagement.GatewayData, as: GDSchema
   alias AcqdatCore.Schema.EntityManagement.SensorsData, as: SDSchema
   alias AcqdatCore.Schema.EntityManagement.GatewayData.Parameters, as: GParam
@@ -58,7 +59,8 @@ defmodule AcqdatCore.IotManager.DataParser do
 
   defp data_manifest(:sensor_data, data, org_id, project_id, inserted_timestamp) do
     sensor_data =
-      Enum.reduce(data, [], fn {key, parameters}, acc ->
+      Enum.reduce(data, %{valid_parameters: [], wrong_parameters: []}, fn {key, parameters},
+                                                                          acc ->
         params = %{
           sensor_id: key,
           org_id: org_id,
@@ -68,12 +70,23 @@ defmodule AcqdatCore.IotManager.DataParser do
           inserted_at: DateTime.truncate(DateTime.utc_now(), :second)
         }
 
+        {wrong_data, parameters} = check_and_extract_errors(key, parameters)
         parameters = prepare_sensor_parameters(parameters)
         params = Map.replace!(params, :parameters, parameters)
-        acc ++ [params]
+
+        wrong_params = %{
+          data: wrong_data,
+          error: %{message: "Wrong Data Type"},
+          sensor_id: key,
+          inserted_at: DateTime.truncate(DateTime.utc_now(), :second)
+        }
+
+        Map.replace!(acc, :valid_parameters, acc.valid_parameters ++ [params])
+        |> Map.replace!(:wrong_parameters, acc.wrong_parameters ++ [wrong_params])
       end)
 
-    Repo.insert_all(SDSchema, sensor_data)
+    Repo.insert_all(SDSchema, sensor_data.valid_parameters)
+    Repo.insert_all(SensorDataError, sensor_data.wrong_parameters)
     AlertCreation.sensor_alert(data)
   end
 
@@ -193,5 +206,42 @@ defmodule AcqdatCore.IotManager.DataParser do
       end)
 
     result
+  end
+
+  defp check_and_extract_errors(key, parameters) do
+    correct_parameters =
+      Enum.reduce(parameters, [], fn param, acc ->
+        case check_data_validity(param.value, param.data_type) do
+          true -> acc ++ [param]
+          false -> acc
+        end
+      end)
+
+    wrong_parameters = parameters -- correct_parameters
+    {wrong_parameters, correct_parameters}
+  end
+
+  defp check_data_validity(value, "string") when is_bitstring(value) do
+    true
+  end
+
+  defp check_data_validity(value, "integer") when is_integer(value) do
+    true
+  end
+
+  defp check_data_validity(value, "boolean") when is_boolean(value) do
+    true
+  end
+
+  defp check_data_validity(_value, "datetime") do
+    true
+  end
+
+  defp check_data_validity(_value, "float") do
+    true
+  end
+
+  defp check_data_validity(_value, _other_data_type) do
+    false
   end
 end

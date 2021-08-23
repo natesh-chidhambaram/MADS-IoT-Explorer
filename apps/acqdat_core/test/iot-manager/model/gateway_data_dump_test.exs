@@ -114,6 +114,24 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDumpTest do
       {deleted, _} = GatewayDataDump.delete_errors(time_now)
       assert deleted == errors
     end
+
+    test "index model data errors", context do
+      %{errors: errors, gateway: gateway} = context
+
+      time_now = DateTime.truncate(Timex.now(), :second)
+
+      ## insert some more errors but keep them at 3 days
+      # new_errors = build_error_record(3, gateway.uuid, Timex.shift(time_now, days: -3))
+      # Repo.insert_all(GatewayError, new_errors)
+      params = %{
+        page_size: 10,
+        page_number: 1,
+        gateway_uuid: gateway.uuid
+      }
+
+      result = GatewayDataDump.get_error(params, [:gateway])
+      assert result.total_entries == 5
+    end
   end
 
   defp build_error_record(number, gateway_uuid, timestamp) do

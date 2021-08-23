@@ -16,7 +16,7 @@ defmodule AcqdatCore.Test.Support.DataDump do
     },
     %{
       name: "Sensor Type1 params2",
-      data_type: "integer",
+      data_type: "string",
       unit: "m",
       uuid: UUID.uuid1(:hex)
     }
@@ -25,7 +25,7 @@ defmodule AcqdatCore.Test.Support.DataDump do
   @parameter_list2 [
     %{
       name: "Sensor Type2 params3",
-      data_type: "integer",
+      data_type: "boolean",
       unit: "cm",
       uuid: UUID.uuid1(:hex)
     },

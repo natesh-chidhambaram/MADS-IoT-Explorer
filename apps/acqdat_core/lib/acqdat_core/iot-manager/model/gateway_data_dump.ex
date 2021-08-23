@@ -15,6 +15,22 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
     GatewayDataDump |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
   end
 
+  def get_error(
+        %{page_size: page_size, page_number: page_number, gateway_uuid: gateway_uuid},
+        preloads
+      ) do
+    query =
+      from(error in GatewayError,
+        where: error.gateway_uuid == ^gateway_uuid,
+        order_by: [desc: error.inserted_at]
+      )
+
+    paginated_data_dump = query |> Repo.paginate(page: page_number, page_size: page_size)
+    data_dump_with_preloads = paginated_data_dump.entries |> Repo.preload(preloads)
+
+    ModelHelper.paginated_response(data_dump_with_preloads, paginated_data_dump)
+  end
+
   def get_all(
         %{
           page_size: page_size,
