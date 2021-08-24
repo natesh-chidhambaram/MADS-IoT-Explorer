@@ -98,6 +98,11 @@ services:
     build: 
       context: ../../
       dockerfile: ./devops/local/Dockerfile
+      args:
+        DASHBOARD_URL: ${DASHBOARD_URL}
+        MADS_URL: ${MADS_URL}
+        REDIS_PORT: ${REDIS_PORT}
+        HTTP_URL: ${HTTP_URL}
     restart: always
     container_name: web_app
     ports:
@@ -115,8 +120,23 @@ services:
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       GUARDIAN_API_KEY: ${GUARDIAN_API_KEY}
       GUARDIAN_IOT_KEY: ${GUARDIAN_IOT_KEY}
+      ELASTIC_SEARCH_HOST: ${ELASTIC_SEARCH_HOST}
+      FRONTEND_URL: ${FRONTEND_URL}
       MQTT_HOST: ${MQTT_HOST}
       MQTT_PORT: ${MQTT_PORT}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      MQTT_EXPOSED_PORT: ${MQTT_EXPOSED_PORT}
+      MQTT_EXPOSED_HOSTNAME: ${MQTT_EXPOSED_HOSTNAME}
+      USER_EMAIL: ${USER_EMAIL}
+      USER_PASSWORD: ${USER_PASSWORD}
+      SENTRY_URL: ${SENTRY_URL}
+
     depends_on:
       - database
       - es01
