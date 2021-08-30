@@ -31,7 +31,9 @@ defmodule AcqdatApi.DashboardManagement.Panel do
       dashboard_id: dashboard_id,
       settings: settings,
       icon: icon,
-      filter_metadata: filter_metadata || %{from_date: from_date},
+      filter_metadata:
+        filter_metadata ||
+          %{from_date: from_date, to_date: DateTime.to_unix(DateTime.utc_now(), :millisecond)},
       widget_layouts: widget_layouts
     }
 

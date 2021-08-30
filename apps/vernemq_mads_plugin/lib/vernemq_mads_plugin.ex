@@ -1,8 +1,8 @@
 defmodule VernemqMadsPlugin do
   alias VernemqMadsPlugin.Account
 
-  def auth_on_register(_peer, {_mountpoint, clientid}, _username, password, _clean_session?) do
-    Account.is_authenticated(clientid, password)
+  def auth_on_register(_peer, {_mountpoint, _clientid}, username, password, _clean_session?) do
+    Account.is_authenticated(username, password)
   end
 
   def on_register(_peer, {_mountpoint, clientid}, username) do
