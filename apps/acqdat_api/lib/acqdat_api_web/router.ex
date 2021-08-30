@@ -121,6 +121,7 @@ defmodule AcqdatApiWeb.Router do
         delete "/gateways/:gateway_id/delete_data_dump", GatewayController, :delete_data_dump
       end
 
+      get "/sensors/:sensor_id/errors", IotManager.GatewayController, :sensor_error_index
       get "/gateways/:gateway_uuid/errors", IotManager.GatewayController, :gateway_error_index
 
       scope "/", Alerts do

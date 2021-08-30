@@ -36,4 +36,12 @@ defmodule AcqdatApiWeb.Validators.IotManager.Gateway do
       gateway_uuid!: :integer
     })
   )
+
+  defparams(
+    verify_sensor_params(%{
+      page_size: :integer,
+      page_number: :integer,
+      sensor_id!: :integer
+    })
+  )
 end

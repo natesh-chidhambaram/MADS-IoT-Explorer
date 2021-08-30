@@ -48,6 +48,7 @@ defmodule AcqdatCore.Widgets.Schema.Widget do
     field(:category, {:array, :string})
     field(:policies, :map)
     field(:classification, :string, default: "timeseries")
+    field(:widget_data_type, {:array, :string}, null: false)
 
     # embedded associations
     embeds_many(:visual_settings, VisualSettings, on_replace: :delete)
@@ -60,7 +61,7 @@ defmodule AcqdatCore.Widgets.Schema.Widget do
   end
 
   @required ~w(label default_values widget_type_id)a
-  @optional ~w(properties image_url policies category classification)a
+  @optional ~w(properties image_url widget_data_type policies category classification)a
   @permitted @required ++ @optional
 
   @spec changeset(

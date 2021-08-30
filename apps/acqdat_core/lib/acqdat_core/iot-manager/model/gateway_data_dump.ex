@@ -2,6 +2,7 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
   import Ecto.Query
   alias AcqdatCore.Repo
   alias AcqdatCore.Schema.IotManager.GatewayDataDump
+  alias AcqdatCore.Schema.IoTManager.SensorDataError
   alias AcqdatCore.Model.IotManager.Gateway
   alias AcqdatCore.Model.Helper, as: ModelHelper
   alias AcqdatCore.Schema.IoTManager.GatewayError
@@ -22,6 +23,22 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
     query =
       from(error in GatewayError,
         where: error.gateway_uuid == ^gateway_uuid,
+        order_by: [desc: error.inserted_at]
+      )
+
+    paginated_data_dump = query |> Repo.paginate(page: page_number, page_size: page_size)
+    data_dump_with_preloads = paginated_data_dump.entries |> Repo.preload(preloads)
+
+    ModelHelper.paginated_response(data_dump_with_preloads, paginated_data_dump)
+  end
+
+  def get_sensor_error(
+        %{page_size: page_size, page_number: page_number, sensor_id: sensor_id},
+        preloads
+      ) do
+    query =
+      from(error in SensorDataError,
+        where: error.sensor_id == ^sensor_id,
         order_by: [desc: error.inserted_at]
       )
 

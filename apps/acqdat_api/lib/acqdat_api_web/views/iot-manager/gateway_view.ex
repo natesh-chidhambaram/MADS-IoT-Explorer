@@ -202,6 +202,16 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
     }
   end
 
+  def render("sensor_error_index.json", errors) do
+    %{
+      errors: render_many(errors.entries, GatewayView, "sensor_error_show.json"),
+      page_number: errors.page_number,
+      page_size: errors.page_size,
+      total_entries: errors.total_entries,
+      total_pages: errors.total_pages
+    }
+  end
+
   def render("data_dump_index.json", data_dump) do
     %{
       data_dumps: render_many(data_dump.entries, GatewayView, "data_dump_show.json"),
@@ -228,6 +238,16 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
       gateway_uuid: error.gateway_uuid,
       error: error.error,
       gateway_name: error.gateway.name,
+      inserted_at: error.inserted_at
+    }
+  end
+
+  def render("sensor_error_show.json", %{gateway: error}) do
+    %{
+      data: error.data,
+      sensor_id: error.sensor_id,
+      error: error.error,
+      gateway_name: error.sensor.name,
       inserted_at: error.inserted_at
     }
   end
