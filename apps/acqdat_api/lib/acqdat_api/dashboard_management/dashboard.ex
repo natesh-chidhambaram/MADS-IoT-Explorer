@@ -67,7 +67,10 @@ defmodule AcqdatApi.DashboardManagement.Dashboard do
         name: "Home",
         org_id: dashboard.org_id,
         dashboard_id: dashboard.id,
-        filter_metadata: %{from_date: from_date()}
+        filter_metadata: %{
+          from_date: from_date(),
+          to_date: DateTime.to_unix(DateTime.utc_now(), :millisecond)
+        }
       })
     end)
     |> run_transaction()
