@@ -4,7 +4,7 @@ defmodule AcqdatApi.ExtractRoutes do
   alias AcqdatCore.Repo
   use Agent
 
-  @neglect_routes ~w(AcqdatApiWeb Bamboo)s
+  @neglect_routes ~w(AcqdatApiWeb Bamboo TenantManagement)s
 
   #   "DashboardManagement" => %{  //This is the application name
   #     "DashboardExport" => {  //This is the feature inside that application`

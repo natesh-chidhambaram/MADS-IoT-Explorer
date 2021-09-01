@@ -8,8 +8,6 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationController do
   alias AcqdatApiWeb.EntityManagement.OrganisationErrorHelper
   alias AcqdatCore.Model.EntityManagement.Organisation, as: OrgModel
 
-  defdelegate get_apps(data), to: OrgModel
-
   plug :load_org when action in [:show, :get_apps, :update, :delete]
 
   def show(conn, _params) do
@@ -145,8 +143,9 @@ defmodule AcqdatApiWeb.EntityManagement.OrganisationController do
     case conn.status do
       nil ->
         org = conn.assigns.org
+        user_id = Guardian.Plug.current_resource(conn)
 
-        with {:list, apps} <- {:list, get_apps(org)} do
+        with {:list, apps} <- {:list, OrgModel.get_apps(org, user_id)} do
           conn
           |> put_status(200)
           |> render("apps.json", %{apps: apps})

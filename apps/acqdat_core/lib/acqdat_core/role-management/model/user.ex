@@ -37,7 +37,7 @@ defmodule AcqdatCore.Model.RoleManagement.User do
         {:error, "not found"}
 
       user ->
-        {:ok, user}
+        {:ok, user |> Repo.preload([:role])}
     end
   end
 

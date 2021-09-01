@@ -4,6 +4,7 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
   alias AcqdatCore.Model.EntityManagement.Project, as: ProjectModel
   alias AcqdatCore.Schema.RoleManagement.App
   alias AcqdatCore.Model.Helper, as: ModelHelper
+  alias AcqdatCore.Model.RoleManagement.User, as: UserModel
   alias AcqdatCore.Repo
 
   def create(params) do
@@ -101,11 +102,22 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     end
   end
 
-  def get_apps(_org) do
-    # TODO: Need to filter by organisation, in future
-    # org = org |> Repo.preload(:apps)
-    # org.apps
-    App |> order_by(:id) |> Repo.all()
+  def get_apps(_org, user_id) do
+    {:ok, user} = UserModel.get(user_id)
+
+    case user.role.name == "superadmin" do
+      true ->
+        App |> order_by(:id) |> Repo.all()
+
+      false ->
+        query =
+          from(q in App,
+            where: q.key != "tenantManager",
+            order_by: q.id
+          )
+
+        Repo.all(query)
+    end
   end
 
   def fetch_by_url(url) do
