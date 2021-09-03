@@ -6,12 +6,41 @@ services:
     restart: always
     ports: 
       - 5431:5432
+    command:
+    - postgres
+    - -cwal_level=archive
+    - -carchive_mode=on
+    - -carchive_command=/usr/bin/wget wale/wal-push/%p  -O -
+    - -carchive_timeout=600
+    - -ccheckpoint_timeout=700
+    - -cmax_wal_senders=1
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: acqdat_prod
+      # POSTGRES_INITDB_WALDIR: /var/lib/postgresql/data/pg_wal
+      #PGDATA: /var/lib/postgresql/data/pg_data
     volumes: 
       - pgdata:/var/lib/postgresql/data
+
+  wale:
+    container_name: wale
+    image: timescale/timescaledb-wale:latest
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      WALE_S3_PREFIX: s3://stg-pgsqlbackup
+      #WALE_FILE_PREFIX: file://localhost/backups
+      PGHOST: database
+      PGWAL: /var/lib/postgresql/data/pg_wal
+      PGUSER: ${DB_USER}
+      WALE_LOG_DESTINATION: stderr
+      PGDATA: /var/lib/postgresql/data/pg_data
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ~/backups:/backups
 
   redis:
     image: redis:latest
