@@ -2,7 +2,21 @@ defmodule CoolingPump do
   alias Weave.{Library, Context, Action}
 
   @moduledoc """
-  Documentation for `CoolingPump`.
+  CoolingPump sample pipeline
+  
+  The gateway sends three temperature values in payload and we want to:
+  - compute the average temperature.
+  - control a cooling pump based on the temperature.
+
+  The average temperature is stored as a new time series and pump state is
+  tracked in metadata of the project.
+  If the pump state differs from the desired state an MQTT message is to be
+  sent.
+
+  ## Example
+      iex> init_state = {:ok, %{type: :telemetry, t1: 12, t2: 13, t3: 57.2}, %Weave.Context{project: %{pump_state: :on}}}
+      iex> {root, tree} = CoolingPump.build
+      iex> CoolingPump.exec_block(root, init_state, CoolingPump.build)
   """
 
   @type action() :: Action.t()
@@ -11,7 +25,7 @@ defmodule CoolingPump do
   @type dag :: {root :: atom(), dag :: %{atom() => block()}}
 
   @type state :: {atom(), map(), Context.t()}
-  # i = {:ok, %{type: :telemetry, t1: 12, t2: 13, t3: 57.2}, %Weave.Context{project: %{pump_state: :on}}}
+  # 
   
   @spec build() :: dag()
   def build do
