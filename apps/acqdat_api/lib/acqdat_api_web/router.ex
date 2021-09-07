@@ -87,6 +87,11 @@ defmodule AcqdatApiWeb.Router do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
     scope "/orgs/:org_id" do
+      get "/projects/:project_id/gateways/mapped_sensors",
+          IotManager.GatewayController,
+          :mapped_sensors,
+          as: :mapped_sensors
+
       get("/entities", EntityManagement.EntityController, :fetch_all_hierarchy)
 
       get("/projects/search", EntityManagement.ProjectController, :search_projects,
