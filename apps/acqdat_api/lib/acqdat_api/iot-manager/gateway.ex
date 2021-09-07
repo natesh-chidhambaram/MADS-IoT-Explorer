@@ -18,7 +18,8 @@ defmodule AcqdatApi.IotManager.Gateway do
 
   def extract_param_uuid(sensors) do
     Enum.reduce(sensors, %{}, fn sensor, acc ->
-      Map.put_new(acc, sensor.id, sensor.gateway_id)
+      sensor = Repo.preload(sensor, :gateway)
+      Map.put_new(acc, sensor.id, %{name: sensor.gateway.name, id: sensor.gateway.id})
     end)
   end
 
