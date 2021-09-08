@@ -319,7 +319,7 @@ defmodule AcqdatCore.Model.IotManager.GatewayTest do
           Map.put_new(acc, sensor.id, gateway.id)
         end)
 
-      assert data == resultant_map
+      assert Map.keys(data) == Map.keys(resultant_map)
     end
   end
 
