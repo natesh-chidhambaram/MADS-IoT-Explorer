@@ -313,6 +313,19 @@ defmodule AcqdatApiWeb.Router do
     end
   end
 
+  #################### Metrics ######################################
+  scope "/metrics", AcqdatApiWeb.Metrics do
+    scope "/" do
+      pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
+
+      scope "/orgs/:org_id" do
+        post("/reports", ReportsController, :create)
+      end
+
+      get "/sections", ReportsController, :fetch_headers
+    end
+  end
+
   ######################### Tenant Manager ############################
   scope "/tent_mgmt", AcqdatApiWeb do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]

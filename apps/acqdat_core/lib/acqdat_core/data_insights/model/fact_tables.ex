@@ -57,4 +57,16 @@ defmodule AcqdatCore.Model.DataInsights.FactTables do
 
     query |> Repo.paginate(page: page_number, page_size: page_size)
   end
+
+  def get_name_by_org(org_id) do
+    from(
+      table in FactTables,
+      where: table.org_id == ^org_id,
+      select: %{
+        id: table.id,
+        name: table.name
+      }
+    )
+    |> Repo.all()
+  end
 end

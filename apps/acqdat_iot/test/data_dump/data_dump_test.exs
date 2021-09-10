@@ -32,6 +32,35 @@ defmodule AcqdatIotWeb.DataDump do
       assert result == %{"data inserted" => true}
     end
 
+    test "data dump create with utc timestamp", %{
+      conn: conn,
+      gateway: gateway,
+      data_dump: data_dump
+    } do
+      params = data_dump
+
+      params =
+        Map.replace!(
+          params,
+          "timestamp",
+          DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_iso8601()
+        )
+
+      conn =
+        post(
+          conn,
+          Routes.data_dump_path(conn, :create, gateway.org_id, gateway.project_id, gateway.id),
+          params
+        )
+
+      # TODO: have added a small time out so worker processes release db
+      # connection, else the test exits and db connection is removed.
+      # Need to add a clean way to handle this.
+      :timer.sleep(50)
+      result = conn |> json_response(202)
+      assert result == %{"data inserted" => true}
+    end
+
     test "fails if authorization header not found", %{conn: conn, gateway: gateway} do
       bad_access_token = "qwerty1234567uiop"
 

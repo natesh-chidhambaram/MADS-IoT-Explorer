@@ -79,4 +79,16 @@ defmodule AcqdatCore.Model.DataInsights.Visualizations do
 
     Repo.one(query)
   end
+
+  def get_name_by_org(org_id) do
+    from(
+      table in Visualizations,
+      where: table.org_id == ^org_id,
+      select: %{
+        id: table.id,
+        name: table.name
+      }
+    )
+    |> Repo.all()
+  end
 end

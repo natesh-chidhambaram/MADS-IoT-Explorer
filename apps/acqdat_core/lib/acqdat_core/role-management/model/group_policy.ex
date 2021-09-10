@@ -11,4 +11,13 @@ defmodule AcqdatCore.Model.RoleManagement.GroupPolicy do
 
     Repo.delete_all(query)
   end
+
+  def add_policy_in_group(group_id, policy_ids) do
+    params =
+      Enum.reduce(policy_ids, [], fn policy_id, acc ->
+        acc ++ [%{user_group_id: group_id, policy_id: policy_id}]
+      end)
+
+    Repo.insert_all(GroupPolicy, params)
+  end
 end

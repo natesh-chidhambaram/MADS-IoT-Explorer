@@ -25,24 +25,22 @@ defmodule AcqdatApi.ApiAccess.UserGroup do
     present_policy_ids = UserGroup.policies(group.id)
     policy_ids_to_delete = present_policy_ids -- policy_ids
     policy_ids_to_add = policy_ids -- present_policy_ids
-    total_policy_ids = (present_policy_ids -- policy_ids_to_delete) ++ policy_ids_to_add
-    delete_policies(group, policy_ids_to_delete)
-    add_policies(total_policy_ids, params, group)
-  end
-
-  defp add_policies(total_policies, params, group) do
-    params = Map.put_new(params, :policy_ids, total_policies)
-    params = Map.put_new(params, :user_ids, [])
-    verify_group(UserGroup.update(group, params))
-  end
-
-  defp delete_policies(group, policies_to_be_delete) do
-    GroupPolicy.remove_policy_from_group(group.id, policies_to_be_delete)
+    delete_and_add_policies(group, policy_ids_to_delete, policy_ids_to_add)
+    add_policies(params, group)
   end
 
   def update(group, params) do
     params = for {key, val} <- params, into: %{}, do: {String.to_atom(key), val}
     verify_group(UserGroup.normal_update(group, params))
+  end
+
+  defp add_policies(params, group) do
+    verify_group(UserGroup.normal_update(group, params))
+  end
+
+  defp delete_and_add_policies(group, policies_to_be_delete, policy_ids_to_add) do
+    GroupPolicy.remove_policy_from_group(group.id, policies_to_be_delete)
+    GroupPolicy.add_policy_in_group(group.id, policy_ids_to_add)
   end
 
   defp verify_group({:ok, group}) do

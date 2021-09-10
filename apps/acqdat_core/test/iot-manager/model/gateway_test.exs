@@ -316,10 +316,10 @@ defmodule AcqdatCore.Model.IotManager.GatewayTest do
 
       resultant_map =
         Enum.reduce(sensors, %{}, fn sensor, acc ->
-          Map.put_new(acc, sensor.id, gateway.id)
+          Map.put_new(acc, sensor.id, %{name: gateway.name, id: gateway.id})
         end)
 
-      assert data == resultant_map
+      assert Map.keys(data) == Map.keys(resultant_map)
     end
   end
 
