@@ -62,9 +62,16 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
 
   defp has_gateway_with_uuid({:ok, gateway}, params) do
     inserted_timestamp = set_timestamp(gateway.timestamp_mapping, params.data)
-    params = Map.put(params, :inserted_timestamp, inserted_timestamp)
-    changeset = GatewayDataDump.changeset(%GatewayDataDump{}, params)
-    Repo.insert(changeset)
+
+    case inserted_timestamp do
+      {:error, message} ->
+        {:error, message}
+
+      {:ok, inserted_timestamp} ->
+        params = Map.put(params, :inserted_timestamp, inserted_timestamp)
+        changeset = GatewayDataDump.changeset(%GatewayDataDump{}, params)
+        Repo.insert(changeset)
+    end
   end
 
   defp has_gateway_with_uuid({:error, message}, _params) do
@@ -76,6 +83,53 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
   end
 
   defp set_timestamp(key, data) do
-    data[key]
+    cond do
+      check_utc_validity(Timex.parse(data[key], "{RFC3339z}")) ->
+        {:ok, utc_datetime} = Timex.parse(data[key], "{RFC3339z}")
+        {:ok, utc_datetime |> DateTime.to_unix()}
+
+      check_unix_validity(cast(data[key])) ->
+        {:ok, data[key]}
+
+      true ->
+        {:error, message: "timestamp not supported"}
+    end
+  end
+
+  defp check_utc_validity({:ok, _utc_datetime}) do
+    true
+  end
+
+  defp check_utc_validity({:error, _message}) do
+    false
+  end
+
+  defp check_unix_validity({:ok, _unix_timestamp}) do
+    true
+  end
+
+  defp check_unix_validity({:error, _message}) do
+    false
+  end
+
+  defp cast(timestamp) when is_integer(timestamp) do
+    check_validity(DateTime.from_unix(timestamp))
+  end
+
+  defp cast(timestamp) when is_binary(timestamp) do
+    timestamp = String.to_integer(timestamp)
+    check_validity(DateTime.from_unix(timestamp))
+  end
+
+  defp cast(_timestamp) do
+    {:error, message: "timestamp not supported"}
+  end
+
+  defp check_validity({:ok, timestamp}) do
+    {:ok, timestamp}
+  end
+
+  defp check_validity({:error, _message}) do
+    {:error, message: "timestamp not supported"}
   end
 end
