@@ -204,8 +204,11 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
 
   defp filter_from_parameters(%{"type" => "list", "value" => value}, acc) do
     ids =
-      Enum.map(value, fn params ->
-        params["entity_id"]
+      Enum.reduce(value, [], fn params, acc ->
+        case params["type"] do
+          "value" -> acc ++ [params["entity_id"]]
+          _ -> acc ++ filter_from_parameters(params, acc)
+        end
       end)
 
     acc ++ ids

@@ -56,7 +56,7 @@ defmodule AcqdatCore.IotManager.DataDump.WorkerTest do
       assert {:noreply, {:error, result}} = Worker.handle_cast({:data_dump, dump_params}, %{})
 
       assert %{
-               inserted_timestamp: ["invalid unix timestamp"]
+               message: "timestamp not supported"
              } == result.error
     end
   end
