@@ -40,7 +40,6 @@ defmodule AcqdatApiWeb.IotManager.DataController do
       # conn
       # |> put_status(200)
       # |> render("sensor_index.json", sensors_data)
-
       404 ->
         conn
         |> send_error(404, DataErrorHelper.error_message(:resource_not_found))
