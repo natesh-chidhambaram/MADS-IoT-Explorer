@@ -44,7 +44,7 @@ defmodule AcqdatCore.Schema.EntityManagement.Sensor do
     # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:project, Project, on_replace: :delete)
-    belongs_to(:gateway, Gateway, on_replace: :delete)
+    belongs_to(:gateway, Gateway)
     belongs_to(:sensor_type, SensorType, on_replace: :delete)
 
     has_one(:sensors_data, SensorsData)

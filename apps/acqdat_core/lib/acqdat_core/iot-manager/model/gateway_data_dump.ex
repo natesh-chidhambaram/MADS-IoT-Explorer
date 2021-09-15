@@ -79,7 +79,7 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
   end
 
   defp set_timestamp(nil, _data) do
-    DateTime.utc_now() |> DateTime.to_unix()
+    {:ok, DateTime.utc_now() |> DateTime.to_unix()}
   end
 
   defp set_timestamp(key, data) do
@@ -92,7 +92,7 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
         {:ok, data[key]}
 
       true ->
-        {:error, message: "timestamp not supported"}
+        {:error, %{message: "timestamp not supported"}}
     end
   end
 
@@ -122,7 +122,7 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
   end
 
   defp cast(_timestamp) do
-    {:error, message: "timestamp not supported"}
+    {:error, %{message: "timestamp not supported"}}
   end
 
   defp check_validity({:ok, timestamp}) do
@@ -130,6 +130,6 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
   end
 
   defp check_validity({:error, _message}) do
-    {:error, message: "timestamp not supported"}
+    {:error, %{message: "timestamp not supported"}}
   end
 end
