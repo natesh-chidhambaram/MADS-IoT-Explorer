@@ -20,7 +20,7 @@ defmodule AcqdatApiWeb.Plug.LoadAlert do
   defp check_alert(conn, alert_id) do
     {alert_id, _} = Integer.parse(alert_id)
 
-    case ARModel.get_by_id(alert_id) do
+    case ARModel.get(alert_id) do
       {:ok, alert} ->
         assign(conn, :alert, alert)
 

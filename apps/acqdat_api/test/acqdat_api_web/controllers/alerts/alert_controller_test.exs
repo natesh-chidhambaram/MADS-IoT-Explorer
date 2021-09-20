@@ -12,7 +12,7 @@ defmodule AcqdatApiWeb.Alerts.AlertControllerTest do
 
     test "update alert", %{conn: conn, org: org} do
       params = %{
-        communication_medium: ["sms, e-mail"]
+        communication_medium: ["sms", "e-mail"]
       }
 
       alert = insert(:alert)
@@ -29,8 +29,6 @@ defmodule AcqdatApiWeb.Alerts.AlertControllerTest do
       assert Map.has_key?(response, "entity_name")
       assert Map.has_key?(response, "status")
       assert Map.has_key?(response, "severity")
-      assert Map.has_key?(response, "policy_name")
-      assert Map.has_key?(response, "rule_parameters")
       assert Map.has_key?(response, "org_id")
       assert response["entity_id"] == alert.entity_id
     end
@@ -79,8 +77,6 @@ defmodule AcqdatApiWeb.Alerts.AlertControllerTest do
       assert Map.has_key?(response, "entity_name")
       assert Map.has_key?(response, "status")
       assert Map.has_key?(response, "severity")
-      assert Map.has_key?(response, "policy_name")
-      assert Map.has_key?(response, "rule_parameters")
       assert Map.has_key?(response, "org_id")
       assert response["entity_id"] == alert.entity_id
     end

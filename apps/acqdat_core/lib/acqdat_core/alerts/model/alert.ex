@@ -2,13 +2,19 @@ defmodule AcqdatCore.Alerts.Model.Alert do
   import Ecto.Query
   alias AcqdatCore.Repo
   alias AcqdatCore.Alerts.Schema.Alert
+  alias AcqdatCore.Alerts.Schema.AlertEventLog
 
   def create(params) do
     changeset = Alert.changeset(%Alert{}, params)
     Repo.insert(changeset)
   end
 
-  def get_by_id(id) when is_integer(id) do
+  def create_alert_log(params) do
+    changeset = AlertEventLog.changeset(%AlertEventLog{}, params)
+    Repo.insert(changeset)
+  end
+
+  def get(id) when is_integer(id) do
     case Repo.get(Alert, id) do
       nil ->
         {:error, "Alert not found"}
@@ -18,8 +24,18 @@ defmodule AcqdatCore.Alerts.Model.Alert do
     end
   end
 
+  def get(params) when is_map(params) do
+    case Repo.get_by(Alert, params) do
+      nil ->
+        {:error, "Alert not found"}
+
+      alert ->
+        {:ok, alert}
+    end
+  end
+
   def update(%Alert{} = alert, params) do
-    changeset = Alert.changeset(alert, params)
+    changeset = Alert.update_changeset(alert, params)
 
     case Repo.update(changeset) do
       {:ok, alert} -> {:ok, alert}

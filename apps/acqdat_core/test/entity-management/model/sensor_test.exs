@@ -124,7 +124,7 @@ defmodule AcqdatCore.Model.EntityManagement.SensorTest do
     test "deletes sensor leaf node", context do
       %{sensor: sensor} = context
 
-      assert {:ok, sensor} = SensorModel.delete(sensor.id)
+      assert {:ok, _sensor} = SensorModel.delete(sensor.id)
     end
 
     test "will raise an error if sensors data is present for respective sensor leaf" do

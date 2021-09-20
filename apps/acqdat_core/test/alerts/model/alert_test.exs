@@ -1,56 +1,50 @@
 defmodule AcqdatCore.Alerts.Model.AlertTest do
   use ExUnit.Case, async: true
   use AcqdatCore.DataCase
+  import AcqdatCore.Support.Factory
 
   alias AcqdatCore.Alerts.Model.Alert, as: AlertModel
 
-  @valid_params %{
-    name: "Test name",
-    description: "Test description",
-    policy_module_name: "Elixir.AcqdatCore.Alerts.Policies.RangeBased",
-    policy_name: "Alert when data is outside a bounded range",
-    app: "iot_manager",
-    entity_name: "Gateway",
-    entity_id: 1,
-    communication_medium: ["email", "sms"],
-    recepient_ids: [1, 2, 3],
-    severity: "Low",
-    status: "resolved",
-    creator_id: 1,
-    org_id: 1,
-    rule_parameters: [
-      %{
-        name: "temperature",
-        data_type: "float",
-        entity_parameter_uuid: "abc",
-        entity_parameter_name: "temperature",
-        value: 34
-      },
-      %{
-        name: "humidity",
-        data_type: "float",
-        entity_parameter_uuid: "abc",
-        entity_parameter_name: "temperature",
-        value: 34
-      }
-    ]
-  }
-
-  describe "create/1" do
+  describe "create/1 " do
     test "with valid params" do
-      valid_params = @valid_params
+      alert_rule = insert(:alert_rules)
+      params = create_alert_params(alert_rule)
 
-      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
-      assert alerts.total_entries == 0
+      {:ok, alert} = AlertModel.create(params)
+      assert alert.name == alert_rule.rule_name
+    end
 
-      {:ok, _} = AlertModel.create(valid_params)
+    test "alert with duplicate grouping hash, returns error" do
+      alert_rule = insert(:alert_rules)
+      params = create_alert_params(alert_rule)
+      # create an alert
+      AlertModel.create(params)
 
-      alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
-      assert alerts.total_entries == 1
+      # create an alert which has same grouping hash because it's from the
+      # same alert_policy_meta and combination of entity_name, entity_id, app
+      # and org_id
+      {:error, changeset} = AlertModel.create(params)
 
-      first_alert = alerts.entries |> List.first()
-      assert first_alert.name == valid_params[:name]
-      assert first_alert.description == valid_params[:description]
+      assert %{
+               grouping_hash: ["unqiue hash per alert should be generated"]
+             } == errors_on(changeset)
+    end
+
+    test "alerts with no grouping" do
+      alert_rule = insert(:alert_rules)
+      params = create_alert_params(alert_rule)
+      params = params |> Map.drop([:alert_policy_meta, :grouping_hash])
+
+      # create an alert
+      {result, alert1} = AlertModel.create(params)
+      assert result == :ok
+
+      # create another alert with same params as grouping not necessary
+      {result, alert2} = AlertModel.create(params)
+      assert result == :ok
+
+      assert alert1.name == alert2.name
+      assert alert1.entity_name == alert2.entity_name
     end
 
     test "with invalid params" do
@@ -65,41 +59,54 @@ defmodule AcqdatCore.Alerts.Model.AlertTest do
     end
   end
 
-  describe "update/1" do
+  describe "update/1 " do
     setup do
-      {:ok, alert} = AlertModel.create(@valid_params)
-
-      [alert: alert]
+      alert_rule = insert(:alert_rules)
+      params = create_alert_params(alert_rule)
+      {:ok, alert} = AlertModel.create(params)
+      [alert: alert, alert_rule: alert_rule]
     end
 
-    test "with valid update params", %{alert: alert} do
-      update_params = %{description: "Updated description"}
+    test "grouping hash can't be updated", context do
+      %{alert_rule: alert_rule, alert: alert} = context
 
-      previous_description = alert.description
+      hash_params =
+        %{}
+        |> Map.put(:alert_policy_meta, alert_rule.entity)
+        |> Map.put(:app, alert_rule.app)
 
-      {:ok, _alert} = AlertModel.update(alert, update_params)
+      grouping_hash = to_string(Murmur.hash_x64_128(hash_params))
+      update_params = %{grouping_hash: grouping_hash}
 
-      {:ok, updated_alert} = AlertModel.get_by_id(alert.id)
-      refute updated_alert.description == previous_description
-      assert updated_alert.description == update_params[:description]
+      {:ok, result} = AlertModel.update(alert, update_params)
+
+      assert alert.grouping_hash == result.grouping_hash
+      refute grouping_hash == result.grouping_hash
     end
 
-    test "with invalid update params", %{alert: alert} do
-      invalid_params = %{creator_id: nil}
+    test "grouping meta related info", context do
+      %{alert: alert} = context
 
-      previous_creator_id = alert.creator_id
+      grouping_meta = %{
+        module: "Elixir.AcqdatCore.Alerts.Schema.Grouping.TimeGrouping",
+        grouping_parameters: %{
+          value: 2,
+          unit: "hours",
+          previous_time: Timex.shift(DateTime.utc_now(), hours: 1)
+        }
+      }
 
-      {:error, _} = AlertModel.update(alert, invalid_params)
-
-      {:ok, updated_alert} = AlertModel.get_by_id(alert.id)
-      refute updated_alert.creator_id == invalid_params[:creator_id]
-      assert updated_alert.creator_id == previous_creator_id
+      update_params = %{grouping_meta: grouping_meta}
+      {:ok, result} = AlertModel.update(alert, update_params)
+      assert result.grouping_meta != alert.grouping_meta
     end
   end
 
   describe "delete/1" do
     setup do
-      {:ok, alert} = AlertModel.create(@valid_params)
+      alert_rule = insert(:alert_rules)
+      params = create_alert_params(alert_rule)
+      {:ok, alert} = AlertModel.create(params)
       [alert: alert]
     end
 
@@ -116,44 +123,90 @@ defmodule AcqdatCore.Alerts.Model.AlertTest do
 
   describe "get_all/1" do
     setup do
-      {:ok, alert} = AlertModel.create(@valid_params)
-
+      alert_rule = insert(:alert_rules)
+      params = create_alert_params(alert_rule)
+      {:ok, alert} = AlertModel.create(params)
       [alert: alert]
     end
 
-    test "with valid params", %{alert: _} do
-      valid_params = @valid_params
-
+    test "with valid params", %{alert: alert} do
       alerts = AlertModel.get_all(%{page_size: 1, page_number: 0})
       assert alerts.total_entries == 1
 
       first_alert = alerts.entries |> List.first()
-      assert first_alert.name == valid_params[:name]
-      assert first_alert.description == valid_params[:description]
+      assert first_alert.name == alert.name
+      assert first_alert.description == alert.description
     end
   end
 
-  describe "get_by_id/1" do
+  describe "get/1 " do
     setup do
-      {:ok, alert} = AlertModel.create(@valid_params)
-
+      alert_rule = insert(:alert_rules)
+      params = create_alert_params(alert_rule)
+      {:ok, alert} = AlertModel.create(params)
       [alert: alert]
     end
 
     test "with valid id", %{alert: alert} do
-      valid_params = @valid_params
+      {:ok, first_alert} = AlertModel.get(alert.id)
 
-      {:ok, first_alert} = AlertModel.get_by_id(alert.id)
-
-      assert first_alert.name == valid_params[:name]
-      assert first_alert.description == valid_params[:description]
+      assert first_alert.name == alert.name
+      assert first_alert.description == alert.description
     end
 
     test "with invalid id", %{alert: _} do
-      {state, message} = AlertModel.get_by_id(12132)
+      {state, message} = AlertModel.get(12132)
 
       assert state == :error
       assert message == "Alert not found"
     end
+
+    test "with grouping hash", %{alert: alert} do
+      {:ok, result} = AlertModel.get(%{grouping_hash: alert.grouping_hash})
+      assert result.name == alert.name
+    end
+  end
+
+  defp create_alert_params(alert_rule) do
+    alert_policy_meta = %{
+      rule_uuid: alert_rule.uuid,
+      parameter_uuid: alert_rule.entity_parameters.uuid
+    }
+
+    grouping_meta = %{
+      module: "Elixir.AcqdatCore.Alerts.Schema.Grouping.TimeGrouping",
+      grouping_parameters: %{
+        value: 1,
+        unit: "hours",
+        previous_time: DateTime.utc_now()
+      }
+    }
+
+    hash_params =
+      %{}
+      |> Map.put(:alert_policy_meta, alert_policy_meta)
+      |> Map.put(:app, alert_rule.app)
+      |> Map.put(:entity_name, alert_rule.entity)
+      |> Map.put(:entity_id, alert_rule.entity_id)
+      |> Map.put(:org_id, alert_rule.org_id)
+
+    grouping_hash = to_string(Murmur.hash_x64_128(hash_params))
+
+    %{
+      name: alert_rule.rule_name,
+      description: alert_rule.description,
+      alert_policy_meta: alert_policy_meta,
+      grouping_meta: grouping_meta,
+      grouping_hash: to_string(grouping_hash),
+      org_id: alert_rule.org_id,
+      project_id: alert_rule.project_id,
+      recipient_ids: [%{type: "user", id: 1}, %{type: "user", id: 2}, %{type: "user", id: 3}],
+      severity: alert_rule.severity,
+      communication_medium: alert_rule.communication_medium,
+      entity_name: alert_rule.entity,
+      entity_id: alert_rule.entity_id,
+      app: alert_rule.app,
+      status: "un_resolved"
+    }
   end
 end

@@ -57,6 +57,7 @@
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], [], "hexpm", "69b09adddc4f74a40716ae54d140f93beb0fb8978d8636eaded0c31b6f099f16"},
   "mime": {:hex, :mime, "1.5.0", "203ef35ef3389aae6d361918bf3f952fa17a09e8e43b5aa592b93eba05d0fb8d", [:mix], [], "hexpm", "55a94c0f552249fc1a3dd9cd2d3ab9de9d3c89b559c2bd01121f824834f24746"},
   "mimerl": {:hex, :mimerl, "1.2.0", "67e2d3f571088d5cfd3e550c383094b47159f3eee8ffa08e64106cdf5e981be3", [:rebar3], [], "hexpm", "f278585650aa581986264638ebf698f8bb19df297f66ad91b18910dfc6e19323"},
+  "murmur": {:hex, :murmur, "1.0.3", "ade5e9cdb86300645abf72abbe064a87bc943678df2567986d720a70c8f48214", [:mix], [], "hexpm", "02b4dda9327ac6650cc9a8d007ec5244b609397b9110c5ad8549224eef9afc60"},
   "nary_tree": {:git, "https://github.com/BandanaPandey/nary_tree.git", "fb1eeb69e38e43c9f9ffb54297cef52dff5c928d", []},
   "nimble_csv": {:hex, :nimble_csv, "0.7.0", "52f23ce46eee304d063d1716e19e45ea544bd751536bc53e5d41cb7fc0ca9405", [:mix], [], "hexpm", "e7051e7a95b5c4f26512af5805c320ee9185e752d949f048bf318fedef86cccc"},
   "nimble_parsec": {:hex, :nimble_parsec, "0.6.0", "32111b3bf39137144abd7ba1cce0914533b2d16ef35e8abc5ec8be6122944263", [:mix], [], "hexpm", "27eac315a94909d4dc68bc07a4a83e06c8379237c5ea528a9acff4ca1c873c52"},

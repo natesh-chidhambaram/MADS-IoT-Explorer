@@ -16,12 +16,12 @@ defmodule AcqdatCore.Alerts.Server do
   end
 
   def handle_cast({:gateway_alert, data}, _status) do
-    response = AlertCreation.traverse_ids(data, "gateway")
-    {:noreply, response}
+    AlertCreation.traverse_ids(data, "gateway")
+    {:noreply, %{}}
   end
 
   def handle_cast({:sensor_alert, data}, _status) do
-    response = AlertCreation.traverse_ids(data, "sensor")
-    {:noreply, response}
+    AlertCreation.traverse_ids(data, "sensor")
+    {:noreply, %{}}
   end
 end

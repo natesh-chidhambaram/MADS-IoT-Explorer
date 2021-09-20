@@ -20,6 +20,8 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
   `status`: The status wheather that alert is resolved or not.
   """
 
+  @type t :: %__MODULE__{}
+
   schema "acqdat_alert_rules" do
     field(:rule_name, :string)
     field(:entity, :string, null: false)
@@ -77,20 +79,6 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
     changeset
     |> unique_constraint(:slug, name: :acqdat_alert_rules_slug_index)
     |> unique_constraint(:uuid, name: :acqdat_alert_rules_uuid_index)
-  end
-
-  defp add_uuid(%Ecto.Changeset{valid?: true} = changeset) do
-    changeset
-    |> put_change(:uuid, UUID.uuid1(:hex))
-  end
-
-  defp add_slug(%Ecto.Changeset{valid?: true} = changeset) do
-    changeset
-    |> put_change(:slug, Slugger.slugify(random_string(12)))
-  end
-
-  defp random_string(length) do
-    :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
   end
 
   defp parameters_changeset(schema, params) do

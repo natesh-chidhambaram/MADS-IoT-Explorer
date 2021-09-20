@@ -54,7 +54,7 @@ defmodule AcqdatCore.Alerts.Model.AlertRulesTest do
       policy_name: "Elixir.AcqdatCore.Alerts.Policies.RangeBased",
       entity_parameters: param1,
       uuid: UUID.uuid1(:hex),
-      communication_medium: ["in-app, sms, e-mail"],
+      communication_medium: ["in-app", "sms", "e-mail"],
       slug: Slugger.slugify(random_string(12)),
       rule_parameters: %{lower_limit: 10, upper_limit: 20},
       # here 0 is added because this is getting converted into charlist

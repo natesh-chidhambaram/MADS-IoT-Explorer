@@ -70,13 +70,26 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.all(query)
   end
 
-  def get(id) when is_integer(id) do
+  def get(identifier, preloads \\ [])
+
+  def get(id, preloads) when is_integer(id) do
     case Repo.get(Sensor, id) do
       nil ->
         {:error, "not found"}
 
       sensor ->
-        sensor = Repo.preload(sensor, [:sensor_type])
+        sensor = Repo.preload(sensor, [:sensor_type] ++ preloads)
+        {:ok, sensor}
+    end
+  end
+
+  def get(query, preloads) when is_map(query) do
+    case Repo.get_by(Sensor, query) do
+      nil ->
+        {:error, "not found"}
+
+      sensor ->
+        sensor = Repo.preload(sensor, [:sensor_type] ++ preloads)
         {:ok, sensor}
     end
   end
@@ -126,22 +139,20 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.update_all(query2, set: [gateway_id: gateway.id])
   end
 
-  def get(query) when is_map(query) do
-    case Repo.get_by(Sensor, query) do
-      nil ->
-        {:error, "not found"}
-
-      sensor ->
-        {:ok, sensor}
-    end
-  end
-
   def get_all_by_sensor_type(entity_ids) do
     Sensor
     |> where([sensor], sensor.sensor_type_id in ^entity_ids)
     |> order_by(:id)
     |> Repo.all()
   end
+
+  # def get_all_by_sensor_type(sensor_type_id) do
+  #   from(sensor in Sensor,
+  #     where: sensor.sensor_type_id == ^sensor_type_id,
+  #     select: map(sensor, [:id, :name])
+  #   )
+  #   |> Repo.all()
+  # end
 
   def get_all_by_parent_gateway(gateway_ids) do
     Sensor
@@ -209,18 +220,17 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.all(query) |> Repo.preload(preloads)
   end
 
-  def get_all_by_sensor_type(sensor_type_id) do
-    from(sensor in Sensor,
-      where: sensor.sensor_type_id == ^sensor_type_id,
-      select: map(sensor, [:id, :name])
-    )
-    |> Repo.all()
-  end
-
   def child_sensors_query(root) when not is_list(root) do
     from(sensor in Sensor,
       preload: [:sensor_type, :gateway],
       where: sensor.parent_id == ^root.id and sensor.parent_type == "Asset"
+    )
+  end
+
+  def child_sensors_query(asset_ids) when is_list(asset_ids) do
+    from(sensor in Sensor,
+      preload: [:sensor_type],
+      where: sensor.parent_id in ^asset_ids and sensor.parent_type == "Asset"
     )
   end
 
@@ -232,13 +242,6 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
           sensor.sensor_type_id in ^sensor_type_ids
     )
     |> Repo.all()
-  end
-
-  def child_sensors_query(asset_ids) when is_list(asset_ids) do
-    from(sensor in Sensor,
-      preload: [:sensor_type],
-      where: sensor.parent_id in ^asset_ids and sensor.parent_type == "Asset"
-    )
   end
 
   def child_sensors(root) do
@@ -345,75 +348,72 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
 
     gateway_data = Gateway.get_names_by_ids(gateway_ids)
 
-    output =
-      Enum.reduce(data_grouped_by_gateway, workbook, fn {gateway_id, value}, acc ->
-        {:ok, workbook} = acc
+    Enum.reduce(data_grouped_by_gateway, workbook, fn {gateway_id, value}, acc ->
+      {:ok, workbook} = acc
 
-        if gateway_id != nil do
-          [header_uuids, header_names] =
-            Enum.reduce(value, [[], []], fn entity, [header_uuids, header_names] ->
-              if Enum.member?(input_params, "#{entity.sensor_id}_#{entity.param_uuid}") do
-                [
-                  ["#{entity.sensor_id}_#{entity.param_uuid}" | header_uuids],
-                  ["#{entity.sensor_name} #{entity.param_name}" | header_names]
-                ]
-              else
-                [header_uuids, header_names]
-              end
-            end)
+      if gateway_id != nil do
+        [header_uuids, header_names] =
+          Enum.reduce(value, [[], []], fn entity, [header_uuids, header_names] ->
+            if Enum.member?(input_params, "#{entity.sensor_id}_#{entity.param_uuid}") do
+              [
+                ["#{entity.sensor_id}_#{entity.param_uuid}" | header_uuids],
+                ["#{entity.sensor_name} #{entity.param_name}" | header_names]
+              ]
+            else
+              [header_uuids, header_names]
+            end
+          end)
 
-          header_uuids = Enum.uniq(header_uuids)
-          header_names = Enum.uniq(header_names)
+        header_uuids = Enum.uniq(header_uuids)
+        header_names = Enum.uniq(header_names)
 
-          [%{name: gateway_name}] =
-            Enum.filter(gateway_data, fn data -> data.id == gateway_id end)
+        [%{name: gateway_name}] = Enum.filter(gateway_data, fn data -> data.id == gateway_id end)
 
-          trans =
-            Repo.transaction(
-              fn ->
-                SensorDataDomain.filter_by_date_query_wrt_format(sensor_ids, date_from, date_to)
-                |> Repo.stream(max_rows: 1000)
-                |> Stream.map(fn grouped_data ->
-                  [timestamp, sensor_data] = grouped_data
-                  rows_len = length(header_uuids)
+        trans =
+          Repo.transaction(
+            fn ->
+              SensorDataDomain.filter_by_date_query_wrt_format(sensor_ids, date_from, date_to)
+              |> Repo.stream(max_rows: 1000)
+              |> Stream.map(fn grouped_data ->
+                [timestamp, sensor_data] = grouped_data
+                rows_len = length(header_uuids)
 
-                  empty_row = List.duplicate(nil, rows_len)
+                empty_row = List.duplicate(nil, rows_len)
 
-                  res =
-                    Enum.reduce(sensor_data, [], fn {sensor_id, params}, acc ->
-                      res =
-                        Enum.reduce(params, empty_row, fn param, acc1 ->
-                          indx_pos =
-                            Enum.find_index(header_uuids, fn x ->
-                              x == "#{sensor_id}_#{param["uuid"]}"
-                            end)
-
-                          if indx_pos != nil,
-                            do: List.replace_at(acc1, indx_pos, param["value"]),
-                            else: acc1
+                res =
+                  Enum.reduce(sensor_data, [], fn {sensor_id, params}, _acc ->
+                    Enum.reduce(params, empty_row, fn param, acc1 ->
+                      indx_pos =
+                        Enum.find_index(header_uuids, fn x ->
+                          x == "#{sensor_id}_#{param["uuid"]}"
                         end)
+
+                      if indx_pos != nil,
+                        do: List.replace_at(acc1, indx_pos, param["value"]),
+                        else: acc1
                     end)
+                  end)
 
-                  res =
-                    if res != empty_row do
-                      ["#{timestamp}" | res]
-                    end
+                res =
+                  if res != empty_row do
+                    ["#{timestamp}" | res]
+                  end
 
-                  res
-                end)
-                |> Enum.filter(&(!is_nil(&1)))
-                |> Enum.to_list()
-                |> gen_xls_sheet(header_names, gateway_name, workbook)
-              end,
-              timeout: :infinity
-            )
+                res
+              end)
+              |> Enum.filter(&(!is_nil(&1)))
+              |> Enum.to_list()
+              |> gen_xls_sheet(header_names, gateway_name, workbook)
+            end,
+            timeout: :infinity
+          )
 
-          trans
-        else
-          acc
-        end
-      end)
-      |> write_to_xls()
+        trans
+      else
+        acc
+      end
+    end)
+    |> write_to_xls()
   end
 
   def gen_xls_sheet(data, headers, gateway_name, workbook) do
