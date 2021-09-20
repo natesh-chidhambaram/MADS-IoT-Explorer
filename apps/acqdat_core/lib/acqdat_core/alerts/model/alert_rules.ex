@@ -52,7 +52,7 @@ defmodule AcqdatCore.Alerts.Model.AlertRules do
         where: rule.entity == ^entity and rule.entity_id == ^entity_id and rule.status == ^:enable
       )
 
-    List.first(Repo.all(query))
+    Repo.all(query)
   end
 
   def get_all(%{page_size: page_size, page_number: page_number}) do
@@ -64,13 +64,26 @@ defmodule AcqdatCore.Alerts.Model.AlertRules do
   """
 
   def send_alert(alert) do
-    Enum.reduce(alert.recepient_ids, [], fn recipient, acc ->
-      if recipient != 0 do
-        user = User.extract_email(recipient)
-        acc ++ [user]
-      else
-        acc
-      end
-    end)
+    case Map.has_key?(alert, :recepient_ids) do
+      true ->
+        Enum.reduce(alert.recepient_ids, [], fn recipient, acc ->
+          if recipient != 0 do
+            user = User.extract_email(recipient)
+            acc ++ [user]
+          else
+            acc
+          end
+        end)
+
+      false ->
+        Enum.reduce(alert.recipient_ids, [], fn recipient, acc ->
+          if recipient != 0 do
+            user = User.extract_email(recipient.id)
+            acc ++ [user]
+          else
+            acc
+          end
+        end)
+    end
   end
 end

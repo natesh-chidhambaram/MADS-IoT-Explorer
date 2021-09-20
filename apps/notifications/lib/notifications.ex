@@ -5,33 +5,34 @@ defmodule Notifications do
   alias AcqdatCore.Model.RoleManagement.User
   alias AcqdatCore.Mailer.AlertNotification
   alias AcqdatCore.Mailer
-  alias AcqdatCore.Model.EntityManagement.Organisation
   alias Notifications.Vendors
 
-  def send_notifications(alert, alert_rule, vendor) do
+  def send_notifications(alert, vendor) do
     Enum.each(alert.communication_medium, fn medium ->
       case medium do
-        "e-mail" -> send_alert(alert)
-        "sms" -> send_sms(alert, alert_rule, vendor)
-        "whatsapp" -> send_message(alert, alert_rule, vendor)
+        "email" -> send_alert(alert)
+        "sms" -> send_sms(alert, vendor)
+        "whatsapp" -> send_message(alert, vendor)
         "in-app" -> nil
+        "e-mail" -> send_alert(alert)
       end
     end)
   end
 
   def send_alert(alert) do
-    Enum.each(alert.recepient_ids, fn recipient ->
+    Enum.each(alert.recipient_ids, fn recipient ->
       if recipient != 0 do
         user = User.extract_email(recipient)
 
-        AlertNotification.email(user.user_credentials.email, alert, user)
+        user.user_credentials.email
+        |> AlertNotification.email(alert, user)
         |> Mailer.deliver_now()
       end
     end)
   end
 
-  defp send_sms(alert, alert_rule, vendor) do
-    contacts = create_contact_list(alert_rule)
+  defp send_sms(alert, vendor) do
+    contacts = create_contact_list(alert)
     message = create_message(alert)
 
     case List.first(contacts) do
@@ -45,8 +46,8 @@ defmodule Notifications do
     end
   end
 
-  defp send_message(alert, alert_rule, vendor) do
-    contacts = create_contact_list(alert_rule)
+  defp send_message(alert, vendor) do
+    contacts = create_contact_list(alert)
     message = create_message(alert)
 
     case List.first(contacts) do
@@ -81,15 +82,15 @@ defmodule Notifications do
     "
   end
 
-  defp create_contact_list(alert_rule) do
+  defp create_contact_list(alert) do
     user_phone_numbers =
-      Enum.reduce(alert_rule.recepient_ids, [], fn recipient, acc ->
+      Enum.reduce(alert.recipient_ids, [], fn recipient, acc ->
         if recipient != 0 do
           user = User.extract_email(recipient)
           acc ++ [user.user_credentials.phone_number]
         end
       end)
 
-    user_phone_numbers ++ alert_rule.phone_numbers
+    user_phone_numbers ++ alert.phone_numbers
   end
 end

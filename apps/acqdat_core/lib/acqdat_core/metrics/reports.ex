@@ -115,7 +115,7 @@ defmodule AcqdatCore.Metrics.Reports do
   end
 
   def range_report(org_id, start_date, end_date, type, group_action) when type == "list" do
-    grp_parms = if group_action == "weekly", do: "7 days", else: "1 days"
+    grp_parms = if group_action == "weekly", do: "7 days", else: "30 days"
 
     query =
       from(
@@ -191,7 +191,7 @@ defmodule AcqdatCore.Metrics.Reports do
 
   # TODO: Needs to refactor this code
   def range_report(org_id, start_date, end_date, type, group_action) when type == "highlights" do
-    grp_parms = if group_action == "weekly", do: "7 days", else: "1 days"
+    grp_parms = if group_action == "weekly", do: "7 days", else: "30 days"
 
     query =
       from(

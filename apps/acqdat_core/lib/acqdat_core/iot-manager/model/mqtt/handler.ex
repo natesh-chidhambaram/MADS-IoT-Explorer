@@ -2,7 +2,9 @@ defmodule AcqdatCore.Model.IotManager.MQTT.Handler do
   use Tortoise.Handler
   alias AcqdatCore.IotManager.DataDump.Worker.Server
   alias AcqdatCore.IotManager.CommandHandler
+  alias AcqdatCore.Schema.IoTManager.GatewayError
   alias AcqdatCore.Model.IotManager.MQTTBroker
+  alias AcqdatCore.Repo
   require Logger
 
   def init(args) do
@@ -73,7 +75,11 @@ defmodule AcqdatCore.Model.IotManager.MQTT.Handler do
     Server.create(params)
   end
 
-  defp log_data_if_valid({:error, data}, _topic) do
-    Logger.error("JSON parse error", addtitional: Map.from_struct(data))
+  defp log_data_if_valid({:error, data}, meta) do
+    error = Map.put(data, :error, "JSON Parser Error")
+    params = %{data: data, error: error, gateway_uuid: meta.gateway_uuid}
+    changeset = GatewayError.changeset(%GatewayError{}, params)
+    {:ok, data} = Repo.insert(changeset)
+    Logger.error("JSON parse error", additional: Map.from_struct(data))
   end
 end

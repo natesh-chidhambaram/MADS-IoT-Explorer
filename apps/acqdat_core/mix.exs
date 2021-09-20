@@ -33,7 +33,7 @@ defmodule AcqdatCore.MixProject do
   def application do
     [
       mod: {AcqdatCore.Application, []},
-      extra_applications: [:logger, :arc_ecto, :scrivener_ecto, :virta]
+      extra_applications: [:logger, :arc_ecto, :scrivener_ecto, :virta, :murmur]
     ]
   end
 
@@ -106,7 +106,10 @@ defmodule AcqdatCore.MixProject do
       {:redix, ">= 0.0.0"},
 
       # writer for the MS Excel OpenXML format
-      {:elixlsx, "~> 0.4.2"}
+      {:elixlsx, "~> 0.4.2"},
+
+      ## hashing
+      {:murmur, "~> 1.0"}
     ]
   end
 

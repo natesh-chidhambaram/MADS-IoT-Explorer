@@ -9,7 +9,8 @@ defmodule AcqdatCore.Alerts.Supervisor do
 
   def init(_args) do
     children = [
-      Server
+      Server,
+      {Task.Supervisor, name: AlertGroupingSupervisor}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

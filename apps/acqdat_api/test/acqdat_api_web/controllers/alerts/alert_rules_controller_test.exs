@@ -69,7 +69,7 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesControllerTest do
 
     test "update alert rule", %{conn: conn, alert_rule: alert_rule, org: org} do
       params = %{
-        communication_medium: ["sms, e-mail"]
+        communication_medium: ["sms", "e-mail"]
       }
 
       # first inserted the alert rule
@@ -243,7 +243,7 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesControllerTest do
       policy_name: "Elixir.AcqdatCore.Alerts.Policies.RangeBased",
       entity_parameters: param1,
       uuid: UUID.uuid1(:hex),
-      communication_medium: ["in-app, sms, e-mail"],
+      communication_medium: ["in-app", "sms", "e-mail"],
       slug: Slugger.slugify(random_string(12)),
       rule_parameters: %{lower_limit: 10, upper_limit: 20},
       recepient_ids: [0, user1.id, user2.id],
