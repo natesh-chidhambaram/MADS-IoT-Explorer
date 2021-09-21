@@ -56,6 +56,7 @@ COPY apps/acqdat_api/ apps/acqdat_api/
 COPY apps/acqdat_core/ apps/acqdat_core/
 COPY apps/acqdat_iot/ apps/acqdat_iot/
 COPY apps/virta/ apps/virta/
+COPY apps/notifications/ apps/notifications/
 
 # Fetch the application dependencies and build the application
 RUN mix deps.get

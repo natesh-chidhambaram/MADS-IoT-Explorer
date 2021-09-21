@@ -109,7 +109,10 @@ defmodule AcqdatCore.MixProject do
       {:elixlsx, "~> 0.4.2"},
 
       ## hashing
-      {:murmur, "~> 1.0"}
+      {:murmur, "~> 1.0"},
+
+      ## notifications
+      {:notifications, in_umbrella: true}
     ]
   end
 
