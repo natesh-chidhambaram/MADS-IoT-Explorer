@@ -1,0 +1,88 @@
+# ---------------------------------------------------------------------
+# Filename: create_env.yml
+# Author: H
+# This creates the VPC, VPC Switch, Security groups in a nested manner.
+# The EC2 instances are then created into this 
+# ---------------------------------------------------------------------
+- name: create vpc
+  hosts: localhost
+  connection: local
+  vars:
+    alicloud_access_key: "LTAI5t6q6RYvoQ8gAdreatS7"
+    alicloud_secret_key: "dKgPNA2i2vSbafNvmG1M2rpK07HbBp"
+    alicloud_region: "ap-southeast-1"
+    state: present
+    cidr_block: 192.168.0.0/16
+    vpc_name: Demo
+    description: Demo VPC
+    group_name: MIP_SEC_GROUP
+    image: ubuntu_20_04_x64_20G_alibase_20210623.vhd
+    instance_type: ecs.t6-c1m2.large
+    assign_public_ip: True
+    max_bandwidth_out: 10
+    host_name: testcluster02
+    password: mipTest@11
+    system_disk_category: cloud_efficiency
+    system_disk_size: 100
+    internet_charge_type: PayByTraffic
+    security_groups: ["MIP_SEC_GROUP"]
+    force: True
+# ----------------END VARS--------------------------------------------
+  tasks:
+    - name: create vpc
+      ali_vpc:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        state: '{{ state }}'
+        cidr_block: '{{ cidr_block }}'
+        vpc_name: '{{ vpc_name }}'
+        description: '{{ description }}'
+      register: vpc
+
+    - name: create vswitch
+      ali_vswitch:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        cidr_block: '{{ cidr_block }}'
+        vswitch_name: vswitch_by_ansible
+        vpc_id: '{{ vpc.vpc.id }}'
+        description: Virtual Switch created by Ansible
+        zone_id: ap-southeast-1a
+      register: v_switch
+
+    - name: create security grp
+      ali_security_group:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        group_name: '{{ group_name}}'
+        vpc_id: '{{vpc.vpc.id}}'
+        rules:
+           - ip_protocol: tcp
+             port_range: 22/22
+             source_cidr_ip: 0.0.0.0/0
+             priority: 1
+      register: sec_group
+
+    - name: launch ECS instance in VPC network
+      ali_instance:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        image: '{{ image }}'
+        instance_name: "ubuntu_ansible"
+        system_disk_category: '{{ system_disk_category }}'
+        system_disk_size: '{{ system_disk_size }}'
+        instance_type: '{{ instance_type }}'
+        assign_public_ip: '{{ assign_public_ip }}'
+        vswitch_id: '{{ v_switch.vswitch.id}}'
+        security_groups: '{{ sec_group.group.id}}'
+        internet_charge_type: '{{ internet_charge_type }}'
+        max_bandwidth_out: '{{ max_bandwidth_out }}'
+        instance_tags:
+            Name: created_one
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+      register: instance

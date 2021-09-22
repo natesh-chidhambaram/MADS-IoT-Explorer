@@ -1,0 +1,24 @@
+# ---------------------------------------------------------------------
+# Filename: copy_env.yml
+# Author: H
+# This copies the environment variables from teh location into profile
+# for making it available across sessions 
+# ---------------------------------------------------------------------
+- hosts: web
+  become_user: root
+  vars:
+    project_env_src: "/home/ansible/source/env/local.env"
+  tasks:
+
+#    - name: Adding example line KUBECONFIG variable
+#      #      delegate_to: localhost
+#      copy:
+#        content: export KUBECONFIG="/etc/config/admin.conf/admin.conf"
+#        dest: /etc/profile.d/kubeconfig.sh
+#
+    - name: Copying env file to profile.d
+      #delegate_to: localhost
+      copy:
+        src: '{{project_env_src}}'
+        dest: /etc/profile.d/mip_local.sh
+        remote_src: yes

@@ -1,0 +1,28 @@
+# ---------------------------------------------------------------------
+# Filename: git_clone.yml
+# Author: H
+# This clones the repository from github into the destination folder
+# ---------------------------------------------------------------------
+---
+- name: Clone the repository from github 
+  hosts: web
+
+  vars_prompt:
+
+   - name: "githubuser"
+     prompt: "Enter your github username"
+     private: no
+   - name: "githubpassword"
+     prompt: "Enter your github password"
+     private: yes
+  tasks:
+   - name: Install pexpect
+     pip:
+       name: pexpect
+   - name: Git clone
+     expect:
+       command: git clone -b staging https://github.com/DataKrewTech/MADS-IoT-Explorer.git /home/ansible/source
+       responses:
+         Username: "{{ githubuser }}"
+         Password: "{{ githubpassword }}"
+         # no_log: true

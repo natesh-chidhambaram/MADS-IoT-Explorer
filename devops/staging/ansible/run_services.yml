@@ -1,0 +1,42 @@
+# ---------------------------------------------------------------------
+# Filename: run_services.yml
+# Author: H
+# This runs the docker compose file created already using the env vars
+# First stops any runing services and starts them again
+# ---------------------------------------------------------------------
+- name: Run services 
+  hosts: web
+  gather_facts: no
+  become: True
+  become_user: root
+  vars:
+    project_src: "/home/ansible/source/devops/staging"
+  tasks:
+    - name: Setup environment variables
+      shell: source ../../env/local.env
+      args:
+        chdir: '{{project_src}}'
+        executable: /bin/bash
+
+    - name: Tear down existing services
+      docker_compose:
+        project_src: '{{project_src}}'
+        state: absent
+
+    - name: Create and start services
+      docker_compose:
+        project_src: '{{project_src}}'
+      register: output
+
+    - debug:
+        var: output
+
+    - name: Run again
+      docker_compose:
+        project_src: '{{project_src}}'
+        build: no
+      register: output
+
+    - debug:
+        var: output
+
