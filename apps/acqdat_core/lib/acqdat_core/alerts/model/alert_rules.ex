@@ -55,8 +55,13 @@ defmodule AcqdatCore.Alerts.Model.AlertRules do
     Repo.all(query)
   end
 
-  def get_all(%{page_size: page_size, page_number: page_number}) do
-    AlertRules |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+  def get_all(%{page_size: page_size, page_number: page_number, org_id: org_id}) do
+    query =
+      from(alert_rules in AlertRules,
+        where: alert_rules.org_id == ^org_id
+      )
+
+    query |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
   end
 
   @doc """
