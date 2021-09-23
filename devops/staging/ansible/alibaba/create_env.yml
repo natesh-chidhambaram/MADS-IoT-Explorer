@@ -8,8 +8,6 @@
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: "LTAI5t6q6RYvoQ8gAdreatS7"
-    alicloud_secret_key: "dKgPNA2i2vSbafNvmG1M2rpK07HbBp"
     alicloud_region: "ap-southeast-1"
     state: present
     cidr_block: 192.168.0.0/16
