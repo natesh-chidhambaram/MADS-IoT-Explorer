@@ -10,5 +10,4 @@ defmodule AcqdatApiWeb.Validators.IotManager.Data do
       gateway_id!: :integer
     })
   )
-
 end
