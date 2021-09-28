@@ -169,6 +169,7 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
 
   defp update_gateway(gateway, %{"mapped_parameters" => mapped_parameters} = params) do
     sensor_ids = extract_sensor_ids_from_parameters(mapped_parameters)
+    params = Map.put_new(params, "version", Decimal.add(gateway.version, "0.1"))
     changeset = Gateway.update_changeset(gateway, params)
 
     case Repo.update(changeset) do

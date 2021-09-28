@@ -33,6 +33,7 @@ defmodule AcqdatCore.Schema.IotManager.Gateway do
     field(:current_location, :map)
     field(:channel, :string, null: false)
     field(:status, :integer, virtual: true)
+    field(:version, :decimal, precision: 2, scale: 1, default: 1.0)
     field(:image_url, :string)
     field(:image, :any, virtual: true)
     field(:static_data, {:array, :map})
@@ -55,7 +56,7 @@ defmodule AcqdatCore.Schema.IotManager.Gateway do
     timestamps(type: :utc_datetime)
   end
 
-  @required_params ~w(name access_token slug uuid org_id project_id channel parent_id parent_type)a
+  @required_params ~w(name access_token version slug uuid org_id project_id channel parent_id parent_type)a
   @optional_params ~w(description serializer current_location image_url static_data mapped_parameters timestamp_mapping)a
   @embedded_required_params ~w(name uuid data_type)a
   @embedded_optional_params ~w(unit)a
