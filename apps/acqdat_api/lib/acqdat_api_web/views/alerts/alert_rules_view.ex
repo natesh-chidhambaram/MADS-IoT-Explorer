@@ -7,11 +7,18 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesView do
     {:ok, severity} = AlertSeverityEnum.dump(alert_rules.severity)
     recepient_ids = AlertRules.send_alert(alert_rules)
 
+    grouping_meta =
+      case alert_rules.grouping_meta do
+        nil -> nil
+        _ -> Map.from_struct(alert_rules.grouping_meta)
+      end
+
     %{
       app: alert_rules.app,
       rule_name: alert_rules.rule_name,
       org_id: alert_rules.org_id,
       assignee_ids: alert_rules.assignee_ids,
+      grouping_meta: grouping_meta,
       communication_medium: alert_rules.communication_medium,
       creator_id: alert_rules.creator_id,
       phone_numbers: alert_rules.phone_numbers,
@@ -57,6 +64,20 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesView do
     %{
       id: recepient.id,
       email: recepient.user_credentials.email
+    }
+  end
+
+  def render("grouping_rules.json", %{grouping_rules: grouping_rules}) do
+    %{
+      grouping_rules: render_many(grouping_rules, AlertRulesView, "grouping_rule.json")
+    }
+  end
+
+  def render("grouping_rule.json", %{alert_rules: alert_rules}) do
+    %{
+      rule_name: alert_rules.rule_name,
+      rule_module: alert_rules,
+      rule_preferences: alert_rules.rule_preferences
     }
   end
 end

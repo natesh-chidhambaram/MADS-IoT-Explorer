@@ -6,6 +6,7 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesController do
   use AcqdatApiWeb, :authorized_controller
   alias AcqdatApi.Alerts.AlertRules
   alias AcqdatApiWeb.Alerts.AlertRuleErrorHelper
+  alias AcqdatCore.Alerts.Model.Grouping
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.Alerts.AlertRules
 
@@ -40,6 +41,14 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesController do
         conn
         |> send_error(401, AlertRuleErrorHelper.error_message(:unauthorized))
     end
+  end
+
+  def grouping_rules(conn, _params) do
+    grouping_rules = Grouping.list_grouping()
+
+    conn
+    |> put_status(200)
+    |> render("grouping_rules.json", %{grouping_rules: grouping_rules})
   end
 
   def update(conn, params) do

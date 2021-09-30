@@ -115,6 +115,7 @@ defmodule AcqdatApiWeb.Router do
 
       scope "/", Alerts do
         resources "/policies", PolicyController, only: [:index]
+        get "/grouping_rules", AlertRulesController, :grouping_rules
         resources "/alert-rules", AlertRulesController, except: [:new, :edit]
         get "/alert_rule_listing", AlertFilterListingController, :alert_rule_listing
         get "/alert_apps", AlertFilterListingController, :alert_app_listing

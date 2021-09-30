@@ -260,10 +260,9 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
   end
 
   def delete(%{channel: "mqtt"} = gateway) do
-    BrokerCredentials.delete(gateway.uuid)
-
     case Repo.delete(gateway) do
       {:ok, gateway} ->
+        BrokerCredentials.delete(gateway.uuid)
         {:ok, gateway}
 
       {:error, gateway} ->

@@ -250,6 +250,13 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesControllerTest do
       assignee_ids: [user3.id],
       policy_type: ["user"],
       severity: "Low",
+      grouping_meta: %{
+        module: "Elixir.AcqdatCore.Alerts.Schema.Grouping.TimeGrouping",
+        grouping_parameters: %{
+          value: 1,
+          unit: "hours"
+        }
+      },
       status: "enable",
       app: "iot_manager",
       project_id: sensor.project_id,

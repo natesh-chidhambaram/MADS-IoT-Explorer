@@ -162,13 +162,7 @@ defmodule AcqdatCore.Alerts.AlertCreation do
         rule_uuid: alert_rule.uuid,
         parameter_uuid: parameter.uuid
       },
-      grouping_meta: %{
-        module: "Elixir.AcqdatCore.Alerts.Schema.Grouping.TimeGrouping",
-        grouping_parameters: %{
-          value: 1,
-          unit: "hours"
-        }
-      },
+      grouping_meta: alert_rule.grouping_meta,
       org_id: alert_rule.org_id,
       project_id: alert_rule.project_id,
       recipient_ids: format_recipient_ids(alert_rule.recepient_ids),
