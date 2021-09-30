@@ -44,6 +44,12 @@ defmodule AcqdatCore.Alerts.Model.Grouping do
     |> update_and_notify(params, hash)
   end
 
+  def list_grouping() do
+    Enum.reduce(AlertGroupingEnum.__enum_map__(), [], fn {key, value}, acc ->
+      acc ++ [key]
+    end)
+  end
+
   ################### Pricvate Functions #############################
 
   # Note that we are working separately with alert and alert_event_logs because

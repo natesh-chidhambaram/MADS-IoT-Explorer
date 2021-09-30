@@ -3,6 +3,7 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
   AlertRules are the rules which an entity follows before creating alerts.
   """
   use AcqdatCore.Schema
+  alias AcqdatCore.Alerts.Schema.AlertRulesGrouping
 
   @typedoc """
   `entity`: entity name for which this alert rule is defined example: "sensor", "gateway"
@@ -34,6 +35,8 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
       field(:data_type, :string, null: false)
       field(:unit, :string)
     end
+
+    embeds_one(:grouping_meta, AlertRulesGrouping, on_replace: :update)
 
     field(:uuid, :string, null: false)
     field(:communication_medium, {:array, :string})
@@ -69,6 +72,7 @@ defmodule AcqdatCore.Alerts.Schema.AlertRules do
     alert_rule
     |> cast(params, @permitted_params)
     |> cast_embed(:entity_parameters, with: &parameters_changeset/2)
+    |> cast_embed(:grouping_meta, with: &AlertRulesGrouping.changeset/2)
     |> add_uuid()
     |> add_slug()
     |> validate_required(@required_params)

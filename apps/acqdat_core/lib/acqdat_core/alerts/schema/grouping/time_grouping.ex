@@ -2,6 +2,7 @@ defmodule AcqdatCore.Alerts.Schema.Grouping.TimeGrouping do
   alias AcqdatCore.Alerts.Schema.Grouping
 
   @behaviour Grouping
+  @rule "Group Alerts by Time"
 
   use AcqdatCore.Schema
   @values ~w(seconds minutes hours days)s
@@ -14,6 +15,23 @@ defmodule AcqdatCore.Alerts.Schema.Grouping.TimeGrouping do
 
   @parameters ~w(value unit previous_time)a
   @required ~w(value unit previous_time)a
+
+  def rule_name() do
+    @rule
+  end
+
+  def rule_preferences() do
+    [
+      %{
+        key: :value,
+        type: :integer
+      },
+      %{
+        key: :unit,
+        type: [:minutes, :seconds, :hours, :days]
+      }
+    ]
+  end
 
   def changeset(%__MODULE__{} = grouping, params) do
     grouping
