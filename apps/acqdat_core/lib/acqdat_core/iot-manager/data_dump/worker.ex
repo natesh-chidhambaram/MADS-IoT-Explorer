@@ -2,6 +2,7 @@ defmodule AcqdatCore.IotManager.DataDump.Worker do
   use GenServer
   alias AcqdatCore.IotManager.DataParser.Worker.Server
   alias AcqdatCore.Model.IotManager.GatewayDataDump, as: GDDModel
+  alias AcqdatCore.Helper.Redis
   alias AcqdatCore.Schema.IoTManager.GatewayError
   alias AcqdatCore.Repo
 
@@ -19,6 +20,10 @@ defmodule AcqdatCore.IotManager.DataDump.Worker do
   end
 
   defp verify_data_dump({:ok, data}, _params) do
+    gateway_uuid = 123 # get the gateway_uuid from data
+    gateway_value = 456 # get the value to store
+    Redis.insert_gateway_activity(gateway_uuid, gateway_value)
+
     GenServer.cast(Server, {:data_parser, data})
     {:ok, data}
   end

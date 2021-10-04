@@ -54,6 +54,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
     case conn.status do
       nil ->
         with {:ok, hits} <- ElasticSearch.gateway_indexing(params) do
+          # gatewayData value from Redis %{hits: hits, gateways: []}
           conn |> put_status(200) |> render("hits.json", %{hits: hits})
         else
           {:error, message} ->

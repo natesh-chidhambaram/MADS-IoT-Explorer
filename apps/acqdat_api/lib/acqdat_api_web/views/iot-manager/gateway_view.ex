@@ -219,6 +219,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
     }
   end
 
+  # additional param GatewayData
   def render("hits.json", %{hits: hits}) do
     %{
       gateways: render_many(hits.hits, GatewayView, "source.json"),
