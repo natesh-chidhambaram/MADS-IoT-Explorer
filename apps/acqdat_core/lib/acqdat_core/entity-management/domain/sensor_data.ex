@@ -403,7 +403,7 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
       data in subquery,
       cross_join: c in fragment("unnest(?)", data.parameters),
       where: fragment("?->>'uuid'=?", c, ^param_uuid),
-      order_by: [asc: data.inserted_timestamp],
+      order_by: [desc: data.inserted_timestamp],
       select: [
         fragment("EXTRACT(EPOCH FROM ?)*1000", data.inserted_timestamp),
         fragment("CAST(ROUND(CAST (?->>'value' AS NUMERIC), 2) AS FLOAT)", c)
@@ -420,7 +420,7 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
       cross_join: c in fragment("unnest(?)", data.parameters),
       where: fragment("?->>'uuid'=?", c, ^param_uuid),
       group_by: fragment("date_filt"),
-      order_by: fragment("date_filt"),
+      order_by: [desc: fragment("date_filt")],
       select: [
         fragment(
           "EXTRACT(EPOCH FROM (time_bucket(?::VARCHAR::INTERVAL, ?)))*1000 as date_filt",
@@ -441,7 +441,7 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
       cross_join: c in fragment("unnest(?)", data.parameters),
       where: fragment("?->>'uuid'=?", c, ^param_uuid),
       group_by: fragment("date_filt"),
-      order_by: fragment("date_filt"),
+      order_by: [desc: fragment("date_filt")],
       select: [
         fragment(
           "EXTRACT(EPOCH FROM (time_bucket(?::VARCHAR::INTERVAL, ?)))*1000 as date_filt",
@@ -462,7 +462,7 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
       cross_join: c in fragment("unnest(?)", data.parameters),
       where: fragment("?->>'uuid'=?", c, ^param_uuid),
       group_by: fragment("date_filt"),
-      order_by: fragment("date_filt"),
+      order_by: [desc: fragment("date_filt")],
       select: [
         fragment(
           "EXTRACT(EPOCH FROM (time_bucket(?::VARCHAR::INTERVAL, ?)))*1000 as date_filt",
@@ -483,7 +483,7 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
       cross_join: c in fragment("unnest(?)", data.parameters),
       where: fragment("?->>'uuid'=?", c, ^param_uuid),
       group_by: fragment("date_filt"),
-      order_by: fragment("date_filt"),
+      order_by: [desc: fragment("date_filt")],
       select: [
         fragment(
           "EXTRACT(EPOCH FROM (time_bucket(?::VARCHAR::INTERVAL, ?)))*1000 as date_filt",
@@ -504,7 +504,7 @@ defmodule AcqdatCore.Domain.EntityManagement.SensorData do
       cross_join: c in fragment("unnest(?)", data.parameters),
       where: fragment("?->>'uuid'=?", c, ^param_uuid),
       group_by: fragment("date_filt"),
-      order_by: fragment("date_filt"),
+      order_by: [desc: fragment("date_filt")],
       select: [
         fragment(
           "EXTRACT(EPOCH FROM (time_bucket(?::VARCHAR::INTERVAL, ?)))*1000 as date_filt",
