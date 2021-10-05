@@ -3,6 +3,9 @@ defmodule AcqdatApi.EntityManagement.Sensor do
   alias AcqdatCore.ElasticSearch
   import AcqdatApiWeb.Helpers
 
+  defdelegate delete_data(atom, params), to: SensorModel
+  defdelegate get_all_sensors_data(params), to: SensorModel
+
   def create(attrs) do
     verify_sensor(SensorModel.create(sensor_create_attrs(attrs)))
   end

@@ -110,7 +110,15 @@ defmodule AcqdatApiWeb.Router do
         resources "/gateways", GatewayController, except: [:new, :edit]
         post "/gateways/:gateway_id/store_commands", GatewayController, :store_commands
         get("/hierarchy", GatewayController, :hierarchy)
+        get("/gateway_data/:gateway_id", DataController, :gateway_data)
+        delete("/gateway_data_delete", DataController, :gateway_data_delete)
         get "/gateways/:gateway_id/data_dump_index", GatewayController, :data_dump_index
+
+        get "/gateways/:gateway_id/data_dump_error_index",
+            GatewayController,
+            :data_dump_error_index
+
+        delete "/gateways/:gateway_id/delete_data_dump", GatewayController, :delete_data_dump
       end
 
       scope "/", Alerts do
@@ -240,6 +248,8 @@ defmodule AcqdatApiWeb.Router do
       get("/projects/:project_id/entities", EntityController, :fetch_hierarchy)
 
       scope "/projects/:project_id" do
+        get("/sensors_data/:sensor_id", SensorController, :sensors_data)
+        delete("/sensor_data_delete", SensorController, :sensor_data_delete)
         resources "/asset_types", AssetTypeController, only: [:create, :update, :delete, :index]
         get "/assets/search", AssetController, :search_assets, as: :search_assets
         get "/sensors/search", SensorController, :search_sensors, as: :search_sensors

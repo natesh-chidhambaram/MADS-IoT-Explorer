@@ -253,6 +253,75 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     Repo.all(Sensor)
   end
 
+  def delete_data(:sensors_data, %{"org_id" => org_id, "project_id" => project_id} = params) do
+    query =
+      SensorsData
+      |> where([data], data.org_id == ^org_id and data.project_id == ^project_id)
+      |> where(^filter_where(params))
+
+    Repo.delete_all(query)
+  end
+
+  def get_all_sensors_data(%{
+        page_size: page_size,
+        page_number: page_number,
+        sensor_id: sensor_id,
+        org_id: org_id,
+        project_id: project_id
+      }) do
+    query1 =
+      from(data in SensorsData,
+        where:
+          data.sensor_id == ^sensor_id and data.org_id == ^org_id and
+            data.project_id == ^project_id
+      )
+
+    query =
+      from(data in query1,
+        cross_join: c in fragment("unnest(?)", data.parameters),
+        order_by: [asc: data.inserted_timestamp],
+        select: [
+          fragment("?->>'name'", c),
+          fragment("?->>'uuid'", c),
+          data.inserted_timestamp,
+          fragment("CAST(ROUND(CAST (?->>'value' AS NUMERIC), 2) AS FLOAT)", c),
+          data.sensor_id
+        ]
+      )
+
+    query |> Repo.paginate(page: page_number, page_size: page_size)
+  end
+
+  defp filter_where(params) do
+    Enum.reduce(params, dynamic(true), fn
+      {"sensor_id", sensor_id}, dynamic_query ->
+        dynamic(
+          [data],
+          ^dynamic_query and data.sensor_id == ^sensor_id
+        )
+
+      {"gateway_id", gateway_id}, dynamic_query ->
+        dynamic(
+          [data],
+          ^dynamic_query and data.gateway_id == ^gateway_id
+        )
+
+      {"start_time", start_date}, dynamic_query ->
+        end_date = params["end_time"]
+        {:ok, start_time, _notrequired} = DateTime.from_iso8601(start_date)
+        {:ok, end_time, _notrequired} = DateTime.from_iso8601(end_date)
+
+        dynamic(
+          [data],
+          ^dynamic_query and
+            fragment("? BETWEEN ? AND ?", data.inserted_timestamp, ^start_time, ^end_time)
+        )
+
+      {_, _}, dynamic_query ->
+        dynamic_query
+    end)
+  end
+
   def delete(sensor_id) do
     sensor = Repo.get(Sensor, sensor_id)
 

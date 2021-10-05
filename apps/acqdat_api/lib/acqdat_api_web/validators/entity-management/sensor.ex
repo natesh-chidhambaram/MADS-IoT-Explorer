@@ -16,6 +16,16 @@ defmodule AcqdatApiWeb.Validators.EntityManagement.Sensor do
   )
 
   defparams(
+    verify_sensor_index_params(%{
+      page_size: :integer,
+      page_number: :integer,
+      sensor_id!: :integer,
+      project_id!: :integer,
+      org_id!: :integer
+    })
+  )
+
+  defparams(
     verify_index_params(%{
       page_size: :integer,
       page_number: :integer,

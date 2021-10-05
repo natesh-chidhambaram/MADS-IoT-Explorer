@@ -40,6 +40,25 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
     ModelHelper.paginated_response(data_dump_with_preloads, paginated_data_dump)
   end
 
+  def get_all_error(%{
+        page_size: page_size,
+        page_number: page_number,
+        org_uuid: org_uuid,
+        project_uuid: project_uuid,
+        gateway_uuid: gateway_uuid
+      }) do
+    query =
+      from(data_dump in GatewayError,
+        where: data_dump.gateway_uuid == ^gateway_uuid
+      )
+
+    paginated_data_dump = query |> Repo.paginate(page: page_number, page_size: page_size)
+
+    data_dump_with_preloads = paginated_data_dump.entries
+
+    ModelHelper.paginated_response(data_dump_with_preloads, paginated_data_dump)
+  end
+
   @doc """
   Deletes all the gateway related errors a week before the provided timestamp.
   """
@@ -52,6 +71,43 @@ defmodule AcqdatCore.Model.IotManager.GatewayDataDump do
       )
 
     Repo.delete_all(query)
+  end
+
+  def delete_data_dumps(
+        :data_dump,
+        %{"org_uuid" => org_uuid, "project_uuid" => project_uuid, "gateway_uuid" => gateway_uuid} =
+          params
+      ) do
+    query =
+      GatewayDataDump
+      |> where(
+        [data],
+        data.project_uuid == ^project_uuid and data.org_uuid == ^org_uuid and
+          data.gateway_uuid == ^gateway_uuid
+      )
+      |> where(^filter_where(params))
+
+    Repo.delete_all(query)
+  end
+
+  defp filter_where(params) do
+    Enum.reduce(params, dynamic(true), fn
+      {"start_time", start_date}, dynamic_query ->
+        end_date = String.to_integer(params["end_time"])
+        start_date = String.to_integer(start_date)
+
+        {:ok, start_time} = DateTime.from_unix(start_date)
+        {:ok, end_time} = DateTime.from_unix(end_date)
+
+        dynamic(
+          [data],
+          ^dynamic_query and
+            fragment("? BETWEEN ? AND ?", data.inserted_timestamp, ^start_time, ^end_time)
+        )
+
+      {_, _}, dynamic_query ->
+        dynamic_query
+    end)
   end
 
   #################### private functions ##############################

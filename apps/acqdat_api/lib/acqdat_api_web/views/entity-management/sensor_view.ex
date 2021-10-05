@@ -168,4 +168,24 @@ defmodule AcqdatApiWeb.EntityManagement.SensorView do
       acc ++ [hits.id]
     end)
   end
+
+  def render("sensor_index.json", sensor_data) do
+    %{
+      sensor_data: render_many(sensor_data.entries, SensorView, "sensor_data.json"),
+      page_number: sensor_data.page_number,
+      page_size: sensor_data.page_size,
+      total_entries: sensor_data.total_entries,
+      total_pages: sensor_data.total_pages
+    }
+  end
+
+  def render("sensor_data.json", %{sensor: sensor}) do
+    %{
+      parameter_name: Enum.at(sensor, 0),
+      parameter_uuid: Enum.at(sensor, 1),
+      inserted_timestamp: Enum.at(sensor, 2),
+      value: Enum.at(sensor, 3),
+      sensor_id: Enum.at(sensor, 4)
+    }
+  end
 end

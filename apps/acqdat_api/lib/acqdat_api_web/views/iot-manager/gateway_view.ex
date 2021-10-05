@@ -202,11 +202,31 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
     }
   end
 
+  def render("data_dump_error_index.json", data_dump) do
+    %{
+      data_dumps: render_many(data_dump.entries, GatewayView, "data_dump_error_show.json"),
+      page_number: data_dump.page_number,
+      page_size: data_dump.page_size,
+      total_entries: data_dump.total_entries,
+      total_pages: data_dump.total_pages
+    }
+  end
+
   def render("data_dump_show.json", %{gateway: data_dump}) do
+    {:ok, date_dump_time} = DateTime.from_unix(data_dump.inserted_timestamp)
+
     %{
       data: data_dump.data,
       gateway_uuid: data_dump.gateway_uuid,
-      inserted_timestamp: data_dump.inserted_timestamp
+      inserted_timestamp: date_dump_time
+    }
+  end
+
+  def render("data_dump_error_show.json", %{gateway: data_dump}) do
+    %{
+      data: data_dump.data,
+      error: data_dump.error,
+      gateway_uuid: data_dump.gateway_uuid
     }
   end
 

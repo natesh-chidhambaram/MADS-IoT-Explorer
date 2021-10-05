@@ -23,7 +23,9 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
               :show,
               :store_commands,
               :associate_sensors,
-              :data_dump_index
+              :data_dump_index,
+              :delete_data_dump,
+              :data_dump_error_index
             ]
 
   plug :load_hierarchy_tree_with_gateway when action in [:hierarchy]
@@ -361,6 +363,75 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
     end
   end
 
+  def delete_data_dump(conn, params) do
+    case conn.status do
+      nil ->
+        params = add_uuid(conn, params)
+
+        case GatewayDataDump.delete_data_dumps(:data_dump, params) do
+          {0, nil} ->
+            conn
+            |> put_status(200)
+            |> json(%{no_date: "Data doesn't exists in the selected timeframe"})
+
+          {_integer, nil} ->
+            conn
+            |> put_status(200)
+            |> json(%{success: "Data deleted successfully"})
+
+          _ ->
+            conn
+            |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
+        end
+
+      404 ->
+        conn
+        |> send_error(404, GatewayErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
+    end
+  end
+
+  def data_dump_index(conn, params) do
+    changeset = verify_index_params(params)
+
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        data = add_meta(conn, data)
+        {:list, data_dump} = {:list, GatewayDataDump.get_all(data, [:org, :project])}
+
+        conn
+        |> put_status(200)
+        |> render("data_dump_index.json", data_dump)
+
+      404 ->
+        conn
+        |> send_error(403, "Unauthorized")
+    end
+  end
+
+  def data_dump_error_index(conn, params) do
+    changeset = verify_index_params(params)
+
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        data = add_meta(conn, data)
+        {:list, data_dump} = {:list, GatewayDataDump.get_all_error(data)}
+
+        conn
+        |> put_status(200)
+        |> render("data_dump_error_index.json", data_dump)
+
+      404 ->
+        conn
+        |> send_error(403, "Unauthorized")
+    end
+  end
+
   ############################### private functions #########################
 
   defp add_image_to_params(conn, params) do
@@ -440,29 +511,17 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
     end
   end
 
-  def data_dump_index(conn, params) do
-    changeset = verify_index_params(params)
-
-    case conn.status do
-      nil ->
-        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
-        data = add_meta(conn, data)
-        {:list, data_dump} = {:list, GatewayDataDump.get_all(data, [:org, :project])}
-
-        conn
-        |> put_status(200)
-        |> render("data_dump_index.json", data_dump)
-
-      404 ->
-        conn
-        |> send_error(403, "Unauthorized")
-    end
-  end
-
   defp add_meta(conn, data) do
     data
     |> Map.put(:org_uuid, conn.assigns.org.uuid)
     |> Map.put(:project_uuid, conn.assigns.project.uuid)
     |> Map.put(:gateway_uuid, conn.assigns.gateway.uuid)
+  end
+
+  defp add_uuid(conn, data) do
+    data
+    |> Map.put("org_uuid", conn.assigns.org.uuid)
+    |> Map.put("project_uuid", conn.assigns.project.uuid)
+    |> Map.put("gateway_uuid", conn.assigns.gateway.uuid)
   end
 end
