@@ -9,7 +9,7 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
 
   plug AcqdatApiWeb.Plug.LoadOrg
   plug AcqdatApiWeb.Plug.LoadProject
-  plug :load_sensor when action in [:update, :delete, :show]
+  plug :load_sensor when action in [:update, :delete, :show, :sensors_data, :sensor_data_delete]
 
   def search_sensors(conn, params) do
     case conn.status do
@@ -29,6 +29,57 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
       401 ->
         conn
         |> send_error(401, SensorErrorHelper.error_message(:unauthorized))
+    end
+  end
+
+  def sensors_data(conn, params) do
+    changeset = verify_sensor_index_params(params)
+
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        {:list, sensors_data} = {:list, Sensor.get_all_sensors_data(data)}
+
+        conn
+        |> put_status(200)
+        |> render("sensor_index.json", sensors_data)
+
+      404 ->
+        conn
+        |> send_error(404, DataErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, DataErrorHelper.error_message(:unauthorized))
+    end
+  end
+
+  def sensor_data_delete(conn, params) do
+    case conn.status do
+      nil ->
+        case Sensor.delete_data(:sensors_data, params) do
+          {0, nil} ->
+            conn
+            |> put_status(200)
+            |> json(%{no_date: "Data doesn't exists in the selected timeframe"})
+
+          {_integer, nil} ->
+            conn
+            |> put_status(200)
+            |> json(%{success: "Data deleted successfully"})
+
+          _ ->
+            conn
+            |> send_error(404, DataErrorHelper.error_message(:resource_not_found))
+        end
+
+      404 ->
+        conn
+        |> send_error(404, DataErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, DataErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -174,6 +225,19 @@ defmodule AcqdatApiWeb.EntityManagement.SensorController do
   end
 
   defp load_sensor(%{params: %{"id" => id}} = conn, _params) do
+    {id, _} = Integer.parse(id)
+
+    case SensorModel.get(id) do
+      {:ok, sensor} ->
+        assign(conn, :sensor, sensor)
+
+      {:error, _message} ->
+        conn
+        |> put_status(404)
+    end
+  end
+
+  defp load_sensor(%{params: %{"sensor_id" => id}} = conn, _params) do
     {id, _} = Integer.parse(id)
 
     case SensorModel.get(id) do
