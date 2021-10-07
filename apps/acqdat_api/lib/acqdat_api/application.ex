@@ -15,6 +15,8 @@ defmodule AcqdatApi.Application do
       AcqdatApi.Helper.RedisSupervisor,
       AcqdatApi.DataInsights.FactTableSupervisor,
       # AcqdatApi.DataInsights.FactTableGenWorker,
+      {Registry, keys: :unique, name: GatewayRegistry},
+      AcqdatApi.Helper.GatewayDataSupervisor,
       AcqdatApi.DataInsights.PivotTableGenWorker,
       {Task.Supervisor, name: Datakrew.TaskSupervisor}
       # Starts a worker by calling: AcqdatApi.Worker.start_link(arg)

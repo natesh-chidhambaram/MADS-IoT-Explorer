@@ -170,6 +170,8 @@ defmodule AcqdatApiWeb.RoleManagement.ProjectController do
              {:create, {:ok, project}} <- {:create, Project.create(data)},
              {:update_image, {:ok, project}} <-
                {:update_image, update_image(conn, project, params)} do
+          AcqdatApi.Helper.GatewayDataSupervisor.start_child(project.uuid)
+
           Task.start_link(fn ->
             ElasticSearch.create_project("org", project, %{id: project.org_id})
           end)
@@ -209,6 +211,7 @@ defmodule AcqdatApiWeb.RoleManagement.ProjectController do
               ImageDeletion.delete_operation(project.avatar, "project/#{project.id}")
             end
 
+            AcqdatApi.Helper.GatewayDataSupervisor.stop_child(project.uuid)
             ElasticSearch.delete_data("org", project)
 
             conn

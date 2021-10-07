@@ -46,12 +46,13 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
     }
   end
 
-  def render("show.json", %{gateway: gateway}) do
+  def render("show.json", %{gateway: gateway, gateway_status: gateway_status}) do
     %{
       uuid: gateway.uuid,
       type: "Gateway",
       id: gateway.id,
       name: gateway.name,
+      gateway_active: gateway_status,
       access_token: gateway.access_token,
       serializer: gateway.serializer,
       channel_details: selective_rendering(gateway),

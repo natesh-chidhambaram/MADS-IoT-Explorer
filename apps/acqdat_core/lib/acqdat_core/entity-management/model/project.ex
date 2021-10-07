@@ -123,6 +123,11 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
     Project |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
   end
 
+  def get_all_uuids() do
+    query = from(p in Project,  select: p.uuid )
+     Repo.all(query)
+  end
+
   def get_all(%{page_size: page_size, page_number: page_number, org_id: org_id}, preloads) do
     query =
       from(project in Project,

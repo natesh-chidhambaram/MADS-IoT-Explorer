@@ -10,6 +10,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
   alias AcqdatCore.ElasticSearch
   alias AcqdatApiWeb.IotManager.GatewayErrorHelper
   alias AcqdatCore.Model.IotManager.GatewayDataDump
+  alias AcqdatApi.Helper.GatewayDataActivity
 
   plug AcqdatApiWeb.Plug.LoadOrg
   plug AcqdatApiWeb.Plug.LoadProject when action not in [:all_gateways, :fetch_projects]
@@ -177,13 +178,18 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
     case conn.status do
       nil ->
         gateway = conn.assigns.gateway
+        project = conn.assigns.project
+        # TODO - test if we have project or project uuid
+
         gateway = Gateway.load_associations(gateway)
         tree_mapping = Gateway.tree_mapping(gateway.mapped_parameters)
         gateway = Map.put_new(gateway, :tree_mapping, tree_mapping)
+        did_gateway_receive_msg_recently_flag = GatewayDataActivity.check_if_active(project.uuid, gateway.uuid)
 
         conn
         |> put_status(200)
-        |> render("show.json", %{gateway: gateway})
+        |> render("show.json", %{gateway: gateway,
+        gateway_status: did_gateway_receive_msg_recently_flag})
 
       404 ->
         conn
