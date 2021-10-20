@@ -9,7 +9,7 @@ defmodule AcqdatCore.Repo.Migrations.EntityAlertRules do
       add :uuid, :string, null: false
       add :slug, :string, null: false
       add :app, EntityAppEnum.type(), null: false
-      add :partials, {:array, :map}, null: false
+      add :partials, :map, null: false
       add :communication_medium, {:array, :string}
       add :recepient_ids, {:array, :integer}
       add :assignee_ids, {:array, :integer}

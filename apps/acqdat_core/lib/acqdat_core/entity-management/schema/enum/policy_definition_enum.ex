@@ -9,6 +9,11 @@ defenum(EntityPolicyDefinitionModuleEnum,
   "Elixir.AcqdatCore.EntityManagement.Policies.LowerThreshold": 2
 )
 
+defenum(EntityEnum,
+  SensorType: 0,
+  Sensor: 1
+)
+
 # Creates an enum for different policy definitions.
 defenum(EntityPolicyDefinitionEnum,
   "Alert when data is outside a bounded range": 0,
