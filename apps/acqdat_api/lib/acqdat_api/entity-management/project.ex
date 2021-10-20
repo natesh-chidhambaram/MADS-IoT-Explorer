@@ -13,11 +13,18 @@ defmodule AcqdatApi.EntityManagement.Project do
   end
 
   def create(attrs) do
-    verify_project(
-      attrs
-      |> project_create_attrs()
-      |> ProjectModel.create()
-    )
+    case verify_project(
+           attrs
+           |> project_create_attrs()
+           |> ProjectModel.create()
+         ) do
+      {:ok, project} ->
+        AcqdatApi.Helper.GatewayDataSupervisor.start_child(project.uuid)
+        {:ok, project}
+
+      {:error, message} ->
+        {:error, message}
+    end
   end
 
   def get_all_users(project) do

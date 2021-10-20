@@ -124,8 +124,8 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
   end
 
   def get_all_uuids() do
-    query = from(p in Project,  select: p.uuid )
-     Repo.all(query)
+    query = from(p in Project, select: p.uuid)
+    Repo.all(query)
   end
 
   def get_all(%{page_size: page_size, page_number: page_number, org_id: org_id}, preloads) do
@@ -196,6 +196,7 @@ defmodule AcqdatCore.Model.EntityManagement.Project do
     case Repo.delete(changeset) do
       {:ok, project} ->
         project = project |> Repo.preload(leads: :user_credentials, users: :user_credentials)
+        AcqdatApi.Helper.GatewayDataSupervisor.stop_child(project.uuid)
         {:ok, project}
 
       {:error, project} ->
