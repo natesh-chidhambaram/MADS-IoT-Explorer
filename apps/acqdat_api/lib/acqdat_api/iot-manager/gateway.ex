@@ -11,6 +11,11 @@ defmodule AcqdatApi.IotManager.Gateway do
   defdelegate associate_sensors(gateway, sensor_ids), to: Gateway
   defdelegate return_sensor_gatewap_mapping(org_id, project_id), to: Sensor
 
+  def get_latest_gateway(id) do
+    {:ok, gateway} = Gateway.get_by_id(id)
+    gateway
+  end
+
   def create(params) do
     params = params_extraction(params)
     Gateway.create(params) |> verify_gateway()

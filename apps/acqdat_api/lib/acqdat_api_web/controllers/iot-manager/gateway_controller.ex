@@ -121,11 +121,12 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
 
             case Map.has_key?(response.source, :version) do
               true ->
-                send_error(
-                  conn,
-                  403,
-                  GatewayErrorHelper.error_message(:version_updated, response)
-                )
+                gateway = Gateway.get_latest_gateway(gateway.id)
+                tree_mapping = Gateway.tree_mapping(gateway.mapped_parameters)
+                gateway = Map.put_new(gateway, :tree_mapping, tree_mapping)
+                conn
+                |> put_status(403)
+                |> render("show.json", %{gateway: gateway})
 
               false ->
                 send_error(conn, 400, response)

@@ -110,12 +110,12 @@ defmodule AcqdatApiWeb.IotManager.GatewayControllerTest do
 
       response = conn |> json_response(403)
 
-      assert response == %{
-               "detail" => "Version has been already updated so kindly fetch the latest one",
-               "source" => %{"version" => ["Version Updated"]},
-               "status_code" => 403,
-               "title" => "Version updated"
-             }
+      assert Map.has_key?(response, "parent_id")
+      assert Map.has_key?(response, "parent_type")
+      assert Map.has_key?(response, "name")
+      assert Map.has_key?(response, "id")
+      assert Map.has_key?(response, "org_id")
+      assert Map.has_key?(response, "slug")
     end
 
     test "update gateway parent to project", %{conn: conn, gateway: gateway} do
