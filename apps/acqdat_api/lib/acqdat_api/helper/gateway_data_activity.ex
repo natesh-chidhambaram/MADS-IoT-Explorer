@@ -1,6 +1,6 @@
 defmodule AcqdatApi.Helper.GatewayDataActivity do
-  use Genserver
-  @timeout_seconds 5
+  use GenServer
+  @timeout_seconds 120
 
   def start_link(project_uuid) do
     GenServer.start_link(__MODULE__, project_uuid, name: via_tuple(project_uuid))
