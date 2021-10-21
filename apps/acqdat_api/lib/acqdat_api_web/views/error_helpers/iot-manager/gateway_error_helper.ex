@@ -30,4 +30,12 @@ defmodule AcqdatApiWeb.IotManager.GatewayErrorHelper do
       source: nil
     }
   end
+
+  def error_message(:version_updated, message) do
+    %{
+      title: "Version updated",
+      error: "Version has been already updated so kindly fetch the latest one",
+      source: message.source
+    }
+  end
 end

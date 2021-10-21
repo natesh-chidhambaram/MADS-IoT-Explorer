@@ -92,6 +92,32 @@ defmodule AcqdatApiWeb.IotManager.GatewayControllerTest do
       assert response["name"] == "Water Plant"
     end
 
+    test "update gateway name and mapped parameters", %{conn: conn, gateway: gateway} do
+      mapped_parameters = create_mapped_parameters()
+
+      data = %{
+        "mapped_parameters" => mapped_parameters,
+        "version" => "1.1",
+        "name" => "Water Plant"
+      }
+
+      conn =
+        put(
+          conn,
+          Routes.gateway_path(conn, :update, gateway.org_id, gateway.project_id, gateway.id),
+          data
+        )
+
+      response = conn |> json_response(403)
+
+      assert response == %{
+               "detail" => "Version has been already updated so kindly fetch the latest one",
+               "source" => %{"version" => ["Version Updated"]},
+               "status_code" => 403,
+               "title" => "Version updated"
+             }
+    end
+
     test "update gateway parent to project", %{conn: conn, gateway: gateway} do
       data = %{
         parent_id: gateway.project_id,
@@ -401,6 +427,23 @@ defmodule AcqdatApiWeb.IotManager.GatewayControllerTest do
        project: project,
        org: org
      }}
+  end
+
+  defp create_mapped_parameters() do
+    %{
+      "sensor 1 testing parameter" => %{
+        "entity" => "sensor",
+        "entity_id" => 1,
+        "type" => "value",
+        "value" => "asdgiasgdja"
+      },
+      "sensor 2 testing parameter" => %{
+        "entity" => "sensor",
+        "entity_id" => 1,
+        "type" => "value",
+        "value" => "sadgjhasgdhjgasjkd"
+      }
+    }
   end
 
   defp build_asset_root_map(name, org_id, org_name, project_id, creator_id, asset_type_id) do

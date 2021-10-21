@@ -169,17 +169,36 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
 
   defp update_gateway(gateway, %{"mapped_parameters" => mapped_parameters} = params) do
     sensor_ids = extract_sensor_ids_from_parameters(mapped_parameters)
-    params = Map.put_new(params, "version", Decimal.add(gateway.version, "0.1"))
-    changeset = Gateway.update_changeset(gateway, params)
 
-    case Repo.update(changeset) do
-      {:ok, gateway} ->
-        GModel.associate_sensors(gateway |> Repo.preload([:sensors]), sensor_ids)
-        gateway = Repo.get!(Gateway, gateway.id) |> Repo.preload([:sensors])
-        {:ok, gateway}
+    upcoming_version =
+      case Map.has_key?(params, "version") do
+        false -> gateway.version
+        true -> Decimal.from_float(String.to_float(params["version"]))
+      end
 
-      {:error, message} ->
-        {:error, message}
+    case Decimal.cmp(gateway.version, upcoming_version) do
+      :eq ->
+        params =
+          case Map.has_key?(params, "version") do
+            false -> Map.put_new(params, "version", Decimal.add(gateway.version, "0.1"))
+            true -> Map.replace!(params, "version", Decimal.add(gateway.version, "0.1"))
+          end
+
+        changeset = Gateway.update_changeset(gateway, params)
+
+        case Repo.update(changeset) do
+          {:ok, gateway} ->
+            GModel.associate_sensors(gateway |> Repo.preload([:sensors]), sensor_ids)
+            gateway = Repo.get!(Gateway, gateway.id) |> Repo.preload([:sensors])
+            {:ok, gateway}
+
+          {:error, message} ->
+            {:error, message}
+        end
+
+      _ ->
+        changeset = Gateway.update_changeset(gateway, params)
+        {:error, Ecto.Changeset.add_error(changeset, :version, "Version Updated")}
     end
   end
 

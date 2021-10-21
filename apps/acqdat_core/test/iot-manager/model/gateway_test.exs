@@ -133,7 +133,7 @@ defmodule AcqdatCore.Model.IotManager.GatewayTest do
       %{sensors: [sensor1, sensor2, sensor3, sensor4], gateway: gateway} = context
       gateway = gateway |> Repo.preload([:sensors])
       mapped_parameters = create_mapped_parameters(sensor1, sensor2)
-      params = %{"mapped_parameters" => mapped_parameters}
+      params = %{"mapped_parameters" => mapped_parameters, "version" => "1.0"}
       earlier_version = gateway.version
       expected_version = Decimal.add(gateway.version, "0.1")
       {:ok, gateway} = Gateway.update(gateway, params)

@@ -119,7 +119,17 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
                 true -> error.error
               end
 
-            send_error(conn, 400, response)
+            case Map.has_key?(response.source, :version) do
+              true ->
+                send_error(
+                  conn,
+                  403,
+                  GatewayErrorHelper.error_message(:version_updated, response)
+                )
+
+              false ->
+                send_error(conn, 400, response)
+            end
         end
 
       404 ->
