@@ -48,6 +48,37 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
 
   def render("show.json", %{gateway: gateway}) do
     %{
+      saved: true,
+      uuid: gateway.uuid,
+      type: "Gateway",
+      id: gateway.id,
+      name: gateway.name,
+      version: gateway.version,
+      access_token: gateway.access_token,
+      serializer: gateway.serializer,
+      channel_details: selective_rendering(gateway),
+      channel: gateway.channel,
+      parent_id: gateway.parent_id,
+      parent_type: gateway.parent_type,
+      slug: gateway.slug,
+      description: gateway.description,
+      tree_mapping: gateway.tree_mapping,
+      static_data: render_many(gateway.static_data, GatewayView, "data.json"),
+      streaming_data: render_many(gateway.streaming_data, GatewayView, "streaming_data.json"),
+      mapped_parameters: gateway.mapped_parameters,
+      current_location: gateway.current_location,
+      org_id: gateway.org_id,
+      image_url: gateway.image_url,
+      org: render_one(gateway.org, OrganisationView, "org.json"),
+      project: render_one(gateway.project, ProjectView, "project_gateway.json"),
+      sensors: render_many(gateway.sensors, SensorView, "sensor.json"),
+      timestamp_mapping: gateway.timestamp_mapping
+    }
+  end
+
+  def render("show_version.json", %{gateway: gateway}) do
+    %{
+      saved: false,
       uuid: gateway.uuid,
       type: "Gateway",
       id: gateway.id,

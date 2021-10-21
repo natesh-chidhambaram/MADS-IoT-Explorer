@@ -126,8 +126,8 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
                 gateway = Map.put_new(gateway, :tree_mapping, tree_mapping)
 
                 conn
-                |> put_status(422)
-                |> render("show.json", %{gateway: gateway})
+                |> put_status(200)
+                |> render("show_version.json", %{gateway: gateway})
 
               false ->
                 send_error(conn, 400, response)

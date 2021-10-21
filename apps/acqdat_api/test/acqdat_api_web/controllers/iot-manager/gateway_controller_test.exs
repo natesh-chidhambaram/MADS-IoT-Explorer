@@ -108,8 +108,8 @@ defmodule AcqdatApiWeb.IotManager.GatewayControllerTest do
           data
         )
 
-      response = conn |> json_response(422)
-
+      response = conn |> json_response(200)
+      assert Map.has_key?(response, "saved")
       assert Map.has_key?(response, "parent_id")
       assert Map.has_key?(response, "parent_type")
       assert Map.has_key?(response, "name")
