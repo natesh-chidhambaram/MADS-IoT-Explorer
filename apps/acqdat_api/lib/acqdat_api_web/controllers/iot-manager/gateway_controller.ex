@@ -124,8 +124,9 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
                 gateway = Gateway.get_latest_gateway(gateway.id)
                 tree_mapping = Gateway.tree_mapping(gateway.mapped_parameters)
                 gateway = Map.put_new(gateway, :tree_mapping, tree_mapping)
+
                 conn
-                |> put_status(403)
+                |> put_status(422)
                 |> render("show.json", %{gateway: gateway})
 
               false ->

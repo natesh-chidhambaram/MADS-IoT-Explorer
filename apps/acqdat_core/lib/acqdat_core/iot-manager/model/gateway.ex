@@ -61,7 +61,7 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
         {:error, "Gateway not found"}
 
       gateway ->
-       {:ok, gateway |> Repo.preload([:org, :project, :sensors])}
+        {:ok, gateway |> Repo.preload([:org, :project, :sensors])}
     end
   end
 
