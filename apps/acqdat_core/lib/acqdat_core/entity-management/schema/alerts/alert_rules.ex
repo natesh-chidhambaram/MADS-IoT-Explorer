@@ -5,6 +5,7 @@ defmodule AcqdatCore.Schema.EntityManagement.AlertRules do
   use AcqdatCore.Schema
   alias AcqdatCore.EntityManagement.Schema.AlertRulesGrouping
   alias AcqdatCore.EntityManagement.Schema.Partials
+  alias AcqdatCore.Schema.EntityManagement.Entities
 
   @typedoc """
   `entity`: entity name for which this alert rule is defined example: "sensor", "gateway"
@@ -27,6 +28,7 @@ defmodule AcqdatCore.Schema.EntityManagement.AlertRules do
   schema "entity_alert_rules" do
     field(:rule_name, :string)
     embeds_many(:partials, Partials)
+    embeds_many(:entities, Entities)
 
     embeds_one(:grouping_meta, AlertRulesGrouping, on_replace: :update)
 
@@ -70,5 +72,23 @@ defmodule AcqdatCore.Schema.EntityManagement.AlertRules do
     changeset
     |> unique_constraint(:slug, name: :acqdat_alert_rules_slug_index)
     |> unique_constraint(:uuid, name: :acqdat_alert_rules_uuid_index)
+  end
+end
+
+defmodule AcqdatCore.Schema.EntityManagement.Entities do
+  use AcqdatCore.Schema
+
+  @primary_key false
+  embedded_schema do
+    field(:entity, :string)
+    field(:entity_id, :integer)
+  end
+
+  @params ~w(entity entity_id)a
+
+  def changeset(%__MODULE__{} = recipient, params) do
+    recipient
+    |> cast(params, @params)
+    |> validate_required(@params)
   end
 end
