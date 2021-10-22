@@ -13,14 +13,21 @@ defmodule AcqdatApi.Helper.GatewayDataSupervisor do
     Supervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+  @spec start_child(any) :: {:error, any} | {:ok, :undefined | pid} | {:ok, :undefined | pid, any}
   def start_child(project_uuid) do
     child_specification = prepare_child_spec(project_uuid)
     Supervisor.start_child(__MODULE__, child_specification)
   end
 
   def stop_child(project_uuid) do
-    child_id = GatewayDataActivity.get_process_id(project_uuid)
-    Supervisor.delete_child(__MODULE__, child_id)
+    child_i = GatewayDataActivity.get_process_id(project_uuid)
+    child_id = GenServer.whereis(child_i)
+    IO.inspect(child_id, label: "child id ")
+    # IO.inspect(Supervisor.which_children(__MODULE__))
+    # IO.inspect  Supervisor.delete_child(__MODULE__, child_id)
+    IO.inspect  Supervisor.terminate_child(__MODULE__, child_id)
+
+  #  IO.inspect GenServer.stop(child_id)
   end
 
   def prepare_child_spec(project_uuid) do
