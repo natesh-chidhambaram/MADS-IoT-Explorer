@@ -66,7 +66,7 @@ RUN mix deps.compile
 RUN mix release
 
 # ---- Application Stage ----
-FROM alpine AS app
+FROM elixir:1.9.1-alpine AS app
 
 ENV LANG=C.UTF-8
 
