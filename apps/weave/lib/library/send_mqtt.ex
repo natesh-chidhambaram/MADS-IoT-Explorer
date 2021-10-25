@@ -28,7 +28,7 @@ defmodule Weave.Library.SendMqtt do
           context
         ) do
       with _args <- Enum.map(projections, fn projector -> projector.(event) end) do
-	Weave.Constant.delay
+        Weave.Constant.delay()
         {:ok, event, context}
       end
     end

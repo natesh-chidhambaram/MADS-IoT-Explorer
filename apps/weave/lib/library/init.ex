@@ -13,9 +13,9 @@ defmodule Weave.Library.Init do
     @spec out_labels(Init.t()) :: [atom(), ...]
     def out_labels(_), do: [:ok, :err]
 
-    @spec exec(Init.t(), map(), Context.t()) :: {atom(), map(), Context.t()}
-    def exec(_, event, context) do
-      {:ok, event, context}
+    @spec exec(Init.t(), %{type: atom()}, Context.t()) :: {atom(), map(), Context.t()}
+    def exec(_, %{type: type} = event, context) do
+      {type, event, context}
     end
   end
 end

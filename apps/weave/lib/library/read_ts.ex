@@ -29,7 +29,7 @@ defmodule Weave.Library.ReadTimeSeries do
           event,
           context
         ) do
-      Weave.Constant.delay
+      Weave.Constant.delay()
       {:ok, Map.put(event, List.first(path), projection.(event)), context}
     end
   end

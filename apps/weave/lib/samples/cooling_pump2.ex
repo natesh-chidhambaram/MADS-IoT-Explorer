@@ -1,4 +1,4 @@
-defmodule CoolingPump do
+defmodule CoolingPump2 do
   alias Weave.{Library, Context, Action}
 
   @moduledoc """
@@ -14,80 +14,73 @@ defmodule CoolingPump do
   sent.
 
   ## Example
-      iex> init_state = {:ok, %{type: :telemetry, t1: 12, t2: 13, t3: 57.2}, %Weave.Context{project: %{pump_state: :on}}}
-      iex> {root, tree} = CoolingPump.build
-      iex> CoolingPump.exec_block(root, init_state, CoolingPump.build)
+  init_state = {:ok, %{type: :telemetry, t1: 12, t2: 13, t3: 57.2}, %Weave.Context{project: %{pump_state: :on}}}
+  {root, tree} = CoolingPump2.build
+  CoolingPump2.exec(:bb0, init_state, CoolingPump2.build)
   """
 
   @type action() :: Action.t()
   @type link() :: {atom(), [atom()]}
-  @type block() :: {[action()], [link()]}
+  @type block() :: {action(), [link()]}
   @type dag :: {root :: atom(), dag :: %{atom() => block()}}
 
   @type state :: {atom(), map(), Context.t()}
-  # 
+  @type result :: {atom(), state(), [result()]}
 
   @spec build() :: dag()
   def build do
     {:bb0,
      %{
-       bb0: {[%Library.Init{}, %Library.Switch{}], [{:bb1, [:telemetry]}, {:bb2, [:telemetry]}]},
-       bb1:
-         {[%Library.MapLambda{options: f2c()}, %Library.WriteTimeSeries{options: project_nil()}],
-          []},
-       bb2:
-         {[
-            %Library.MapLambda{options: f2c()},
-            %Library.MapLambda{options: avg()}
-          ], [{:bb3, [:ok]}, {:bb4, [:ok]}]},
-       bb3: {[%Library.WriteTimeSeries{options: project_nil()}], []},
-       bb4:
-         {[
-            %Library.ReadTimeSeries{options: read_avg()},
-            %Library.MapLambda{options: pump_cond()},
-            %Library.ReadState{options: read_pump()},
-            %Library.Condition{options: pump_update_cond()}
-          ], [{:bb5, [true]}, {:bb6, [true]}]},
-       bb5: {[%Library.SendMqtt{options: project_nil()}], []},
-       bb6: {[%Library.WriteState{options: write_pump()}], []}
+       bb0: {%Library.Init{}, [bb1: [:telemetry], bb4: [:telemetry]]},
+       bb1: {%Library.Switch{}, [bb2: [:telemetry]]},
+       bb2: {%Library.MapLambda{options: f2c()}, [bb3: [:ok]]},
+       bb3: {%Library.WriteTimeSeries{options: project_nil()}, []},
+       bb4: {%Library.MapLambda{options: f2c()}, [bb5: [:ok]]},
+       bb5: {%Library.MapLambda{options: avg()}, [bb6: [:ok], bb7: [:ok]]},
+       bb6: {%Library.WriteTimeSeries{options: project_nil()}, []},
+       bb7: {%Library.ReadTimeSeries{options: read_avg()}, [bb8: [:ok]]},
+       bb8: {%Library.MapLambda{options: pump_cond()}, [bb9: [:ok]]},
+       bb9: {%Library.ReadState{options: read_pump()}, [bb10: [:ok]]},
+       bb10: {%Library.Condition{options: pump_update_cond()}, [bb11: [true], bb12: [true]]},
+       bb11: {%Library.SendMqtt{options: project_nil()}, []},
+       bb12: {%Library.WriteState{options: write_pump()}, []}
      }}
   end
 
-  @type result :: {atom(), state(), [result()]}
+  @spec exec(atom(), state(), dag()) :: result()
+  def exec(bb, {_, event, context}, {_, dag} = pipeline) do
+    {action, links} = dag[bb]
 
-  @spec exec_block(atom(), state(), dag()) :: result()
-  def exec_block(bb, state, {_, tree} = dag) do
-    {actions, links} = tree[bb]
+    case Weave.Action.exec(action, event, context) do
+      {:error, _, _} = xstate ->
+        {bb, xstate, []}
 
-    {exit_label, _exit_event, exit_context} =
-      exit_state =
-      Enum.reduce_while(actions, state, fn
-        _, {:halt, event, context} -> {:halt, {:ok, event, context}}
-        _, {:error, _, _} = state -> {:halt, state}
-        action, {_, event, context} -> {:cont, Action.exec(action, event, context)}
-      end)
+      {xlabel, _xevent, _xcontext} = xstate ->
+        outedges = Enum.filter(links, fn {_, labels} -> Enum.member?(labels, xlabel) end)
 
-    subtasks =
-      Task.Supervisor.async_stream(
-        Weave.TaskSupervisor,
-        links,
-        fn
-          {bb, labels} ->
-            if exit_label in labels do
-              exec_block(bb, exit_state, dag)
-            else
-              {bb, {:ok, exit_state, exit_context}, []}
-            end
-        end,
-        max_concurrency: 6,
-        ordered: false
-      )
-      |> Enum.reduce([], fn
-        {:ok, result}, acc -> [result | acc]
-        {:exit, reason}, acc -> [reason | acc]
-      end)
+        case outedges do
+          [] ->
+            {bb, xstate, []}
 
-    {bb, exit_state, subtasks}
+          [{dest, _} | []] ->
+            {bb, xstate, [exec(dest, xstate, pipeline)]}
+
+          _ ->
+            subtasks =
+              Task.Supervisor.async_stream(
+                Weave.TaskSupervisor,
+                outedges,
+                fn {dest, _} -> exec(dest, xstate, pipeline) end,
+                max_concurrency: 6,
+                ordered: false
+              )
+              |> Enum.reduce([], fn
+                subresult, acc -> [subresult | acc]
+              end)
+
+            {bb, xstate, subtasks}
+        end
+    end
   end
 
   defp project_nil do
