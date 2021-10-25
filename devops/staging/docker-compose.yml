@@ -103,11 +103,14 @@ services:
         MADS_URL: ${MADS_URL}
         REDIS_PORT: ${REDIS_PORT}
         HTTP_URL: ${HTTP_URL}
+        RELEASE_COOKIE: ${RELEASE_COOKIE}
     restart: always
     container_name: web
     ports:
       - 4001:4001
       - 4000:4000
+      - 4369:4369
+      - 9001:9001
     environment:
       APP_IOT_PORT: ${APP_IOT_PORT}
       APP_API_PORT: ${APP_API_PORT}
@@ -136,6 +139,7 @@ services:
       USER_EMAIL: ${USER_EMAIL}
       USER_PASSWORD: ${USER_PASSWORD}
       SENTRY_URL: ${SENTRY_URL}
+      RELEASE_COOKIE: ${RELEASE_COOKIE}
 
     depends_on:
       - database
