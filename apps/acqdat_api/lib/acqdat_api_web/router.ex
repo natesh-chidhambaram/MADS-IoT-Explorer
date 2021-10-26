@@ -446,4 +446,22 @@ defmodule AcqdatApiWeb.Router do
       resources("/tool-type", ToolTypeController, only: [:create, :update, :delete, :index, :show])
     end
   end
+
+   #################### Reports ######################################
+  #  http://localhost:4000/metrics/orgs/1/reports
+   scope "/reports", AcqdatApiWeb.Reports do
+    scope "/" do
+      pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
+
+      get "/templates", TemplateController, :index
+      get "/templates/:id", TemplateController, :show
+
+      post("/templates", TemplateController, :create)
+      put("/templates/:template_id", TemplateController, :update)
+      delete("/templates/:template_id/delete", TemplateController, :delete)
+      # get "/reports", ReportsController, :index
+    end
+  end
+
+
 end
