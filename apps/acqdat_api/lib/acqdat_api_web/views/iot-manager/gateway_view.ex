@@ -254,6 +254,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
 
   def render("data_dump_show.json", %{gateway: data_dump}) do
     {:ok, date_dump_time} = DateTime.from_unix(data_dump.inserted_timestamp)
+
     %{
       data: data_dump.data,
       gateway_uuid: data_dump.gateway_uuid,
@@ -263,6 +264,7 @@ defmodule AcqdatApiWeb.IotManager.GatewayView do
 
   def render("data_dump_error_show.json", %{gateway: data_dump}) do
     {:ok, inserted_timestamp_utc} = DateTime.from_unix(data_dump.inserted_timestamp)
+
     %{
       data: data_dump.data,
       error: data_dump.error,

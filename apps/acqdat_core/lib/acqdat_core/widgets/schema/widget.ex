@@ -60,8 +60,9 @@ defmodule AcqdatCore.Widgets.Schema.Widget do
     timestamps(type: :utc_datetime)
   end
 
+  # widget_data_type
   @required ~w(label default_values widget_type_id)a
-  @optional ~w(properties image_url widget_data_type policies category classification)a
+  @optional ~w(properties image_url policies category classification)a
   @permitted @required ++ @optional
 
   @spec changeset(

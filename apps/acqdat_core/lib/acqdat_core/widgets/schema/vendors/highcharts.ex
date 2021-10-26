@@ -440,23 +440,24 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
   # ]
 
   def fetch_highchart_details(widget_inst, filter_params) do
-    case aggregation_func(widget_inst.widget.widget_data_type, filter_params) do
-      true ->
-        widget_inst |> gen_series_data(filter_params)
+    widget_inst |> gen_series_data(filter_params)
+    # case aggregation_func(widget_inst.widget.widget_data_type, filter_params) do
+    #   true ->
+    #     widget_inst |> gen_series_data(filter_params)
 
-      false ->
-        filter_params = Map.replace!(filter_params, :aggregate_func, "no")
-        widget_inst |> gen_series_data(filter_params)
-    end
+    #   false ->
+    #     filter_params = Map.replace!(filter_params, :aggregate_func, "no")
+    #     widget_inst |> gen_series_data(filter_params)
+    # end
   end
 
-  defp aggregation_func(_widget_data_type, "count") do
-    true
-  end
+  # defp aggregation_func(_widget_data_type, "count") do
+  #   true
+  # end
 
-  defp aggregation_func(widget_data_type, _filter_params) do
-    !(Enum.member?(widget_data_type, "string") or Enum.member?(widget_data_type, "boolean"))
-  end
+  # defp aggregation_func(widget_data_type, _filter_params) do
+  #   !(Enum.member?(widget_data_type, "string") or Enum.member?(widget_data_type, "boolean"))
+  # end
 
   def parse_properties(properties) do
     Enum.reduce(properties, %{}, fn setting, acc ->
