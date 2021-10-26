@@ -3,6 +3,8 @@ defmodule AcqdatCore.Repo.Migrations.EntityAlertRules do
 
   def change do
     create table(:entity_alert_rules) do
+      add(:entity, EntityEnum.type(), null: false)
+      add(:entity_id, :integer, null: false)
       add(:grouping_meta, :map)
       add(:phone_numbers, {:array, :string})
       add :rule_name, :string

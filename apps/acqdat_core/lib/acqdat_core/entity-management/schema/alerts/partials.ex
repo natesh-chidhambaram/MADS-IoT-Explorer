@@ -4,8 +4,6 @@ defmodule AcqdatCore.EntityManagement.Schema.Partials do
   @primary_key false
   embedded_schema do
     field(:name, :string, null: false)
-    field(:entity, EntityEnum, null: false)
-    field(:entity_id, :integer, null: false)
     field(:policy_name, EntityPolicyDefinitionModuleEnum, null: false)
 
     embeds_one :entity_parameters, EntityParameters, on_replace: :delete do
@@ -18,7 +16,7 @@ defmodule AcqdatCore.EntityManagement.Schema.Partials do
     field(:rule_parameters, :map, null: false)
   end
 
-  @params ~w(name entity entity_id policy_name rule_parameters)a
+  @params ~w(name policy_name rule_parameters)a
   @embedded_required_params ~w(name uuid data_type)a
   @embedded_optional_params ~w(unit)a
   @permitted_embedded @embedded_optional_params ++ @embedded_required_params

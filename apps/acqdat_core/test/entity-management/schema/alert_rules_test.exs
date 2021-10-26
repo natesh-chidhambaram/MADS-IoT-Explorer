@@ -23,19 +23,17 @@ defmodule AcqdatCore.EntityManagement.Schema.AlertRulesTest do
     [user1, user2, user3] = insert_list(3, :user)
 
     alert_rule = %{
+      entity: 1,
+      entity_id: sensor.id,
       partials: [
         %{
-          entity: 1,
           name: "partial1",
-          entity_id: sensor.id,
           policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.RangeBased",
           entity_parameters: param1,
           rule_parameters: %{lower_limit: 10, upper_limit: 20}
         },
         %{
-          entity: 1,
           name: "partial1",
-          entity_id: sensor.id,
           policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.RangeBased",
           entity_parameters: param1,
           rule_parameters: %{lower_limit: 10, upper_limit: 20}
