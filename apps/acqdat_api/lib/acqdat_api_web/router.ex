@@ -446,4 +446,16 @@ defmodule AcqdatApiWeb.Router do
       resources("/tool-type", ToolTypeController, only: [:create, :update, :delete, :index, :show])
     end
   end
+
+   #################### Reports ######################################
+   scope "/reports", AcqdatApiWeb.Reports do
+    scope "/" do
+      pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
+
+      get "/templates", TemplateController, :index
+      # get "/reports", ReportsController, :index
+    end
+  end
+
+
 end
