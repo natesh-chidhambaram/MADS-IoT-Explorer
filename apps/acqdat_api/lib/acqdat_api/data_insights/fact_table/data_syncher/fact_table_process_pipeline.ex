@@ -90,7 +90,7 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
     subtree = NaryTree.from_map(subtree)
     leaf_node = NaryTree.get(subtree, leaf_id)
 
-    {:ok, sen} = AcqdatCore.Model.EntityManagement.Sensor.get(event["source_id"])
+    {:ok, sen} = AcqdatCore.Model.EntityManagement.Sensor.get(event["entity_source_id"])
 
     {:ok, asset} = AssetModel.get(sen.parent_id)
 

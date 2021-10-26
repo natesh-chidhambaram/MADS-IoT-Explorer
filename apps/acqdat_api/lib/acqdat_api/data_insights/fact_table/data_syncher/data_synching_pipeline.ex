@@ -2,17 +2,23 @@ defmodule AcqdatApi.DataInsights.FactTable.DataSynchingPipeline do
   use Broadway
   alias AcqdatCore.Model.DataInsights.FactTables
 
+  @queue "data_sync_queue"
+  @exchange "entity_exch"
+
   @producer BroadwayRabbitMQ.Producer
-  @producer_config [
-    queue: "data_sync_queue",
-    declare: [durable: true],
-    on_failure: :reject
-  ]
 
   def start_link(_args) do
-    options = [
+    Broadway.start_link(__MODULE__,
       name: AcqdatApi.DataInsights.FactTable.DataSynchingPipeline,
-      producer: [module: {@producer, @producer_config}],
+      producer: [
+        module:
+          {@producer,
+           queue: @queue,
+           declare: [durable: true],
+           after_connect: &declare_rabbitmq_topology/1,
+           bindings: [{@exchange, []}],
+           on_failure: :reject}
+      ],
       processors: [
         default: []
       ],
@@ -20,9 +26,7 @@ defmodule AcqdatApi.DataInsights.FactTable.DataSynchingPipeline do
         asset_type: [],
         sensor_type: []
       ]
-    ]
-
-    Broadway.start_link(__MODULE__, options)
+    )
   end
 
   def prepare_messages(messages, _context) do
@@ -72,5 +76,13 @@ defmodule AcqdatApi.DataInsights.FactTable.DataSynchingPipeline do
     end)
 
     messages
+  end
+
+  defp declare_rabbitmq_topology(amqp_channel) do
+    with :ok <- AMQP.Exchange.declare(amqp_channel, @exchange, :topic, durable: true),
+         {:ok, _} <- AMQP.Queue.declare(amqp_channel, @queue, durable: true),
+         :ok <- AMQP.Queue.bind(amqp_channel, @queue, @exchange, routing_key: "entity.*.*") do
+      :ok
+    end
   end
 end
