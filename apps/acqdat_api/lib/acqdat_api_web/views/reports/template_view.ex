@@ -2,9 +2,10 @@ defmodule AcqdatApiWeb.Reports.TemplateView do
   use AcqdatApiWeb, :view
   # alias AcqdatApiWeb.Reports.TemplateView
 
-  def render("index.json", %{data: _data}) do
+  def render("index.json", %{templates: templates}) do
     %{
-      greet: "hello data"
+      greet: "hello templates",
+      data: templates
     }
   end
 
