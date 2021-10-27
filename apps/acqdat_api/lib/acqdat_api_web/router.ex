@@ -331,6 +331,8 @@ defmodule AcqdatApiWeb.Router do
 
       scope "/orgs/:org_id" do
         post("/reports", ReportsController, :create)
+        post("/downloads", ReportsController, :downloads)
+        post("/fetch_reports", ReportsController, :fetch_reports)
       end
 
       get "/sections", ReportsController, :fetch_headers

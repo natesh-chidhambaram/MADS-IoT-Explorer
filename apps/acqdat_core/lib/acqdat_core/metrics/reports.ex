@@ -72,6 +72,27 @@ defmodule AcqdatCore.Metrics.Reports do
     {:ok, Repo.all(query)}
   end
 
+  def fetch_data(org_id, start_date, end_date, filter_metadata) do
+    out =
+      Enum.reduce(filter_metadata, "", fn set, acc ->
+        set["app"]
+        set["entity"]
+
+        "a0.metrics -> '#{set["app"]}' -> '#{set["entity"]}' -> 'count' as \"#{set["entity"]} count\"," <>
+          acc
+      end)
+
+    out = String.slice(out, 0..-2)
+
+    res = """
+    SELECT a0."inserted_time"::VARCHAR, #{out}
+    FROM "acqdat_metrics" AS a0 WHERE ((a0."org_id" = #{org_id}) AND
+    a0."inserted_time"::date BETWEEN \'#{start_date}\' AND \'#{end_date}\')
+    """
+
+    Ecto.Adapters.SQL.query!(Repo, res, [])
+  end
+
   def range_report(org_id, start_date, end_date, type, group_action) when type == "cards" do
     query =
       from(
