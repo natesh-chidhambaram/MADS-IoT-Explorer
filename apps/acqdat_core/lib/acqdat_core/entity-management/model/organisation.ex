@@ -19,7 +19,7 @@ defmodule AcqdatCore.Model.EntityManagement.Organisation do
     Repo.update(changeset)
   end
 
-  def get(id) when is_integer(id) do
+  def get(id) do
     case Repo.get(Organisation, id) do
       nil ->
         {:error, "organisation not found"}
