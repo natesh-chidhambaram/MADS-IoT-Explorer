@@ -13,25 +13,24 @@ defmodule AcqdatCore.Reports.Schema.Template do
       foreign_key: :created_by_user_id
     )
 
-    embeds_many(:pages, Pages, on_replace: :delete)
+    embeds_many(:pages, Page)
   end
 
-  @required ~w(pages name uuid)a
+  @required ~w(name uuid)a
   @optional ~w(type)a
   @permitted @optional ++ @required
 
-  def changeset(%__MODULE__{} = template, params) do
+  def changeset(%__MODULE__{} = template, attrs) do
+
     template
-    |> cast(params, @permitted)
+    |> cast(attrs, @permitted)
     |> validate_required(@required)
     |> cast_embed(:pages, with: &Page.changeset/2)
-
-    # |> common_changeset(params)
   end
 
-  def update_changeset(%__MODULE__{} = template, params) do
-    #
-  end
+  # def update_changeset(%__MODULE__{} = template, params) do
+  #   #
+  # end
 
   # def common_changeset(changeset, _params) do
   #   changeset
@@ -47,15 +46,14 @@ defmodule AcqdatCore.Reports.Schema.Template.Page do
   alias AcqdatCore.Reports.Schema.Template.PageElement
 
   embedded_schema do
-    field(:page_number, :integer, null: false)
-
-    embeds_many(:elements, PageElements, on_replace: :delete)
+    field(:page_number, :integer)
+    embeds_many(:elements, PageElement)
   end
 
-  @permitted ~w(page_number elements)a
-  def changeset(%__MODULE__{} = page, params) do
+  @permitted ~w(page_number)a
+  def changeset(%__MODULE__{} = page, attrs) do
     page
-    |> cast(params, @permitted)
+    |> cast(attrs, @permitted)
     |> cast_embed(:elements, with: &PageElement.changeset/2)
   end
 end
@@ -71,9 +69,9 @@ defmodule AcqdatCore.Reports.Schema.Template.PageElement do
   @permitted ~w(visual_settings data_settings)a
   @required ~w(visual_settings)a
 
-  def changeset(%__MODULE__{} = page_element, params) do
+  def changeset(%__MODULE__{} = page_element, attrs) do
     page_element
-    |> cast(params, @permitted)
+    |> cast(attrs, @permitted)
     |> validate_required(@required)
   end
 end
