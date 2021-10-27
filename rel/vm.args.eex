@@ -11,4 +11,3 @@
 ##-env ERL_FULLSWEEP_AFTER 10
 -kernel inet_dist_listen_min 19000
 -kernel inet_dist_listen_max 19000
-
