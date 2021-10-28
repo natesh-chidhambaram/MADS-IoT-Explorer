@@ -454,6 +454,11 @@ defmodule AcqdatApiWeb.Router do
       pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
       get "/templates", TemplateController, :index
+      get "/templates/:id", TemplateController, :show
+
+      post("/templates", TemplateController, :create)
+      put("/templates/:id", TemplateController, :update)
+
       # get "/reports", ReportsController, :index
     end
   end

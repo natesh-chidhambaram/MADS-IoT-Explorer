@@ -2,7 +2,7 @@ defmodule AcqdatApi.Reports.Templates do
   # alias AcqdatCore.Reports.Templates
   alias AcqdatCore.Reports.Model.Template, as: TemplateModel
 
-  # defdelegate get_all(data), to: TemplateModel
+  defdelegate get_by_id(template_id), to: TemplateModel
 
   def get_all(data) do
     TemplateModel.get_all()
