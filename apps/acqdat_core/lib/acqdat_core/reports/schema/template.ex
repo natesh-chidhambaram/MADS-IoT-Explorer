@@ -13,24 +13,32 @@ defmodule AcqdatCore.Reports.Schema.Template do
       foreign_key: :created_by_user_id
     )
 
-    embeds_many(:pages, Page)
+    embeds_many(:pages, Page, on_replace: :delete)
   end
 
-  @required ~w(name uuid)a
+  @required ~w(name)a
   @optional ~w(type)a
   @permitted @optional ++ @required
 
   def changeset(%__MODULE__{} = template, attrs) do
+    template
+    |> cast(attrs, @permitted)
+    |> validate_required(@required)
+    |> add_uuid()
+    |> cast_embed(:pages, with: &Page.changeset/2)
+  end
 
+  def update_changeset(%__MODULE__{} = template, attrs) do
     template
     |> cast(attrs, @permitted)
     |> validate_required(@required)
     |> cast_embed(:pages, with: &Page.changeset/2)
   end
 
-  # def update_changeset(%__MODULE__{} = template, params) do
-  #   #
-  # end
+  defp add_uuid(%Ecto.Changeset{valid?: true} = changeset) do
+    changeset
+    |> put_change(:uuid, UUID.uuid1(:hex))
+  end
 
   # def common_changeset(changeset, _params) do
   #   changeset
@@ -47,7 +55,7 @@ defmodule AcqdatCore.Reports.Schema.Template.Page do
 
   embedded_schema do
     field(:page_number, :integer)
-    embeds_many(:elements, PageElement)
+    embeds_many(:elements, PageElement, on_replace: :delete)
   end
 
   @permitted ~w(page_number)a

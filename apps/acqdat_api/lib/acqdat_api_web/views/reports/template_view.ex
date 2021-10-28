@@ -10,14 +10,16 @@ defmodule AcqdatApiWeb.Reports.TemplateView do
       pages: render_many(pages, TemplateView, "template_pages.json")
     }
   end
-  def render("create.json", %{template: %{name: name, id: id, uuid: uuid, pages: pages}}) do
-    %{
-      name: name,
-      id: id,
-      uuid: uuid,
-      pages: render_many(pages, TemplateView, "template_pages.json")
-    }
-  end
+
+  # use show.json on create as well as update
+  # def render("create.json", %{template: %{name: name, id: id, uuid: uuid, pages: pages}}) do
+  #   %{
+  #     name: name,
+  #     id: id,
+  #     uuid: uuid,
+  #     pages: render_many(pages, TemplateView, "template_pages.json")
+  #   }
+  # end
 
   def render("index.json", %{templates: templates}) do
     %{

@@ -13,6 +13,11 @@ defmodule AcqdatCore.Reports.Model.Template do
     Repo.insert(changeset)
   end
 
+  def update(template, attrs) do
+    changeset = Template.update_changeset(template, attrs)
+    Repo.update(changeset)
+  end
+
   # id or uuid?
   def get_by_id(id) do
     case Repo.get(Template, id) do

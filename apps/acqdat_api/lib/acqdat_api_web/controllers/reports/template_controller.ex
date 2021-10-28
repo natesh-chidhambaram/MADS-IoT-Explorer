@@ -4,9 +4,10 @@ defmodule AcqdatApiWeb.Reports.TemplateController do
 
   import AcqdatApiWeb.Validators.Reports.Template
   alias AcqdatApiWeb.Reports.TemplateErrorHelper
-
-  # alias AcqdatCore.Reports.Model.Template, as: TemplateModel
   alias AcqdatApi.Reports.Templates
+
+  plug AcqdatApiWeb.Plug.LoadTemplate when action in [:update, :delete]
+
 
   def index(conn, params) do
     changeset = verify_index_params(params)
@@ -25,13 +26,11 @@ defmodule AcqdatApiWeb.Reports.TemplateController do
   def create(conn, params) do
     changeset = verify_params(params)
 
-    {:ok, dataa} = extract_changeset_data(changeset)
-
     with {:extract, {:ok, data} = extract_changeset_data(changeset)},
          {:create, {:ok, template}} <- {:create, Templates.create(data)} do
       conn
       |> put_status(200)
-      |> render("create.json", %{template: template})
+      |> render("show.json", %{template: template})
     else
       {:extract, {:error, error}} ->
         send_error(conn, 400, error)
@@ -55,4 +54,22 @@ defmodule AcqdatApiWeb.Reports.TemplateController do
         |> render("show.json", %{template: template})
     end
   end
+
+  def update(conn, params) do
+    changeset = verify_update_params(params)
+
+    with {:extract, {:ok, data} = extract_changeset_data(changeset)},
+         {:update, {:ok, template}} <- {:update, Templates.update(conn.assigns.template, data)} do
+      conn
+      |> put_status(200)
+      |> render("show.json", %{template: template})
+    else
+      {:extract, {:error, error}} ->
+        send_error(conn, 400, error)
+
+      {:update, {:error, message}} ->
+        send_error(conn, 400, message.error)
+    end
+  end
+
 end
