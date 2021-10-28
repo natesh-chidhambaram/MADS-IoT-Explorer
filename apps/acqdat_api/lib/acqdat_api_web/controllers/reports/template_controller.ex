@@ -20,6 +20,11 @@ defmodule AcqdatApiWeb.Reports.TemplateController do
     |> render("index.json", resp_data)
   end
 
+  def create(conn, params) do
+    # changeset = verify_params(params)
+
+  end
+
   def show(conn, params) do
 
   end
