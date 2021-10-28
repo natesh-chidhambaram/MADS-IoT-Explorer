@@ -26,4 +26,8 @@ defmodule AcqdatCore.Reports.Model.Template do
     end
   end
 
+  def delete(template) do
+    Repo.delete(template)
+  end
+
 end

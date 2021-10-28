@@ -22,6 +22,10 @@ defmodule AcqdatApi.Reports.Templates do
     TemplateModel.update(template, attrs)
   end
 
+  def delete(template) do
+    TemplateModel.delete(template)
+  end
+
   defp template_create_attrs(%{name: name, type: type, pages: pages, uuid: uuid}) do
     %{name: name, type: type, pages: pages, uuid: uuid}
   end

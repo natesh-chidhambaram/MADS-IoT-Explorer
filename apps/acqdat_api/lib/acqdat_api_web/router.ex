@@ -458,7 +458,7 @@ defmodule AcqdatApiWeb.Router do
 
       post("/templates", TemplateController, :create)
       put("/templates/:template_id", TemplateController, :update)
-
+      delete("/templates/:template_id/delete", TemplateController, :delete)
       # get "/reports", ReportsController, :index
     end
   end

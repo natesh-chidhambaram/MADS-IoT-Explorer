@@ -72,4 +72,22 @@ defmodule AcqdatApiWeb.Reports.TemplateController do
     end
   end
 
+  def delete(conn, _params) do
+    case Templates.delete(conn.assigns.template) do
+      {:ok, template} ->
+        conn
+        |> put_status(200)
+        |> render("template.json", %{template: template})
+
+        {:else, template} ->
+          error = case String.valid?(template) do
+            false -> extract_changeset_error(template)
+            true -> template
+          end
+
+          conn
+          |> send_error(400, error)
+    end
+  end
+
 end
