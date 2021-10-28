@@ -23,3 +23,4 @@ erl_crash.dump
 /env/docker.env
 
 /devops/staging/data/certbot/
+/devops/test/data/nodered/
