@@ -9,6 +9,13 @@ defmodule AcqdatApiWeb.Reports.TemplateView do
       pages: render_many(pages, TemplateView, "template_pages.json")
     }
   end
+  def render("create.json", %{template: %{name: name, uuid: uuid, pages: pages}}) do
+    %{
+      name: name,
+      uuid: uuid,
+      pages: render_many(pages, TemplateView, "template_pages.json")
+    }
+  end
 
   def render("index.json", %{templates: templates}) do
     %{

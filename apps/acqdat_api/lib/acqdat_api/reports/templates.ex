@@ -9,8 +9,15 @@ defmodule AcqdatApi.Reports.Templates do
   end
 
   def create(attrs) do
+    attrs
+    |> template_create_attrs
+    |> TemplateModel.create()
+    # IO.inspect(attrs, label: "get individual attrs from here")
     # add current_user
-    TemplateModel.create(attrs)
+  end
+
+  defp template_create_attrs(%{name: name, type: type, pages: pages, uuid: uuid}) do
+    %{name: name, type: type, pages: pages, uuid: uuid}
   end
 
   def create_dummy() do

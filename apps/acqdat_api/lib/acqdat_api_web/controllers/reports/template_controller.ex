@@ -10,6 +10,10 @@ defmodule AcqdatApiWeb.Reports.TemplateController do
 
   def index(conn, params) do
     changeset = verify_index_params(params)
+
+    IO.inspect(extract_changeset_data(changeset), label: "extract_changeset_data(changeset) ")
+
+
     # TODO pagination
     {:ok, data} = extract_changeset_data(changeset)
 
@@ -22,7 +26,23 @@ defmodule AcqdatApiWeb.Reports.TemplateController do
   end
 
   def create(conn, params) do
-    # changeset = verify_params(params)
+    changeset = verify_params(params)
+
+    {:ok, dataa} = extract_changeset_data(changeset)
+    IO.inspect(dataa, label: "extract_changeset_dataa ....#####")
+
+    with {:extract, {:ok, data} = extract_changeset_data(changeset)},
+         {:create, {:ok, template}} <- {:create, Templates.create(data)} do
+      conn
+      |> put_status(200)
+      |> render("create.json", %{template: template})
+    else
+      {:extract, {:error, error}} ->
+        send_error(conn, 400, error)
+
+      {:create, {:error, message}} ->
+        send_error(conn, 400, message.error)
+    end
   end
 
   def show(conn, %{"id" => id} = _params) do
