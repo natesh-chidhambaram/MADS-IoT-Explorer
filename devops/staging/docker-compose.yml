@@ -140,6 +140,7 @@ services:
       USER_PASSWORD: ${USER_PASSWORD}
       SENTRY_URL: ${SENTRY_URL}
       RELEASE_COOKIE: ${RELEASE_COOKIE}
+      AWS_S3_BUCKET_FILE: ${AWS_S3_BUCKET_FILE}
 
     depends_on:
       - database
