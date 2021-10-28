@@ -109,8 +109,6 @@ services:
     ports:
       - 4001:4001
       - 4000:4000
-      - 4369:4369
-      - 19000:19000
     environment:
       APP_IOT_PORT: ${APP_IOT_PORT}
       APP_API_PORT: ${APP_API_PORT}
