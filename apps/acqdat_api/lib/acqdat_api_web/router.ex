@@ -447,9 +447,9 @@ defmodule AcqdatApiWeb.Router do
     end
   end
 
-   #################### Reports ######################################
+  #################### Reports ######################################
   #  http://localhost:4000/metrics/orgs/1/reports
-   scope "/reports", AcqdatApiWeb.Reports do
+  scope "/reports", AcqdatApiWeb.Reports do
     scope "/" do
       pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
@@ -459,9 +459,18 @@ defmodule AcqdatApiWeb.Router do
       post("/templates", TemplateController, :create)
       put("/templates/:template_id", TemplateController, :update)
       delete("/templates/:template_id/delete", TemplateController, :delete)
-      # get "/reports", ReportsController, :index
+
+      get "/template_instances", TemplateInstanceController, :index
+      get "/template_instances/:id", TemplateInstanceController, :show
+
+      post("/template_instances", TemplateInstanceController, :create)
+      put("/template_instances/:template_instance_id", TemplateInstanceController, :update)
+
+      delete(
+        "/template_instances/:template_instance_id/delete",
+        TemplateInstanceController,
+        :delete
+      )
     end
   end
-
-
 end
