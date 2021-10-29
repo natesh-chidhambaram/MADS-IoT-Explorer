@@ -54,7 +54,6 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
 
               if is_leaf?(leaf_nodes.leaf_nodes, data) != [] do
                 IO.inspect("this is leaf node data")
-                # IO.inspect(data)
                 row_computation(fact_table, data, subtree)
               end
 
@@ -82,7 +81,16 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
     row = List.duplicate(nil, headers_metadata["rows_len"])
     leaf_id = "#{event["entity_id"]}_#{event["entity_name"]}"
     leaf_pos = headers_metadata["headers"][leaf_id][event["metadata_id"]]
-    row = List.replace_at(row, leaf_pos, event["metadata_val"])
+
+    row =
+      if event["metadata_id"] == "name" do
+        List.replace_at(row, leaf_pos, event["metadata_val"])
+      else
+        row = List.replace_at(row, leaf_pos, event["metadata_val"])
+        leaf_tim_pos = headers_metadata["headers"][leaf_id]["#{event["metadata_id"]}_dateTime"]
+        if leaf_tim_pos, do: List.replace_at(row, leaf_tim_pos, event["event_id"]), else: row
+      end
+
     IO.inspect(row)
 
     IO.inspect(subtree)
@@ -90,25 +98,30 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
     subtree = NaryTree.from_map(subtree)
     leaf_node = NaryTree.get(subtree, leaf_id)
 
-    {:ok, sen} = AcqdatCore.Model.EntityManagement.Sensor.get(event["entity_source_id"])
-
-    {:ok, asset} = AssetModel.get(sen.parent_id)
+    {:ok, child} =
+      if event["entity_type"] == "SensorType" do
+        {:ok, sen} = AcqdatCore.Model.EntityManagement.Sensor.get(event["entity_source_id"])
+      else
+        {:ok, asset} = AcqdatCore.Model.EntityManagement.Asset.get(event["entity_source_id"])
+      end
 
     row =
-      subtree_computation(
-        subtree,
-        leaf_node,
-        headers_metadata,
-        row,
-        asset,
-        asset.asset_type_id,
-        asset.asset_type.name
-      )
+      if child && child.parent_id do
+        {:ok, asset} = AssetModel.get(child.parent_id)
+
+        subtree_computation(
+          subtree,
+          leaf_node,
+          headers_metadata,
+          row,
+          asset,
+          asset.asset_type_id,
+          asset.asset_type.name
+        )
+      end
 
     IO.inspect("row lits")
     IO.inspect(row)
-
-    # insert_to_fact_table(fact_table_id, headers_metadata, row)
 
     res = insert_to_fact_table(fact_table, row)
     IO.inspect(res)
