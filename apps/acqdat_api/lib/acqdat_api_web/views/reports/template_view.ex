@@ -2,28 +2,13 @@ defmodule AcqdatApiWeb.Reports.TemplateView do
   use AcqdatApiWeb, :view
   alias AcqdatApiWeb.Reports.TemplateView
 
-  def render("show.json", %{template: %{name: name, id: id, uuid: uuid, pages: pages}}) do
-    %{
-      name: name,
-      id: id,
-      uuid: uuid,
-      pages: render_many(pages, TemplateView, "template_pages.json")
-    }
-  end
-
   def render("index.json", %{templates: templates}) do
     %{
-      templates: render_many(templates, TemplateView, "template.json")
+      templates: render_many(templates, TemplateView, "show.json")
     }
   end
 
-  def render("index.json", role) do
-    %{
-      greet: "hello only"
-    }
-  end
-
-  def render("template.json", %{
+  def render("show.json", %{
         template: %{name: name, id: id, uuid: uuid, type: type, pages: pages}
       }) do
     %{

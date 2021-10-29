@@ -2,28 +2,13 @@ defmodule AcqdatApiWeb.Reports.TemplateInstanceView do
   use AcqdatApiWeb, :view
   alias AcqdatApiWeb.Reports.TemplateInstanceView
 
-  def render("show.json", %{template_instance: %{name: name, id: id, uuid: uuid, pages: pages}}) do
-    %{
-      name: name,
-      id: id,
-      uuid: uuid,
-      pages: render_many(pages, TemplateInstanceView, "template_instance_pages.json")
-    }
-  end
-
   def render("index.json", %{template_instances: template_instances}) do
     %{
-      template_instances: render_many(template_instances, TemplateInstanceView, "template_instance.json")
+      template_instances: render_many(template_instances, TemplateInstanceView, "show.json")
     }
   end
 
-  def render("index.json", role) do
-    %{
-      greet: "hello only"
-    }
-  end
-
-  def render("template_instance.json", %{
+  def render("show.json", %{
         template_instance: %{name: name, id: id, uuid: uuid, type: type, pages: pages}
       }) do
     %{
@@ -35,10 +20,13 @@ defmodule AcqdatApiWeb.Reports.TemplateInstanceView do
     }
   end
 
-  def render("template_instance_pages.json", %{template_instance: %{page_number: page_number, elements: elements}}) do
+  def render("template_instance_pages.json", %{
+        template_instance: %{page_number: page_number, elements: elements}
+      }) do
     %{
       page_number: page_number,
-      elements: render_many(elements, TemplateInstanceView, "template_instance_page_elements.json")
+      elements:
+        render_many(elements, TemplateInstanceView, "template_instance_page_elements.json")
     }
   end
 

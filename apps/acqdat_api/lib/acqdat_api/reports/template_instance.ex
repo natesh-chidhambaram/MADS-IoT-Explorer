@@ -22,12 +22,9 @@ defmodule AcqdatApi.Reports.TemplateInstance do
     TemplateInstanceModel.update(template_instance, attrs)
   end
 
-  def delete(template_instance) do
-    TemplateInstanceModel.delete(template_instance)
-  end
+  defdelegate delete(template), to: TemplateInstanceModel
 
   defp template_instance_create_attrs(%{name: name, type: type, pages: pages, uuid: uuid}) do
     %{name: name, type: type, pages: pages, uuid: uuid}
   end
-
 end

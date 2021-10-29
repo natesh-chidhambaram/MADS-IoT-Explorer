@@ -37,10 +37,6 @@ defmodule AcqdatCore.Reports.Schema.TemplateInstance do
     |> cast_embed(:pages, with: &Page.changeset/2)
   end
 
-  defp add_uuid(%Ecto.Changeset{valid?: true} = changeset) do
-    changeset
-    |> put_change(:uuid, UUID.uuid1(:hex))
-  end
 end
 
 defmodule AcqdatCore.Reports.Schema.TemplateInstance.Page do
