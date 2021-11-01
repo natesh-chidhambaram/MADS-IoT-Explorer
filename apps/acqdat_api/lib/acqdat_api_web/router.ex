@@ -449,28 +449,28 @@ defmodule AcqdatApiWeb.Router do
 
   #################### Reports ######################################
   #  http://localhost:4000/metrics/orgs/1/reports
-  scope "/reports", AcqdatApiWeb.Reports do
-    scope "/" do
-      pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
+  scope "/reports/orgs/:org_id", AcqdatApiWeb.Reports do
+    pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
-      get "/templates", TemplateController, :index
-      get "/templates/:id", TemplateController, :show
+    get "/templates", TemplateController, :index
+    get "/templates/:id", TemplateController, :show
 
-      post("/templates", TemplateController, :create)
-      put("/templates/:template_id", TemplateController, :update)
-      delete("/templates/:template_id/delete", TemplateController, :delete)
+    post("/templates", TemplateController, :create)
+    put("/templates/:template_id", TemplateController, :update)
+    delete("/templates/:template_id/delete", TemplateController, :delete)
 
-      get "/template_instances", TemplateInstanceController, :index
-      get "/template_instances/:id", TemplateInstanceController, :show
+    get "/template_instances", TemplateInstanceController, :index
+    get "/template_instances/:id", TemplateInstanceController, :show
 
-      post("/template_instances", TemplateInstanceController, :create)
-      put("/template_instances/:template_instance_id", TemplateInstanceController, :update)
+    post("/template_instances", TemplateInstanceController, :create)
+    put("/template_instances/:template_instance_id", TemplateInstanceController, :update)
 
-      delete(
-        "/template_instances/:template_instance_id/delete",
-        TemplateInstanceController,
-        :delete
-      )
-    end
+    delete(
+      "/template_instances/:template_instance_id/delete",
+      TemplateInstanceController,
+      :delete
+    )
+
+    resources "/widgets", WidgetController, only: [:show, :index]
   end
 end

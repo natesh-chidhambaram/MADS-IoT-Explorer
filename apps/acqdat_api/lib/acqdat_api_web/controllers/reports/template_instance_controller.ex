@@ -91,7 +91,7 @@ defmodule AcqdatApiWeb.Reports.TemplateInstanceController do
           {:ok, template_instance} ->
             conn
             |> put_status(200)
-            |> render("template_instance.json", %{template_instance: template_instance})
+            |> render("show.json", %{template_instance: template_instance})
 
           {:else, template_instance} ->
             error =
