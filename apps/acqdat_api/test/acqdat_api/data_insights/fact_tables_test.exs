@@ -55,8 +55,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res =
-        FactTableCon.gen_comp_sensor_data(%{fact_table_id: fact_table.id, sensor_types: user_list})
+      res = FactTableCon.gen_comp_sensor_data(%{fact_table: fact_table, sensor_types: user_list})
 
       assert res.total == 6
 
@@ -87,8 +86,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res =
-        FactTableCon.gen_comp_sensor_data(%{fact_table_id: fact_table.id, sensor_types: user_list})
+      res = FactTableCon.gen_comp_sensor_data(%{fact_table: fact_table, sensor_types: user_list})
 
       assert res.total == 78
 
@@ -112,8 +110,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res =
-        FactTableCon.gen_comp_asset_data(%{fact_table_id: fact_table.id, asset_types: user_list})
+      res = FactTableCon.gen_comp_asset_data(%{fact_table: fact_table, asset_types: user_list})
 
       assert res.total == 3
 
@@ -138,8 +135,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res =
-        FactTableCon.gen_comp_asset_data(%{fact_table_id: fact_table.id, asset_types: user_list})
+      res = FactTableCon.gen_comp_asset_data(%{fact_table: fact_table, asset_types: user_list})
 
       assert res.total == 3
 
@@ -185,7 +181,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
 
       res =
         FactTableCon.gen_comp_asset_metadata(%{
-          fact_table_id: fact_table.id,
+          fact_table: fact_table,
           asset_types: user_list,
           uniq_asset_types: uniq_asset_types
         })
@@ -224,7 +220,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table.id)
+      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table)
 
       assert res.total == 7
 
@@ -272,7 +268,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table.id)
+      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table)
 
       assert res.total == 7
 
@@ -312,7 +308,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table.id)
+      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table)
 
       assert res.total == 7
       assert Enum.sort(res.headers) == [%{"Apartment name" => "text"}, %{"Place name" => "text"}]
@@ -356,7 +352,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table.id)
+      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table)
 
       assert res.total == 10
 
@@ -401,7 +397,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table.id)
+      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table)
 
       assert res[:error] == "No data present for the specified user inputs"
     end
@@ -437,7 +433,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table.id)
+      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table)
 
       assert res[:error] == "No data present for the specified user inputs"
     end
@@ -505,7 +501,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table.id)
+      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table)
 
       assert res.total == 7
 
@@ -605,7 +601,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table.id)
+      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table)
 
       assert res.total == 7
 
@@ -658,7 +654,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
         }
       ]
 
-      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table.id)
+      res = gen_n_compute_fact_table(org_id, project, user_list, fact_table)
 
       assert res.total == 78
 
@@ -728,7 +724,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
 
       res =
         FactTableCon.compute_sensors(
-          fact_table.id,
+          fact_table,
           user_list,
           uniq_sensor_types
         )
@@ -744,7 +740,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
                ])
     end
 
-    defp gen_n_compute_fact_table(org_id, project, user_list, fact_table_id) do
+    defp gen_n_compute_fact_table(org_id, project, user_list, fact_table) do
       topology_map = Topology.gen_topology(org_id, project)
       parent_tree = NaryTree.from_map(topology_map)
 
@@ -763,7 +759,7 @@ defmodule AcqdatApi.DataInsights.FactTablesTest do
       node_tracker = Map.put(entity_map, "#{root_entity["type"]}_#{root_entity["id"]}", true)
 
       FactTableCon.fetch_descendants(
-        fact_table_id,
+        fact_table,
         parent_tree,
         root_node,
         user_list,
