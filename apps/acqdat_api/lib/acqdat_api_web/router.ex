@@ -472,5 +472,6 @@ defmodule AcqdatApiWeb.Router do
     )
 
     resources "/widgets", WidgetController, only: [:show, :index]
+    get "/widgets/:id/data", WidgetController, :data
   end
 end
