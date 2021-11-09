@@ -30,10 +30,23 @@ defmodule AcqdatApiWeb.Reports.TemplateInstanceView do
     }
   end
 
-  def render("template_instance_page_elements.json", element) do
+  def render("template_instance_page_elements.json", %{
+        template_instance: %{
+          layout: layout,
+          styles: styles,
+          options: options,
+          type: type,
+          sub_type: sub_type,
+          uid: uid
+        }
+      }) do
     %{
-      visual_settings: element.template_instance.visual_settings,
-      data_settings: element.template_instance.data_settings
+      layout: layout,
+      styles: styles,
+      options: options,
+      type: type,
+      sub_type: sub_type,
+      uid: uid
     }
   end
 end

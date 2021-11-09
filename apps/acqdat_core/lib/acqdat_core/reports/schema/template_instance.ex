@@ -29,14 +29,12 @@ defmodule AcqdatCore.Reports.Schema.TemplateInstance do
     |> cast_embed(:pages, with: &Page.changeset/2)
   end
 
-
   def update_changeset(%__MODULE__{} = template_instance, attrs) do
     template_instance
     |> cast(attrs, @permitted)
     |> validate_required(@required)
     |> cast_embed(:pages, with: &Page.changeset/2)
   end
-
 end
 
 defmodule AcqdatCore.Reports.Schema.TemplateInstance.Page do
@@ -62,13 +60,27 @@ end
 defmodule AcqdatCore.Reports.Schema.TemplateInstance.PageElement do
   use AcqdatCore.Schema
 
+  @moduledoc """
+    Assuming we need below fields for reason.
+    layout - elem position
+    styles - color
+    options - flag, widget_instance_id, content - hello word
+    type - h1
+    subtype - (maybe) for widget subtype
+    uid - when something needs to refer this element.
+  """
+
   embedded_schema do
-    field(:visual_settings, :map)
-    field(:data_settings, :map)
+    field(:layout, :map)
+    field(:styles, :map)
+    field(:options, :map)
+    field(:type, :string)
+    field(:sub_type, :string)
+    field(:uid, :string)
   end
 
-  @permitted ~w(visual_settings data_settings)a
-  @required ~w(visual_settings)a
+  @permitted ~w(layout styles options type sub_type uid)a
+  @required ~w(layout styles options type uid)a
 
   def changeset(%__MODULE__{} = page_element, attrs) do
     page_element

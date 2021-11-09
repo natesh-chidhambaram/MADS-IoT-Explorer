@@ -27,10 +27,23 @@ defmodule AcqdatApiWeb.Reports.TemplateView do
     }
   end
 
-  def render("template_page_elements.json", element) do
+  def render("template_page_elements.json", %{
+        template: %{
+          layout: layout,
+          styles: styles,
+          options: options,
+          type: type,
+          sub_type: sub_type,
+          uid: uid
+        }
+      }) do
     %{
-      visual_settings: element.template.visual_settings,
-      data_settings: element.template.data_settings
+      layout: layout,
+      styles: styles,
+      options: options,
+      type: type,
+      sub_type: sub_type,
+      uid: uid
     }
   end
 end

@@ -471,7 +471,11 @@ defmodule AcqdatApiWeb.Router do
       :delete
     )
 
-    resources "/widgets", WidgetController, only: [:show, :index]
-    get "/widgets/:id/data", WidgetController, :data
+    resources "/widgets", WidgetMouldController, only: [:show, :index]
+
+    resources "/widget_instances", WidgetInstanceController,
+      only: [:create, :show, :update, :delete]
+
+    get "/widget_instances/:id/data", WidgetInstanceController, :data
   end
 end
