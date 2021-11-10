@@ -148,7 +148,7 @@ services:
       - redis
 
   nodered:
-    image: nodered/node-red-docker:slim
+    image: nodered/node-red:latest
     container_name: nodered
     ports:
       - "1880:1880"
