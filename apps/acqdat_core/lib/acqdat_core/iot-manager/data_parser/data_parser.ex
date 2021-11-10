@@ -9,6 +9,9 @@ defmodule AcqdatCore.IotManager.DataParser do
   alias AcqdatCore.Schema.EntityManagement.SensorsData.Parameters, as: SParam
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SModel
 
+  @queue "entity_queue"
+  @exchange "alert_exchange"
+
   def start_parsing(data_dump) do
     %{gateway_uuid: gateway_uuid, data: iot_data, inserted_timestamp: inserted_timestamp} =
       data_dump
@@ -75,11 +78,25 @@ defmodule AcqdatCore.IotManager.DataParser do
       end)
 
     Repo.insert_all(SDSchema, sensor_data)
-    AlertCreation.sensor_alert(data)
-    EntityAlertCreation.sensor_alert(data)
+    send_to_rabbitmq_queue(data)
+    # AlertCreation.sensor_alert(data)
+    # EntityAlertCreation.sensor_alert(data)
   end
 
   ##################### parsing data private helpers ###################
+
+  defp send_to_rabbitmq_queue(data) do
+    {:ok, connection} = AMQP.Connection.open()
+    {:ok, channel} = AMQP.Channel.open(connection)
+
+    with :ok <- AMQP.Exchange.declare(channel, @exchange, :fanout, durable: true),
+         {:ok, _} <- AMQP.Queue.declare(channel, @queue, durable: true),
+         :ok <- AMQP.Queue.bind(channel, @queue, @exchange) do
+      AMQP.Basic.publish(channel, @exchange, "", Jason.encode!(data))
+    end
+
+    AMQP.Connection.close(connection)
+  end
 
   defp prepare_gateway_parameters(parameters) do
     Enum.reduce(parameters, [], fn param, acc ->
