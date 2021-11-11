@@ -1,6 +1,9 @@
 defmodule AcqdatCore.Schema.Streams.Pipeline do
   @moduledoc """
   Models a project's action pipeline.
+
+  A pipeline is a DAG of actions with a single root action. Telemtry pipelines
+  are rooted with `Init`.
   """
   use AcqdatCore.Schema
   alias AcqdatCore.Schema.Streams.Action
@@ -26,10 +29,10 @@ defmodule AcqdatCore.Schema.Streams.Pipeline do
 
   @required_params ~W(name project_id)a
   @optional_params ~W(description)a
-  
+
   @all_params @required_params ++ @optional_params
-  
-  @spec changeset(t | Ecto.Changeset.t, map) :: Ecto.Changeset.t
+
+  @spec changeset(t | Ecto.Changeset.t(), map) :: Ecto.Changeset.t()
   def changeset(action, params) do
     action
     |> cast(params, @all_params)

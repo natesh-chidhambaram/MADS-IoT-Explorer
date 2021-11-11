@@ -12,8 +12,7 @@ defmodule AcqdatCore.Schema.Streams.PipelineTest do
     end
 
     test "returns a valid changeset", context do
-      %{project: project} =
-        context
+      %{project: project} = context
 
       params = %{
         name: "Root pipeline",
@@ -30,14 +29,14 @@ defmodule AcqdatCore.Schema.Streams.PipelineTest do
       refute validity
 
       assert %{
-               name: ["can't be blank"],
+               name: ["can't be blank"]
              } = errors_on(changeset)
     end
 
     test "returns error if project assoc constraint not satisfied" do
       params = %{
         name: "Root pipeline",
-        project_id: 0,
+        project_id: 0
       }
 
       changeset = Pipeline.changeset(%Pipeline{}, params)

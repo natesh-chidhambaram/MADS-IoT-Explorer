@@ -54,6 +54,7 @@ defmodule AcqdatCore.MixProject do
 
       # neseted sets
       {:as_nested_set, "~> 3.2"},
+      {:polymorphic_embed, "~> 1.2"},
 
       # Pagination
       {:scrivener_ecto, "~> 2.0"},
