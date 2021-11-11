@@ -28,8 +28,9 @@ config :acqdat_core, AcqdatCore.Repo,
   username: "postgres",
   password: "postgres",
   database: "acqdat_core_test",
+  pool: Ecto.Adapters.SQL.Sandbox,
   hostname: System.get_env("DB_HOST", "localhost"),
-  pool: Ecto.Adapters.SQL.Sandbox
+  port: System.get_env("DB_PORT", "5432")
 
 # settings to be used if db connections are failing
 # queue_target: 1500,
