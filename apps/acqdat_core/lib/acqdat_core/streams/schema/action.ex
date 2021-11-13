@@ -25,7 +25,6 @@ defmodule AcqdatCore.Schema.Streams.Action do
       types: [
         init: Init
       ],
-      type_field: :type,
       on_replace: :update
     )
 
@@ -44,22 +43,38 @@ defmodule AcqdatCore.Schema.Streams.Action do
   @spec create_changeset(t | Ecto.Changeset.t(), map) :: Ecto.Changeset.t()
   def create_changeset(action, params) do
     action
-    |> cast(params, @all_params)
+    |> cast(add_action_type_to_config(action, params), @all_params)
     |> validate_inclusion(:type, @action_types)
     |> validate_required(@required_params)
     |> assoc_constraint(:pipeline)
-    |> cast_polymorphic_embed(:config,
-      required: true,
-      with: [
-        init: &Init.create_changeset/2
-      ]
+    |> unique_constraint(:pipeline_id)
+    |> unique_constraint(:type,
+      name: :atmost_one_init_per_pipeline,
+      message: "pipeline already has `init` action"
     )
+    |> cast_polymorphic_embed(:config, required: true)
   end
 
   @spec update_changeset(t | Ecto.Changeset.t(), map) :: Ecto.Changeset.t()
   def update_changeset(action, params) do
     action
-    |> cast(params, @mutable_params)
+    |> cast(add_action_type_to_config(action, params), @mutable_params)
     |> cast_polymorphic_embed(:config, with: [])
+  end
+
+  @spec add_action_type_to_config(t, map) :: map
+  defp add_action_type_to_config(action, params) do
+    case (case Map.fetch(action, :type) do
+            {:ok, type} when type != nil -> {:ok, type}
+            _ -> Map.fetch(params, :type)
+          end) do
+      {:ok, type} ->
+        Map.update(params, :config, %{__type__: type}, fn config ->
+          Map.put(config, :__type__, type)
+        end)
+
+      :error ->
+        params
+    end
   end
 end
