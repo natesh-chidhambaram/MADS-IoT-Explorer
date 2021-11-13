@@ -14,8 +14,7 @@ defmodule AcqdatCore.Schema.Streams.ActionTest do
     test "valid changeset", %{pipeline: pipeline} do
       params = %{
         pipeline_id: pipeline.id,
-        type: :init,
-        config: %{}
+        type: :init
       }
 
       %{valid?: validity} = Action.create_changeset(%Action{}, params)
