@@ -63,13 +63,13 @@ defmodule AcqdatCore.EntityManagement.Policies.LowerThreshold do
   defp check_eligibility?(lower_limit, @decimal_zero, value) do
     case Decimal.cmp(value, lower_limit) do
       :lt ->
-        false
+        true
 
       :eq ->
-        false
+        true
 
       _ ->
-        true
+        false
     end
   end
 end
