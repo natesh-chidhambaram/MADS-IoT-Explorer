@@ -63,13 +63,13 @@ defmodule AcqdatCore.EntityManagement.Policies.UpperThreshold do
   defp check_eligibility?(@decimal_zero, upper_limit, value) do
     case Decimal.cmp(value, upper_limit) do
       :gt ->
-        false
+        true
 
       :eq ->
-        false
+        true
 
       _ ->
-        true
+        false
     end
   end
 end

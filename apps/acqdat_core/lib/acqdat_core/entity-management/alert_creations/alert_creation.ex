@@ -26,6 +26,10 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
   alias AcqdatCore.AlertMessage.Token
   alias AcqdatCore.Alerts.Model.Grouping
   alias AcqdatCore.Model.EntityManagement.Sensor
+  use Broadway
+
+  @entity_queue "entity_queue"
+  @exchange "alert_exchange"
 
   @doc """
   Receives data from dataparser module and for each entity ID will check if an
@@ -68,6 +72,35 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
       }
   """
 
+  def start_link(_opts) do
+    Broadway.start_link(__MODULE__,
+      name: __MODULE__,
+      producer: [
+          module: {BroadwayRabbitMQ.Producer,
+            queue: @entity_queue,
+            declare: [durable: true],
+            connection: [
+              username: "guest",
+              password: "guest",
+            ],
+            on_failure: :reject
+          },
+          concurrency: 1
+        ],
+        processors: [
+          default: [
+            concurrency: 10
+          ]
+        ]
+      )
+    end
+
+    @impl true
+    def handle_message(_processor, message, _context) do
+      AlertCreation.traverse_ids(Jason.decode!(message.data), "Sensor")
+      Broadway.Message.ack_immediately(message)
+    end
+
   def sensor_alert(data) do
     AlertCreation.traverse_ids(data, "Sensor")
   end
@@ -82,13 +115,21 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
 
         alert_rules ->
           Enum.each(alert_rules, fn alert_rule ->
-            asd =
               alert_rule
               |> bifurcate_partials()
               |> check_parameter(parameters, sensor_id, "Sensor")
+              |> evaluate_partials(alert_rule)
+              |> case do
+                true ->
+                  true
+                  # context = prepare_context(sensor)
+                  # alert_rule
+                  # |> data_manifest(parameter, context)
+                  # |> Grouping.create_alert()
+                false ->
+                  :no_reply
+              end
 
-            require IEx
-            IEx.pry()
           end)
       end
     end)
@@ -97,6 +138,25 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
   # Check for the availability of alert rule for that specific entity
   defp check_alert_rule(entity_id, entity) do
     AlertRules.check_rule(entity_id, :Sensor)
+  end
+
+  defp evaluate_partials(partial_results, alert_rule) do
+    results =
+    Enum.reduce(partial_results, %{}, fn result, acc ->
+      Map.merge(acc, result)
+    end)
+    expression =
+    Enum.reduce(results, "", fn {key, value}, acc ->
+      case acc do
+        "" -> String.replace(alert_rule.expression, key, to_string(value))
+        _ -> String.replace(acc, key, to_string(value))
+      end
+    end)
+    case Case.eval_string(expression) do
+      {true, []} -> true
+      {false, []} -> false
+      _ -> false
+    end
   end
 
   # Check for the parameter of an entity if that parameter is a valid parameter
@@ -157,13 +217,10 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
   defp check_eligibility(parameter, alert_rule, context) do
     case alert_rule.policy_name.eligible?(alert_rule.rule_parameters, parameter.value) do
       true ->
-        false
+        true
 
       false ->
-        true
-        # alert_rule
-        # |> data_manifest(parameter, context)
-        # |> Grouping.create_alert()
+        false
     end
   end
 

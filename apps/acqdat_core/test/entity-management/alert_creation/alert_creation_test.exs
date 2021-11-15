@@ -110,9 +110,51 @@ defmodule AcqdatCore.EntityManagement.AlertCreationTest do
           policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.RangeBased",
           entity_parameters: param2,
           rule_parameters: %{lower_limit: 14, upper_limit: 20}
+        },
+        %{
+          name: "partial9",
+          policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.RangeBased",
+          entity_parameters: param2,
+          rule_parameters: %{lower_limit: 16, upper_limit: 20}
+        },
+        %{
+          name: "partial3",
+          policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.LowerThreshold",
+          entity_parameters: param1,
+          rule_parameters: %{lower_limit: 10}
+        },
+        %{
+          name: "partial4",
+          policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.LowerThreshold",
+          entity_parameters: param1,
+          rule_parameters: %{lower_limit: 15}
+        },
+        %{
+          name: "partial5",
+          policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.LowerThreshold",
+          entity_parameters: param1,
+          rule_parameters: %{lower_limit: 16}
+        },
+        %{
+          name: "partial6",
+          policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.UpperThreshold",
+          entity_parameters: param1,
+          rule_parameters: %{upper_limit: 10}
+        },
+        %{
+          name: "partial7",
+          policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.UpperThreshold",
+          entity_parameters: param1,
+          rule_parameters: %{upper_limit: 15}
+        },
+        %{
+          name: "partial8",
+          policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.UpperThreshold",
+          entity_parameters: param1,
+          rule_parameters: %{upper_limit: 16}
         }
       ],
-      expression: "partial1 AND partial2",
+      expression: "partial1 and partial2 or partial3 and partial4 or partial5 or partial5 and partial6 or partial7 and partial8 and partial9",
       grouping_meta: %{
         module: "Elixir.AcqdatCore.EntityManagement.Schema.Grouping.TimeGrouping",
         grouping_parameters: %{

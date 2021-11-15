@@ -119,7 +119,6 @@ defmodule AcqdatCore.EntityManagement.Policies.RangeBased do
         _ ->
           false
       end
-
     value_lower && value_upper
   end
 end

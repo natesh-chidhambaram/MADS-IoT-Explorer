@@ -16,7 +16,8 @@ defmodule AcqdatCore.Application do
       {AcqdatCore.MQTT.Supervisor, strategy: :one_for_one},
       AcqdatCore.Domain.Notification.Supervisor,
       AcqdatCore.Alerts.Supervisor,
-      AcqdatCore.Metrics.SchedulerSupervisor
+      AcqdatCore.Metrics.SchedulerSupervisor,
+      AcqdatCore.EntityManagement.AlertCreation
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

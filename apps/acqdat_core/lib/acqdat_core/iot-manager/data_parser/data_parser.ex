@@ -9,7 +9,8 @@ defmodule AcqdatCore.IotManager.DataParser do
   alias AcqdatCore.Schema.EntityManagement.SensorsData.Parameters, as: SParam
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SModel
 
-  @queue "entity_queue"
+  @entity_queue "entity_queue"
+  @alert_queue "alert_queue"
   @exchange "alert_exchange"
 
   def start_parsing(data_dump) do
@@ -90,8 +91,10 @@ defmodule AcqdatCore.IotManager.DataParser do
     {:ok, channel} = AMQP.Channel.open(connection)
 
     with :ok <- AMQP.Exchange.declare(channel, @exchange, :fanout, durable: true),
-         {:ok, _} <- AMQP.Queue.declare(channel, @queue, durable: true),
-         :ok <- AMQP.Queue.bind(channel, @queue, @exchange) do
+         {:ok, _} <- AMQP.Queue.declare(channel, @entity_queue, durable: true),
+         :ok <- AMQP.Queue.bind(channel, @entity_queue, @exchange),
+         {:ok, _} <- AMQP.Queue.declare(channel, @alert_queue, durable: true),
+         :ok <- AMQP.Queue.bind(channel, @alert_queue, @exchange) do
       AMQP.Basic.publish(channel, @exchange, "", Jason.encode!(data))
     end
 
