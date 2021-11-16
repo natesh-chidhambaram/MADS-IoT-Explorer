@@ -1,7 +1,8 @@
-defmodule AcqdatCore.IotManager.DataDump.Supervisor do
+defmodule AcqdatCore.IotManager.Supervisor do
   use Supervisor
 
-  alias AcqdatCore.IotManager.DataDump.Worker.{Server, Manager}
+  alias AcqdatCore.IotManager.Server
+  alias AcqdatCore.IotManager.DataSupervisor
   alias AcqdatCore.IotManager.DataDump.ErrorCron
 
   def start_link(args) do
@@ -11,10 +12,10 @@ defmodule AcqdatCore.IotManager.DataDump.Supervisor do
   def init(_args) do
     children = [
       Server,
-      Manager,
+      DataSupervisor,
       ErrorCron
     ]
 
-    Supervisor.init(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :rest_for_one)
   end
 end

@@ -68,11 +68,12 @@ config :acqdat_core, AcqdatCore.Repo,
   password: "postgres",
   database: "acqdat_core_dev",
   hostname: "localhost",
+  port: 5431,
   pool_size: 10
 
 config :acqdat_core, :mqtt_broker,
   host: System.get_env("MQTT_HOST", "localhost"),
-  port: System.get_env("MQTT_PORT", "1883")
+  port: System.get_env("MQTT_PORT", "1882")
 
 config :acqdat_api,
        :frontend_url,

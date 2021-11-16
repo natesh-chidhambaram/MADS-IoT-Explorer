@@ -7,17 +7,17 @@ services:
     ports: 
       - 5431:5432
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: acqdat_prod
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "acqdat_core"
     volumes: 
       - pgdata:/var/lib/postgresql/data
   
   redis:
     image: redis:latest
     container_name: redis
-    expose:
-      - "6379"
+    ports:
+      - 6379:6379
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
@@ -26,12 +26,8 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
     container_name: es01
     environment:
-      - node.name=es01
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
     ulimits:
       memlock:
         soft: -1
@@ -41,49 +37,16 @@ services:
     ports:
       - 127.0.0.1:9200:9200
 
-  es02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
-    container_name: es02
-    environment:
-      - node.name=es02
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata02:/usr/share/elasticsearch/data
-
-  es03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
-    container_name: es03
-    environment:
-      - node.name=es03
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es02
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata03:/usr/share/elasticsearch/data
-  
   mqtt_broker:
     build:
       context: ../../
-      dockerfile: ./devops/local/mqtt/Dockerfile
+      dockerfile: ./devops/test/mqtt/Dockerfile
       args:
-        DB_USER: ${DB_USER}
-        DB_PASSWORD: ${DB_PASSWORD}
-        DB_HOST: ${DB_HOST}
-        DB_PORT: ${DB_PORT}
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: database
+        DB_PORT: 5432
+        DB_NAME: acqdat_core_dev
     restart: always
     ports:
       - 1882:1883
@@ -93,45 +56,46 @@ services:
       - vernemqetc:/vernemq/etc
     depends_on:
       - database
-  
-  web:
-    build: 
-      context: ../../
-      dockerfile: ./devops/local/Dockerfile
-    restart: always
-    container_name: web_app
-    ports:
-      - 4001:4001
-      - 4000:4000
-    environment:
-      APP_IOT_PORT: ${APP_IOT_PORT}
-      APP_API_PORT: ${APP_API_PORT}
-      APP_HOSTNAME: ${APP_HOSTNAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      SENDGRID_KEY: ${SENDGRID_KEY}
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      GUARDIAN_API_KEY: ${GUARDIAN_API_KEY}
-      GUARDIAN_IOT_KEY: ${GUARDIAN_IOT_KEY}
-      MQTT_HOST: ${MQTT_HOST}
-      MQTT_PORT: ${MQTT_PORT}
-    depends_on:
-      - database
-      - es01
-      - mqtt_broker
-      - redis
 
+  nodered:
+    image: nodered/node-red-docker:slim
+    container_name: nodered
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./data/nodered:/data
+    depends_on:
+      - mosquitto
+    user: root:root
+  
+  mosquitto:
+    image: "eclipse-mosquitto"
+    container_name: mosquitto
+    ports:
+      - "1881:1881"
+      - "9001:9001"
+    volumes:
+      - ./data/mosquitto/config:/mosquitto/config
+      - ./data/mosquitto/data:/mosquitto/data
+      - ./data/mosquitto/log:/mosquitto/log
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - rabbitmq_data:/var/lib/rabbitmq/
+        - rabbitmq_logs:/var/log/rabbitmq
+  
 volumes: 
   esdata01:
     driver: local
-  esdata02:
-    driver: local
-  esdata03:
-    driver: local
   pgdata:
+  redis-data:
   vernemqdata:
   vernemqlogs:
   vernemqetc:
-  redis-data:
+  rabbitmq_data:
+  rabbitmq_logs:
