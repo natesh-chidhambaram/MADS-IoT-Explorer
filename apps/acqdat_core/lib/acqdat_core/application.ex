@@ -4,16 +4,14 @@ defmodule AcqdatCore.Application do
   @moduledoc false
 
   use Application
-  alias AcqdatCore.Model.IotManager.MQTTBroker
 
   def start(_type, _args) do
     children = [
       # Start the Ecto repository
       AcqdatCore.Repo,
       AcqdatCore.IotManager.CommandHandler,
-      AcqdatCore.IotManager.DataParser.Supervisor,
-      AcqdatCore.IotManager.DataDump.Supervisor,
-      {AcqdatCore.MQTT.Supervisor, strategy: :one_for_one},
+      AcqdatCore.IotManager.Supervisor,
+      AcqdatCore.MQTT.Supervisor,
       AcqdatCore.Domain.Notification.Supervisor,
       AcqdatCore.Alerts.Supervisor,
       AcqdatCore.Metrics.SchedulerSupervisor
@@ -22,15 +20,6 @@ defmodule AcqdatCore.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: AcqdatCore.Supervisor]
-    result = Supervisor.start_link(children, opts)
-    initialize()
-    result
-  end
-
-  # Initializes components that need to be started after application is up.
-  # Make Sure all the initializers are asynchronous in nature so they don't
-  # block the application startup.
-  defp initialize() do
-    MQTTBroker.start_children()
+    Supervisor.start_link(children, opts)
   end
 end

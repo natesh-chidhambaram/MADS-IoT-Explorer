@@ -28,22 +28,12 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     end)
     |> Multi.run(:setup_mqtt_if_needed, fn _, changes ->
       %{insert_gateway: gateway} = changes
-      start_broker_if_needed(gateway)
+      setup_credentials(gateway)
     end)
     |> Repo.transaction()
     |> case do
       {:ok, %{setup_mqtt_if_needed: data}} ->
-        if Map.has_key?(data, :access_token) do
-          gateway = data.gateway
-
-          Task.start(fn ->
-            start_project_client(gateway, gateway.project, data)
-          end)
-
-          {:ok, gateway}
-        else
-          {:ok, data.gateway}
-        end
+        {:ok, data.gateway}
 
       {:error, _failed_operation, failed_value, _} ->
         {:error, failed_value}
@@ -134,17 +124,7 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     |> Repo.transaction()
     |> case do
       {:ok, %{setup_mqtt_if_needed: data}} ->
-        if Map.has_key?(data, :access_token) do
-          gateway = data.gateway
-
-          Task.start(fn ->
-            start_project_client(gateway, gateway.project, data)
-          end)
-
-          {:ok, gateway}
-        else
-          {:ok, data.gateway}
-        end
+        {:ok, data.gateway}
 
       {:error, _failed_operation, failed_value, _} ->
         {:error, failed_value}
@@ -438,28 +418,17 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
     end)
   end
 
-  def start_broker_if_needed(gateway) do
+  def setup_credentials(gateway) do
     initiation_for_channel(gateway, gateway.channel)
   end
 
   defp initiation_for_channel(gateway, "http"), do: {:ok, %{gateway: gateway}}
 
   defp initiation_for_channel(gateway, "mqtt") do
-    gateway = Repo.preload(gateway, project: :org)
-    project = gateway.project
-
-    if BrokerCredentials.subscription_present?(project.uuid) do
-      validate_gateway_creds_results(
-        gateway,
-        BrokerCredentials.create(gateway, gateway.access_token, "Gateway")
-      )
-    else
-      validate_project_create_results(
-        project,
-        gateway,
-        BrokerCredentials.create(gateway, gateway.access_token, "Gateway")
-      )
-    end
+    validate_gateway_creds_results(
+      gateway,
+      BrokerCredentials.create(gateway, gateway.access_token, "Gateway")
+    )
   end
 
   # adding only gateway credentials
@@ -470,48 +439,6 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
   defp validate_gateway_creds_results(_gateway, {:error, changeset}) do
     {:error, changeset}
   end
-
-  # adding both gateway and project credentials
-  defp validate_project_create_results(_project, _gateway, {:error, changeset}) do
-    {:error, changeset}
-  end
-
-  defp validate_project_create_results(project, gateway, {:ok, _creds}) do
-    access_token = UUID.uuid1(:hex)
-
-    validate_project_credentials(
-      project,
-      gateway,
-      BrokerCredentials.create(
-        project,
-        access_token,
-        "Project"
-      )
-    )
-  end
-
-  defp validate_project_credentials(_project, _gateway, {:error, changeset}) do
-    {:error, changeset}
-  end
-
-  defp validate_project_credentials(_project, gateway, {:ok, credentials}) do
-    {:ok, %{gateway: gateway, access_token: credentials.access_token}}
-  end
-
-  defp start_project_client(_gateway = %{channel: "mqtt"}, project, credentials) do
-    topics = [
-      {"org/#{project.org.uuid}/project/#{project.uuid}/gateway/+", 0},
-      {"org/#{project.org.uuid}/project/#{project.uuid}/gateway/+/request-config", 0}
-    ]
-
-    MQTTBroker.start_project_client(
-      project.uuid,
-      topics,
-      credentials.access_token
-    )
-  end
-
-  defp start_project_client(_gateway, _project, _credentials), do: :ok
 
   defp fetch_gateway_ids(gateways) do
     Enum.reduce(gateways, [], fn gateway, acc ->
@@ -529,6 +456,6 @@ defmodule AcqdatCore.Model.IotManager.Gateway do
   end
 
   defp update_channel(gateway, "http") do
-    start_broker_if_needed(gateway)
+    setup_credentials(gateway)
   end
 end

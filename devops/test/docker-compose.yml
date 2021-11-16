@@ -36,9 +36,98 @@ services:
       - esdata01:/usr/share/elasticsearch/data
     ports:
       - 127.0.0.1:9200:9200
+
+  mqtt_broker:
+    build:
+      context: ../../
+      dockerfile: ./devops/test/mqtt/Dockerfile
+      args:
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: database
+        DB_PORT: 5432
+        DB_NAME: acqdat_core_test
+    restart: always
+    ports:
+      - 1882:1883
+    volumes:
+      - vernemqdata:/vernemq/data
+      - vernemqlogs:/vernemq/logs
+      - vernemqetc:/vernemq/etc
+    depends_on:
+      - database
+
+  nodered:
+    image: nodered/node-red-docker:slim
+    container_name: nodered
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./data/nodered:/data
+    depends_on:
+      - mosquitto
+    user: root:root
+  
+  mosquitto:
+    image: "eclipse-mosquitto"
+    container_name: mosquitto
+    ports:
+      - "1881:1881"
+      - "9001:9001"
+    volumes:
+      - ./data/mosquitto/config:/mosquitto/config
+      - ./data/mosquitto/data:/mosquitto/data
+      - ./data/mosquitto/log:/mosquitto/log
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - rabbitmq_data:/var/lib/rabbitmq/
+        - rabbitmq_logs:/var/log/rabbitmq
+  
+  # Uncomment only if you want to test web also.
+
+  # web:
+  #   build: 
+  #     context: ../../
+  #     dockerfile: ./devops/local/Dockerfile
+  #   restart: always
+  #   container_name: web_app
+  #   ports:
+  #     - 4001:4001
+  #     - 4000:4000
+  #   environment:
+  #     APP_IOT_PORT: ${APP_IOT_PORT}
+  #     APP_API_PORT: ${APP_API_PORT}
+  #     APP_HOSTNAME: ${APP_HOSTNAME}
+  #     DB_USER: ${DB_USER}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     DB_HOST: ${DB_HOST}
+  #     DB_PORT: ${DB_PORT}
+  #     SENDGRID_KEY: ${SENDGRID_KEY}
+  #     SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+  #     GUARDIAN_API_KEY: ${GUARDIAN_API_KEY}
+  #     GUARDIAN_IOT_KEY: ${GUARDIAN_IOT_KEY}
+  #     MQTT_HOST: ${MQTT_HOST}
+  #     MQTT_PORT: ${MQTT_PORT}
+  #   depends_on:
+  #     - database
+  #     - es01
+  #     - mqtt_broker
+  #     - redis
   
 volumes: 
   esdata01:
     driver: local
   pgdata:
   redis-data:
+  vernemqdata:
+  vernemqlogs:
+  vernemqetc:
+  rabbitmq_data:
+  rabbitmq_logs:
+ 

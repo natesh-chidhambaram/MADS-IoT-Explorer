@@ -24,3 +24,7 @@ erl_crash.dump
 
 /devops/staging/data/certbot/
 /devops/test/data/nodered/
+/devops/test/data/mosquitto/
+
+/devops/local/data/nodered/
+/devops/local/data/mosquitto/

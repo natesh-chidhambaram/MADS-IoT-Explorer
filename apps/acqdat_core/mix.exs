@@ -112,7 +112,9 @@ defmodule AcqdatCore.MixProject do
       {:murmur, "~> 1.0"},
 
       ## notifications
-      {:notifications, in_umbrella: true}
+      {:notifications, in_umbrella: true},
+
+      {:gen_stage, "~> 1.0"}
     ]
   end
 

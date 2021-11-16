@@ -1,10 +1,8 @@
 defmodule AcqdatCore.Model.IotManager.MQTT.Handler do
   use Tortoise.Handler
-  alias AcqdatCore.IotManager.DataDump.Worker.Server
+  alias AcqdatCore.IotManager.Server
   alias AcqdatCore.IotManager.CommandHandler
-  alias AcqdatCore.Schema.IoTManager.GatewayError
   alias AcqdatCore.Model.IotManager.MQTTBroker
-  alias AcqdatCore.Repo
   require Logger
 
   def init(args) do
@@ -49,7 +47,8 @@ defmodule AcqdatCore.Model.IotManager.MQTT.Handler do
 
   def handle_message([_org, org_id, _project, project_id, _gateway, gateway_uuid], payload, state) do
     meta = %{org_uuid: org_id, project_uuid: project_id, gateway_uuid: gateway_uuid}
-    log_data_if_valid(Jason.decode(payload), meta)
+    params = %{payload: payload, meta: meta, mode: "mqtt"}
+    Server.log_data(params)
     {:ok, state}
   end
 
@@ -62,24 +61,5 @@ defmodule AcqdatCore.Model.IotManager.MQTT.Handler do
     # that is in alignment with other behaviours that implement a
     # terminate-callback
     :ok
-  end
-
-  ######################## private functions ######################
-
-  # TODO: At present data being received is not enriched and needs the client
-  # to send data in our format inspite of providing mapped parameters support
-  # we need to modify this so gateway_id doesn't need to be part of the json
-  # being sent both for MQTT as well as HTTP.
-  defp log_data_if_valid({:ok, data}, meta) do
-    params = Map.put(meta, :data, data)
-    Server.create(params)
-  end
-
-  defp log_data_if_valid({:error, data}, meta) do
-    error = Map.put(data, :error, "JSON Parser Error")
-    params = %{data: data, error: error, gateway_uuid: meta.gateway_uuid}
-    changeset = GatewayError.changeset(%GatewayError{}, params)
-    {:ok, data} = Repo.insert(changeset)
-    Logger.error("JSON parse error", additional: Map.from_struct(data))
   end
 end
