@@ -16,6 +16,7 @@ jobs:
         MIX_ENV: test
         ELASTIC_SEARCH_HOST: "http://elastic_search:9200"
         REDIS_PORT: "redis://redis:6379"
+        DB_NAME: acqdat_core_test
 
     services: 
       db:
