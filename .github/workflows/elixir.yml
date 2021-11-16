@@ -1,8 +1,8 @@
 name: Elixir CI
 
 on:
-  push: {branches: master}
-  pull_request: {branches: master}
+  push: {branches: [master, stream/main]}
+  pull_request: {branches: [master, stream/main]}
   repository_dispatch:
 
 jobs:
