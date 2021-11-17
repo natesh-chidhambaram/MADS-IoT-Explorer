@@ -6,7 +6,8 @@ defmodule AcqdatCore.Schema.Streams.Action do
   """
   use AcqdatCore.Schema
   import PolymorphicEmbed, only: [cast_polymorphic_embed: 3]
-  alias AcqdatCore.Schema.Streams.{Pipeline, Init}
+  alias AcqdatCore.Schema.Streams.Pipeline
+  alias AcqdatCore.Schema.Streams.{Init, LoadOriginatorMetadata}
 
   @typedoc """
   `id`: A UUID to identify the Action.
@@ -23,7 +24,8 @@ defmodule AcqdatCore.Schema.Streams.Action do
 
     field(:config, PolymorphicEmbed,
       types: [
-        init: Init
+        init: Init,
+        originator_metadata: LoadOriginatorMetadata
       ],
       on_replace: :update
     )
@@ -52,14 +54,23 @@ defmodule AcqdatCore.Schema.Streams.Action do
       name: :atmost_one_init_per_pipeline,
       message: "pipeline already has `init` action"
     )
-    |> cast_polymorphic_embed(:config, required: true)
+    |> cast_polymorphic_embed(:config,
+      required: true,
+      with: [
+        originator_metadata: &LoadOriginatorMetadata.create_changeset/2
+      ]
+    )
   end
 
   @spec update_changeset(t | Ecto.Changeset.t(), map) :: Ecto.Changeset.t()
   def update_changeset(action, params) do
     action
     |> cast(add_action_type_to_config(action, params), @mutable_params)
-    |> cast_polymorphic_embed(:config, with: [])
+    |> cast_polymorphic_embed(:config,
+      with: [
+        originator_metadata: &LoadOriginatorMetadata.update_changeset/2
+      ]
+    )
   end
 
   @spec add_action_type_to_config(t, map) :: map

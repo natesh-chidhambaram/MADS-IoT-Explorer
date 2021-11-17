@@ -35,6 +35,14 @@ defmodule AcqdatCore.DataCase do
     :ok
   end
 
+  def poly_embed_errors_on(changeset) do
+    PolymorphicEmbed.traverse_errors(changeset, fn {message, opts} ->
+      Enum.reduce(opts, message, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+  end
+  
   @doc """
   A helper that transforms changeset errors into a map of messages.
 
