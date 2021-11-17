@@ -429,6 +429,10 @@ defmodule AcqdatApiWeb.IotManager.GatewayController do
       404 ->
         conn
         |> send_error(403, "Unauthorized")
+
+      401 ->
+        conn
+        |> send_error(401, GatewayErrorHelper.error_message(:unauthorized))
     end
   end
 
