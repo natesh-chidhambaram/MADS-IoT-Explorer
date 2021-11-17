@@ -44,7 +44,7 @@ defmodule AcqdatCore.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto_sql, "~> 3.2.0"},
+      {:ecto_sql, "~> 3.2"},
       {:postgrex, ">= 0.0.0"},
       {:jason, "~> 1.0"},
 
@@ -82,10 +82,10 @@ defmodule AcqdatCore.MixProject do
       {:slugger, "~> 0.3"},
 
       # mailer
-      {:bamboo, github: "thoughtbot/bamboo"},
+      {:bamboo, github: "thoughtbot/bamboo", tag: "v1.7.1"},
       {:phoenix, "~> 1.4.10"},
       {:gettext, "~> 0.11"},
-      {:phoenix_html, "~> 2.13.2"},
+      {:phoenix_html, "~> 2.13"},
 
       # Phone Number Validation
       {:ex_phone_number, "~> 0.2"},
