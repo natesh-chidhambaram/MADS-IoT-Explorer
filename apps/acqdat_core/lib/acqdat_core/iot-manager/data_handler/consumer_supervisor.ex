@@ -19,7 +19,7 @@ defmodule AcqdatCore.IotManager.DataSupervisor do
     opts = [
       strategy: :one_for_one,
       subscribe_to: [
-        {Server, max_demand: 60}
+        {Server, max_demand: 40}
       ]
     ]
 

@@ -70,7 +70,7 @@ config :acqdat_core, AcqdatCore.Repo,
   database: "acqdat_core_dev",
   hostname: db_host,
   port: db_port,
-  pool_size: 40
+  pool_size: 80
 
 config :tirexs, :uri, elastic_search_host
 
