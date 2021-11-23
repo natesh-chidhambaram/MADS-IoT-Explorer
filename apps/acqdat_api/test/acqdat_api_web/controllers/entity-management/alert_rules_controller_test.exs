@@ -47,7 +47,7 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesControllerTest do
       conn =
         post(
           conn,
-          Routes.alert_rules_path(conn, :create, org.id),
+          Routes.entity_alert_rule_path(conn, :create, org.id),
           alert_rule
         )
 
@@ -62,173 +62,215 @@ defmodule AcqdatApiWeb.Alerts.AlertRulesControllerTest do
     end
   end
 
-  # describe "update/2" do
-  #   setup :setup_conn
-  #   setup :setup_alert_rules
+  describe "update/2" do
+    setup :setup_conn
+    setup :setup_alert_rules
 
-  #   test "update alert rule", %{conn: conn, alert_rule: alert_rule, org: org} do
-  #     params = %{
-  #       communication_medium: ["sms", "e-mail"]
-  #     }
+    test "update alert rule", %{conn: conn, alert_rule: alert_rule, org: org} do
+      params = %{
+        communication_medium: ["sms", "e-mail"]
+      }
 
-  #     # first inserted the alert rule
-  #     conn =
-  #       post(
-  #         conn,
-  #         Routes.alert_rules_path(conn, :create, org.id),
-  #         alert_rule
-  #       )
+      # first inserted the alert rule
+      conn =
+        post(
+          conn,
+          Routes.entity_alert_rule_path(conn, :create, org.id),
+          alert_rule
+        )
 
-  #     response = conn |> json_response(200)
+      response = conn |> json_response(200)
 
-  #     conn =
-  #       put(
-  #         conn,
-  #         Routes.alert_rules_path(conn, :update, org.id, response["id"]),
-  #         params
-  #       )
+      conn =
+        put(
+          conn,
+          Routes.entity_alert_rule_path(conn, :update, org.id, response["id"]),
+          params
+        )
 
-  #     response = conn |> json_response(200)
-  #     assert Map.has_key?(response, "entity")
-  #     assert Map.has_key?(response, "entity_parameters")
-  #     assert Map.has_key?(response, "policy_name")
-  #     assert Map.has_key?(response, "rule_parameters")
-  #     assert Map.has_key?(response, "org_id")
-  #     assert Map.has_key?(response, "slug")
-  #     assert response["entity_id"] == alert_rule.entity_id
-  #   end
+      response = conn |> json_response(200)
+      assert Map.has_key?(response, "entity")
+      assert Map.has_key?(response, "expression")
+      assert Map.has_key?(response, "partials")
+      assert Map.has_key?(response, "uuid")
+      assert Map.has_key?(response, "org_id")
+      assert Map.has_key?(response, "slug")
+      assert response["entity_id"] == alert_rule.entity_id
+    end
 
-  #   test "fails if authorization header not found", %{
-  #     conn: conn,
-  #     alert_rule: alert_rule,
-  #     org: org
-  #   } do
-  #     bad_access_token = "qwerty1234567uiop"
-  #     {:ok, alert_rule} = AlertRules.create(alert_rule)
+    test "update alert rule partials", %{conn: conn, alert_rule: alert_rule, org: org} do
+      sensor = insert(:sensor)
+      [param1, _param2] = fetch_parameters(sensor.sensor_type.parameters)
 
-  #     # added bad access token here
-  #     conn =
-  #       conn
-  #       |> put_req_header("authorization", "Bearer #{bad_access_token}")
+      params = %{
+        partials: [
+          %{
+            name: "partial3",
+            policy_name: "Elixir.AcqdatCore.EntityManagement.Policies.RangeBased",
+            entity_parameters: param1,
+            rule_parameters: %{lower_limit: 10, upper_limit: 20}
+          }
+        ]
+      }
 
-  #     data = %{}
+      # first inserted the alert rule
+      conn =
+        post(
+          conn,
+          Routes.entity_alert_rule_path(conn, :create, org.id),
+          alert_rule
+        )
 
-  #     conn =
-  #       put(
-  #         conn,
-  #         Routes.alert_rules_path(conn, :update, org.id, alert_rule.id),
-  #         data
-  #       )
+      response = conn |> json_response(200)
 
-  #     result = conn |> json_response(403)
+      conn =
+        put(
+          conn,
+          Routes.entity_alert_rule_path(conn, :update, org.id, response["id"]),
+          params
+        )
 
-  #     assert result == %{
-  #              "detail" => "You are not allowed to perform this action.",
-  #              "source" => nil,
-  #              "status_code" => 403,
-  #              "title" => "Unauthorized"
-  #            }
-  #   end
-  # end
+      response = conn |> json_response(200)
+      assert Map.has_key?(response, "entity")
+      assert Map.has_key?(response, "expression")
+      assert Map.has_key?(response, "partials")
+      assert Map.has_key?(response, "uuid")
+      assert Map.has_key?(response, "org_id")
+      assert Map.has_key?(response, "slug")
+      assert response["entity_id"] == alert_rule.entity_id
+    end
 
-  # describe "delete/2" do
-  #   setup :setup_conn
-  #   setup :setup_alert_rules
+    test "fails if authorization header not found", %{
+      conn: conn,
+      alert_rule: alert_rule,
+      org: org
+    } do
+      bad_access_token = "qwerty1234567uiop"
+      {:ok, alert_rule} = AlertRules.create(alert_rule)
 
-  #   test "alert rule delete", %{conn: conn, alert_rule: alert_rule, org: org} do
-  #     {:ok, alert_rule} = AlertRules.create(alert_rule)
+      # added bad access token here
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-  #     conn =
-  #       delete(
-  #         conn,
-  #         Routes.alert_rules_path(conn, :delete, org.id, alert_rule.id)
-  #       )
+      data = %{}
 
-  #     response = conn |> json_response(200)
-  #     assert Map.has_key?(response, "entity")
-  #     assert Map.has_key?(response, "entity_parameters")
-  #     assert Map.has_key?(response, "policy_name")
-  #     assert Map.has_key?(response, "rule_parameters")
-  #     assert Map.has_key?(response, "org_id")
-  #     assert Map.has_key?(response, "slug")
-  #     assert response["entity_id"] == alert_rule.entity_id
-  #   end
+      conn =
+        put(
+          conn,
+          Routes.entity_alert_rule_path(conn, :update, org.id, alert_rule.id),
+          data
+        )
 
-  #   test "fails if invalid token in authorization header", %{
-  #     conn: conn,
-  #     alert_rule: alert_rule,
-  #     org: org
-  #   } do
-  #     bad_access_token = "qwerty1234567uiop"
-  #     {:ok, alert_rule} = AlertRules.create(alert_rule)
+      result = conn |> json_response(403)
 
-  #     # added bad access token here
-  #     conn =
-  #       conn
-  #       |> put_req_header("authorization", "Bearer #{bad_access_token}")
+      assert result == %{
+               "detail" => "You are not allowed to perform this action.",
+               "source" => nil,
+               "status_code" => 403,
+               "title" => "Unauthorized"
+             }
+    end
+  end
 
-  #     conn =
-  #       delete(
-  #         conn,
-  #         Routes.alert_rules_path(conn, :delete, org.id, alert_rule.id)
-  #       )
+  describe "delete/2" do
+    setup :setup_conn
+    setup :setup_alert_rules
 
-  #     result = conn |> json_response(403)
+    test "alert rule delete", %{conn: conn, alert_rule: alert_rule, org: org} do
+      {:ok, alert_rule} = AlertRules.create(alert_rule)
 
-  #     assert result == %{
-  #              "detail" => "You are not allowed to perform this action.",
-  #              "source" => nil,
-  #              "status_code" => 403,
-  #              "title" => "Unauthorized"
-  #            }
-  #   end
-  # end
+      conn =
+        delete(
+          conn,
+          Routes.entity_alert_rule_path(conn, :delete, org.id, alert_rule.id)
+        )
 
-  # describe "index/2" do
-  #   setup :setup_conn
-  #   setup :setup_alert_rules
+      response = conn |> json_response(200)
+      assert Map.has_key?(response, "entity")
+      assert Map.has_key?(response, "expression")
+      assert Map.has_key?(response, "partials")
+      assert Map.has_key?(response, "uuid")
+      assert Map.has_key?(response, "org_id")
+      assert Map.has_key?(response, "slug")
+      assert response["entity_id"] == alert_rule.entity_id
+    end
 
-  #   test "list alert rules", %{conn: conn, alert_rule: alert_rule, org: org} do
-  #     params = %{
-  #       "page_size" => 100,
-  #       "page_number" => 1
-  #     }
+    test "fails if invalid token in authorization header", %{
+      conn: conn,
+      alert_rule: alert_rule,
+      org: org
+    } do
+      bad_access_token = "qwerty1234567uiop"
+      {:ok, alert_rule} = AlertRules.create(alert_rule)
 
-  #     AlertRules.create(alert_rule)
+      # added bad access token here
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
 
-  #     conn = get(conn, Routes.alert_rules_path(conn, :index, org.id, params))
+      conn =
+        delete(
+          conn,
+          Routes.entity_alert_rule_path(conn, :delete, org.id, alert_rule.id)
+        )
 
-  #     response = conn |> json_response(200)
-  #     assert response["alert_rules"]
-  #   end
+      result = conn |> json_response(403)
 
-  #   test "fails if invalid token in authorization header", %{
-  #     conn: conn,
-  #     org: org
-  #   } do
-  #     bad_access_token = "qwerty1234567qwerty12"
+      assert result == %{
+               "detail" => "You are not allowed to perform this action.",
+               "source" => nil,
+               "status_code" => 403,
+               "title" => "Unauthorized"
+             }
+    end
+  end
 
-  #     conn =
-  #       conn
-  #       |> put_req_header("authorization", "Bearer #{bad_access_token}")
+  describe "index/2" do
+    setup :setup_conn
+    setup :setup_alert_rules
 
-  #     params = %{
-  #       "page_size" => 2,
-  #       "page_number" => 1
-  #     }
+    test "list alert rules", %{conn: conn, alert_rule: alert_rule, org: org} do
+      params = %{
+        "page_size" => 100,
+        "page_number" => 1
+      }
 
-  #     conn = get(conn, Routes.alert_rules_path(conn, :index, org.id, params))
+      AlertRules.create(alert_rule)
 
-  #     result = conn |> json_response(403)
+      conn = get(conn, Routes.entity_alert_rule_path(conn, :index, org.id, params))
 
-  #     assert result == %{
-  #              "detail" => "You are not allowed to perform this action.",
-  #              "source" => nil,
-  #              "status_code" => 403,
-  #              "title" => "Unauthorized"
-  #            }
-  #   end
-  # end
+      response = conn |> json_response(200)
+      assert response["alert_rules"]
+    end
+
+    test "fails if invalid token in authorization header", %{
+      conn: conn,
+      org: org
+    } do
+      bad_access_token = "qwerty1234567qwerty12"
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
+
+      params = %{
+        "page_size" => 2,
+        "page_number" => 1
+      }
+
+      conn = get(conn, Routes.entity_alert_rule_path(conn, :index, org.id, params))
+
+      result = conn |> json_response(403)
+
+      assert result == %{
+               "detail" => "You are not allowed to perform this action.",
+               "source" => nil,
+               "status_code" => 403,
+               "title" => "Unauthorized"
+             }
+    end
+  end
 
   def setup_alert_rules(_context) do
     sensor = insert(:sensor)

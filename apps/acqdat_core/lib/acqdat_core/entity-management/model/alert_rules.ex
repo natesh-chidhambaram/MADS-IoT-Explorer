@@ -49,4 +49,41 @@ defmodule AcqdatCore.Model.EntityManagement.AlertRules do
         end)
     end
   end
+
+  @doc """
+  update function will update the alert rules
+  """
+  def update(alert_rules, params) do
+    changeset = AlertRules.changeset(alert_rules, params)
+    Repo.update(changeset)
+  end
+
+  @doc """
+  delete function will delete the alert rules
+  """
+  def delete(alert_rules) do
+    Repo.delete(alert_rules)
+  end
+
+  @doc """
+  for fetching a alert rule from the given ID
+  """
+  def get_by_id(id) when is_integer(id) do
+    case Repo.get(AlertRules, id) do
+      nil ->
+        {:error, "Alert not found"}
+
+      alert_rules ->
+        {:ok, alert_rules}
+    end
+  end
+
+  def get_all(%{page_size: page_size, page_number: page_number, org_id: org_id}) do
+    query =
+      from(alert_rules in AlertRules,
+        where: alert_rules.org_id == ^org_id
+      )
+
+    query |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
+  end
 end

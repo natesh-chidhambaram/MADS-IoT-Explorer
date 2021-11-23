@@ -27,7 +27,7 @@ defmodule AcqdatCore.Schema.EntityManagement.AlertRules do
 
   schema "entity_alert_rules" do
     field(:rule_name, :string)
-    embeds_many(:partials, Partials)
+    embeds_many(:partials, Partials, on_replace: :delete)
     field(:entity, EntityEnum, null: false)
     field(:entity_id, :integer, null: false)
 
