@@ -86,4 +86,10 @@ defmodule AcqdatCore.Model.EntityManagement.AlertRules do
 
     query |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
   end
+
+  def list_policies() do
+    Enum.reduce(EntityPolicyDefinitionModuleEnum.__enum_map__(), [], fn {key, value}, acc ->
+      acc ++ [key]
+    end)
+  end
 end
