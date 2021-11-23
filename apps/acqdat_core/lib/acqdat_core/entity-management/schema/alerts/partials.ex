@@ -5,6 +5,7 @@ defmodule AcqdatCore.EntityManagement.Schema.Partials do
   embedded_schema do
     field(:name, :string, null: false)
     field(:policy_name, EntityPolicyDefinitionModuleEnum, null: false)
+    field(:logic, :string, default: nil)
 
     embeds_one :entity_parameters, EntityParameters, on_replace: :delete do
       field(:name, :string, null: false)
@@ -16,9 +17,9 @@ defmodule AcqdatCore.EntityManagement.Schema.Partials do
     field(:rule_parameters, :map, null: false)
   end
 
-  @params ~w(name policy_name rule_parameters)a
+  @params ~w(name policy_name logic rule_parameters)a
   @embedded_required_params ~w(name uuid data_type)a
-  @embedded_optional_params ~w(unit)a
+  @embedded_optional_params ~w(unit logic)a
   @permitted_embedded @embedded_optional_params ++ @embedded_required_params
 
   def changeset(%__MODULE__{} = partials, params) do
