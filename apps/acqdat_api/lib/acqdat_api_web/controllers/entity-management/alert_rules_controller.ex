@@ -11,7 +11,7 @@ defmodule AcqdatApiWeb.EntityManagement.AlertRulesController do
   import AcqdatApiWeb.Validators.EntityManagement.AlertRules
 
   plug AcqdatApiWeb.Plug.LoadOrg
-  plug AcqdatApiWeb.Plug.LoadAlertRules when action in [:update, :delete, :show]
+  plug AcqdatApiWeb.Plug.LoadEntityAlertRules when action in [:update, :delete, :show]
 
   def create(conn, params) do
     case conn.status do
@@ -51,81 +51,81 @@ defmodule AcqdatApiWeb.EntityManagement.AlertRulesController do
     |> render("grouping_rules.json", %{grouping_rules: grouping_rules})
   end
 
-  # def update(conn, params) do
-  #   case conn.status do
-  #     nil ->
-  #       %{assigns: %{alert_rule: alert_rule}} = conn
+  def update(conn, params) do
+    case conn.status do
+      nil ->
+        %{assigns: %{alert_rule: alert_rule}} = conn
 
-  #       case AlertRules.update(alert_rule, params) do
-  #         {:ok, alert_rules} ->
-  #           conn
-  #           |> put_status(200)
-  #           |> render("alert_rules.json", %{alert_rules: alert_rules})
+        case AlertRules.update(alert_rule, params) do
+          {:ok, alert_rules} ->
+            conn
+            |> put_status(200)
+            |> render("alert_rules.json", %{alert_rules: alert_rules})
 
-  #         {:error, alert_rule} ->
-  #           error = extract_changeset_error(alert_rule)
+          {:error, alert_rule} ->
+            error = extract_changeset_error(alert_rule)
 
-  #           conn
-  #           |> send_error(400, error)
-  #       end
+            conn
+            |> send_error(400, error)
+        end
 
-  #     404 ->
-  #       conn
-  #       |> send_error(404, AlertRuleErrorHelper.error_message(:resource_not_found))
+      404 ->
+        conn
+        |> send_error(404, AlertRuleErrorHelper.error_message(:resource_not_found))
 
-  #     401 ->
-  #       conn
-  #       |> send_error(401, AlertRuleErrorHelper.error_message(:unauthorized))
-  #   end
-  # end
+      401 ->
+        conn
+        |> send_error(401, AlertRuleErrorHelper.error_message(:unauthorized))
+    end
+  end
 
-  # def delete(conn, _params) do
-  #   case conn.status do
-  #     nil ->
-  #       %{assigns: %{alert_rule: alert_rule}} = conn
+  def delete(conn, _params) do
+    case conn.status do
+      nil ->
+        %{assigns: %{alert_rule: alert_rule}} = conn
 
-  #       case AlertRules.delete(alert_rule) do
-  #         {:ok, alert_rules} ->
-  #           conn
-  #           |> put_status(200)
-  #           |> render("alert_rules.json", %{alert_rules: alert_rules})
+        case AlertRules.delete(alert_rule) do
+          {:ok, alert_rules} ->
+            conn
+            |> put_status(200)
+            |> render("alert_rules.json", %{alert_rules: alert_rules})
 
-  #         {:error, alert_rule} ->
-  #           error = extract_changeset_error(alert_rule)
+          {:error, alert_rule} ->
+            error = extract_changeset_error(alert_rule)
 
-  #           conn
-  #           |> send_error(400, error)
-  #       end
+            conn
+            |> send_error(400, error)
+        end
 
-  #     404 ->
-  #       conn
-  #       |> send_error(404, AlertRuleErrorHelper.error_message(:resource_not_found))
+      404 ->
+        conn
+        |> send_error(404, AlertRuleErrorHelper.error_message(:resource_not_found))
 
-  #     401 ->
-  #       conn
-  #       |> send_error(401, AlertRuleErrorHelper.error_message(:unauthorized))
-  #   end
-  # end
+      401 ->
+        conn
+        |> send_error(401, AlertRuleErrorHelper.error_message(:unauthorized))
+    end
+  end
 
-  # def index(conn, params) do
-  #   changeset = verify_index_params(params)
+  def index(conn, params) do
+    changeset = verify_index_params(params)
 
-  #   case conn.status do
-  #     nil ->
-  #       {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
-  #       {:list, alert_rules} = {:list, AlertRules.get_all(data)}
+    case conn.status do
+      nil ->
+        {:extract, {:ok, data}} = {:extract, extract_changeset_data(changeset)}
+        {:list, alert_rules} = {:list, AlertRules.get_all(data)}
 
-  #       conn
-  #       |> put_status(200)
-  #       |> render("index.json", alert_rules)
+        conn
+        |> put_status(200)
+        |> render("index.json", alert_rules)
 
-  #     404 ->
-  #       conn
-  #       |> send_error(404, AlertRuleErrorHelper.error_message(:resource_not_found))
+      404 ->
+        conn
+        |> send_error(404, AlertRuleErrorHelper.error_message(:resource_not_found))
 
-  #     401 ->
-  #       conn
-  #       |> send_error(401, AlertRuleErrorHelper.error_message(:unauthorized))
-  #   end
-  # end
+      401 ->
+        conn
+        |> send_error(401, AlertRuleErrorHelper.error_message(:unauthorized))
+    end
+  end
 end
