@@ -19,7 +19,7 @@ defmodule AcqdatCore.EntityManagement.Schema.Partials do
 
   @params ~w(name policy_name logic rule_parameters)a
   @embedded_required_params ~w(name uuid data_type)a
-  @embedded_optional_params ~w(unit logic)a
+  @embedded_optional_params ~w(unit)a
   @permitted_embedded @embedded_optional_params ++ @embedded_required_params
 
   def changeset(%__MODULE__{} = partials, params) do
