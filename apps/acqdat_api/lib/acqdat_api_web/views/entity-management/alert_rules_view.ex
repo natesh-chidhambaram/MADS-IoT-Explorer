@@ -41,6 +41,7 @@ defmodule AcqdatApiWeb.EntityManagement.AlertRulesView do
   def render("partials.json", %{alert_rules: partial}) do
     %{
       name: partial.name,
+      logic: partial.logic,
       policy_name: partial.policy_name,
       rule_parameters: partial.rule_parameters,
       entity_parameters: render_one(partial.entity_parameters, AlertRulesView, "parameter.json")
