@@ -107,6 +107,14 @@ defmodule AcqdatApiWeb.EntityManagement.AlertRulesController do
     end
   end
 
+  def policies(conn, _params) do
+    policies = AlertRules.list_policies()
+
+    conn
+    |> put_status(200)
+    |> render("policies.json", %{policies: policies})
+  end
+
   def index(conn, params) do
     changeset = verify_index_params(params)
 

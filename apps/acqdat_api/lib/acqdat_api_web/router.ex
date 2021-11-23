@@ -268,7 +268,7 @@ defmodule AcqdatApiWeb.Router do
       end
 
       scope "/" do
-        # resources "/policies", PolicyController, only: [:index]
+        get "/policies", AlertRulesController, :policies
         # get "/grouping_rules", AlertRulesController, :grouping_rules
         resources "/alert-rules", AlertRulesController,
           except: [:new, :edit],

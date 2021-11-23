@@ -86,4 +86,18 @@ defmodule AcqdatApiWeb.EntityManagement.AlertRulesView do
       rule_preferences: alert_rules.rule_preferences
     }
   end
+
+  def render("policies.json", %{policies: policies}) do
+    %{
+      policies: render_many(policies, AlertRulesView, "policy.json")
+    }
+  end
+
+  def render("policy.json", %{alert_rules: policy}) do
+    %{
+      policy_name: policy.rule_name,
+      rule_parameters: policy.rule_preferences,
+      policy_module: policy
+    }
+  end
 end

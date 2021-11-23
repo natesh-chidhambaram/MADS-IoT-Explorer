@@ -8,6 +8,8 @@ defmodule AcqdatApi.EntityManagement.AlertRules do
   defdelegate get_all(data), to: AlertRules
   defdelegate delete(alert_rules), to: AlertRules
 
+  defdelegate list_policies(), to: AlertRules
+
   def create(params) do
     params = params_extraction(params)
     verify_alert_rules(AlertRules.create(params))
