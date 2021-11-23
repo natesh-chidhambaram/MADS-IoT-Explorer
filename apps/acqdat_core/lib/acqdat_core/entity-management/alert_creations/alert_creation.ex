@@ -76,30 +76,30 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
     Broadway.start_link(__MODULE__,
       name: __MODULE__,
       producer: [
-          module: {BroadwayRabbitMQ.Producer,
-            queue: @entity_queue,
-            declare: [durable: true],
-            connection: [
-              username: "guest",
-              password: "guest",
-            ],
-            on_failure: :reject
-          },
-          concurrency: 1
-        ],
-        processors: [
-          default: [
-            concurrency: 10
-          ]
+        module:
+          {BroadwayRabbitMQ.Producer,
+           queue: @entity_queue,
+           declare: [durable: true],
+           connection: [
+             username: "guest",
+             password: "guest"
+           ],
+           on_failure: :reject},
+        concurrency: 1
+      ],
+      processors: [
+        default: [
+          concurrency: 10
         ]
-      )
-    end
+      ]
+    )
+  end
 
-    @impl true
-    def handle_message(_processor, message, _context) do
-      AlertCreation.traverse_ids(Jason.decode!(message.data), "Sensor")
-      Broadway.Message.ack_immediately(message)
-    end
+  @impl true
+  def handle_message(_processor, message, _context) do
+    AlertCreation.traverse_ids(Jason.decode!(message.data), "Sensor")
+    Broadway.Message.ack_immediately(message)
+  end
 
   def sensor_alert(data) do
     AlertCreation.traverse_ids(data, "Sensor")
@@ -115,21 +115,21 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
 
         alert_rules ->
           Enum.each(alert_rules, fn alert_rule ->
-              alert_rule
-              |> bifurcate_partials()
-              |> check_parameter(parameters, sensor_id, "Sensor")
-              |> evaluate_partials(alert_rule)
-              |> case do
-                true ->
-                  true
-                  # context = prepare_context(sensor)
-                  # alert_rule
-                  # |> data_manifest(parameter, context)
-                  # |> Grouping.create_alert()
-                false ->
-                  :no_reply
-              end
+            alert_rule
+            |> bifurcate_partials()
+            |> check_parameter(parameters, sensor_id, "Sensor")
+            |> evaluate_partials(alert_rule)
+            |> case do
+              true ->
+                true
 
+              # context = prepare_context(sensor)
+              # alert_rule
+              # |> data_manifest(parameter, context)
+              # |> Grouping.create_alert()
+              false ->
+                :no_reply
+            end
           end)
       end
     end)
@@ -142,16 +142,18 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
 
   defp evaluate_partials(partial_results, alert_rule) do
     results =
-    Enum.reduce(partial_results, %{}, fn result, acc ->
-      Map.merge(acc, result)
-    end)
+      Enum.reduce(partial_results, %{}, fn result, acc ->
+        Map.merge(acc, result)
+      end)
+
     expression =
-    Enum.reduce(results, "", fn {key, value}, acc ->
-      case acc do
-        "" -> String.replace(alert_rule.expression, key, to_string(value))
-        _ -> String.replace(acc, key, to_string(value))
-      end
-    end)
+      Enum.reduce(results, "", fn {key, value}, acc ->
+        case acc do
+          "" -> String.replace(alert_rule.expression, key, to_string(value))
+          _ -> String.replace(acc, key, to_string(value))
+        end
+      end)
+
     case Case.eval_string(expression) do
       {true, []} -> true
       {false, []} -> false
