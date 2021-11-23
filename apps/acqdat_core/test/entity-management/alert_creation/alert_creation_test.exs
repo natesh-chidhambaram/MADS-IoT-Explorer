@@ -154,7 +154,8 @@ defmodule AcqdatCore.EntityManagement.AlertCreationTest do
           rule_parameters: %{upper_limit: 16}
         }
       ],
-      expression: "partial1 and partial2 or partial3 and partial4 or partial5 or partial5 and partial6 or partial7 and partial8 and partial9",
+      expression:
+        "partial1 and partial2 or partial3 and partial4 or partial5 or partial5 and partial6 or partial7 and partial8 and partial9",
       grouping_meta: %{
         module: "Elixir.AcqdatCore.EntityManagement.Schema.Grouping.TimeGrouping",
         grouping_parameters: %{
