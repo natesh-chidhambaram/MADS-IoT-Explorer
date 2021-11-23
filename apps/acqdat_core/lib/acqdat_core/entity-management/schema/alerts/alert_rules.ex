@@ -40,9 +40,9 @@ defmodule AcqdatCore.Schema.EntityManagement.AlertRules do
     field(:recepient_ids, {:array, :integer})
     field(:phone_numbers, {:array, :string})
     field(:assignee_ids, {:array, :integer})
-    field(:severity, AlertSeverityEnum)
-    field(:status, AlertRulesStatusEnum)
-    field(:app, AppEnum)
+    field(:severity, EntityAlertSeverityEnum)
+    field(:status, EntityAlertRulesStatusEnum)
+    field(:app, EntityAppEnum)
 
     field(:description, :string)
 
