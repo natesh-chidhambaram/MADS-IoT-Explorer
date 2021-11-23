@@ -1,4 +1,4 @@
-defmodule AcqdatApiWeb.Alerts.AlertRulesControllerTest do
+defmodule AcqdatApiWeb.EntityManagement.AlertRulesControllerTest do
   @moduledoc """
   Test cases for the API of alertrules endpoints
   """
