@@ -440,6 +440,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
   # ]
 
   def fetch_highchart_details(widget_inst, filter_params) do
+    IO.inspect(filter_params, label: "filter params for gen series data")
     widget_inst |> gen_series_data(filter_params)
   end
 
@@ -519,15 +520,20 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
   end
 
   defp fetch_latest_axes_spec_data(axes, filter_metadata) do
+    # validate data source?
+
     Enum.reduce(axes, [], fn axis, acc ->
-      res = axis |> validate_data_source(filter_metadata, "latest")
+      IO.inspect(axis, label: "axis")
+
+      res = validate_data_source(axis, filter_metadata, "latest")
       acc ++ (res || [])
     end)
   end
 
   defp fetch_axes_specific_data(axes, filter_metadata) do
     Enum.reduce(axes, [], fn axis, acc ->
-      res = axis |> validate_data_source(filter_metadata, "timeseries")
+      u_axis = Map.put(axis, :source_metadata, %{"parameter" => "inserted_timestamp"})
+      res = validate_data_source(u_axis, filter_metadata, "timeseries")
       acc ++ (res || [])
     end)
   end
@@ -564,6 +570,7 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
        )
        when source_type == "pds" and parameter == "inserted_timestamp" do
   end
+
 
   defp fetch_from_data_source(
          entity_id,

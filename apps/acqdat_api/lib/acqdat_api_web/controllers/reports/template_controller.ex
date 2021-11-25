@@ -91,7 +91,7 @@ defmodule AcqdatApiWeb.Reports.TemplateController do
           {:ok, template} ->
             conn
             |> put_status(200)
-            |> render("template.json", %{template: template})
+            |> render("show.json", %{template: template})
 
           {:else, template} ->
             error =

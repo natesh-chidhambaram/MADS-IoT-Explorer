@@ -6,6 +6,7 @@ defmodule AcqdatApiWeb.Reports.TemplateInstanceController do
   alias AcqdatApiWeb.Reports.TemplateInstanceErrorHelper
   alias AcqdatApi.Reports.TemplateInstance
 
+  plug AcqdatApiWeb.Plug.LoadOrg when action in [:create, :update]
   plug AcqdatApiWeb.Plug.LoadTemplateInstance when action in [:update, :delete]
 
   def index(conn, params) do
@@ -23,7 +24,10 @@ defmodule AcqdatApiWeb.Reports.TemplateInstanceController do
   end
 
   def create(conn, params) do
-    changeset = verify_params(params)
+    changeset =
+      params
+      |> Map.put("org_id", conn.assigns.org.id)
+      |> verify_params()
 
     with {:extract, {:ok, data} = extract_changeset_data(changeset)},
          {:create, {:ok, template_instance}} <- {:create, TemplateInstance.create(data)} do
@@ -58,7 +62,10 @@ defmodule AcqdatApiWeb.Reports.TemplateInstanceController do
   def update(conn, params) do
     case conn.status do
       nil ->
-        changeset = verify_update_params(params)
+        changeset =
+          params
+          |> Map.put("org_id", conn.assigns.org.id)
+          |> verify_update_params()
 
         with {:extract, {:ok, data} = extract_changeset_data(changeset)},
              {:update, {:ok, template_instance}} <-

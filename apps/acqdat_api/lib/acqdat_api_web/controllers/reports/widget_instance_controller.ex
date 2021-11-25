@@ -60,8 +60,7 @@ defmodule AcqdatApiWeb.Reports.WidgetInstanceController do
       nil ->
         {id, _} = Integer.parse(id)
 
-        # case WidgetInstance.get_by_filter(id, params) do
-        case {:ok, %{}} do
+        case WidgetInstance.get_by_filter(id, params) do
           {:error, message} ->
             conn
             |> send_error(400, WidgetInstanceErrorHelper.error_message(:resource_not_found))

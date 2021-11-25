@@ -2,6 +2,7 @@ defmodule AcqdatCore.Reports.Schema.TemplateInstance do
   use AcqdatCore.Schema
   alias AcqdatCore.Schema.RoleManagement.User
   alias AcqdatCore.Reports.Schema.TemplateInstance.Page
+  alias AcqdatCore.Schema.EntityManagement.Organisation
 
   schema("acqdat_reports_template_instances") do
     field(:uuid, :string)
@@ -13,10 +14,12 @@ defmodule AcqdatCore.Reports.Schema.TemplateInstance do
       foreign_key: :created_by_user_id
     )
 
+    belongs_to(:org, Organisation)
+
     embeds_many(:pages, Page, on_replace: :delete)
   end
 
-  @required ~w(name)a
+  @required ~w(name org_id)a
   @optional ~w(type)a
   @permitted @optional ++ @required
 
@@ -25,6 +28,7 @@ defmodule AcqdatCore.Reports.Schema.TemplateInstance do
     |> cast(attrs, @permitted)
     |> validate_required(@required)
     |> unique_constraint(:name, name: :acqdat_reports_template_instances_name_index)
+    |> assoc_constraint(:org)
     |> add_uuid()
     |> cast_embed(:pages, with: &Page.changeset/2)
   end

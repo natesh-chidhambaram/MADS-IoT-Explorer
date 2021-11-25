@@ -2,6 +2,7 @@ defmodule AcqdatCore.Reports.Model.ReportWidget do
   import Ecto.Query
   alias AcqdatCore.Repo
   alias AcqdatCore.Reports.Schema.ReportWidget
+  alias AcqdatCore.Widgets.Schema.Vendors.HighCharts
 
   def create(params) do
     changeset = ReportWidget.changeset(%ReportWidget{}, params)
@@ -11,12 +12,18 @@ defmodule AcqdatCore.Reports.Model.ReportWidget do
   # filter
   def get_by_filter(id, filter_params) when is_integer(id) do
     # report widget = widget instance
-    case Repo.get(ReportWidget, id) do
+
+    case Repo.get(ReportWidget, id) |> Repo.preload([:widget]) do
       nil ->
+        IO.puts("report widget not FOUND .......")
+
         {:error, "widget instance in this report with this id not found"}
 
       report_widget ->
-        filtered_params = parse_filtered_params(filter_params, report_widget.filter_params)
+        IO.puts("report widget .......###########")
+        # require IEx; IEx.pry()
+
+        filtered_params = parse_filtered_params(filter_params, report_widget.filter_metadata)
 
         # source app check
 
@@ -30,6 +37,8 @@ defmodule AcqdatCore.Reports.Model.ReportWidget do
           else
             report_widget |> HighCharts.fetch_highchart_details(filtered_params)
           end
+
+        # IO.inspect(widget_instance_data, label: "repo in data")
 
         # widget_instance_data = HighCharts.fetch_highchart_details(filtered_params)
 

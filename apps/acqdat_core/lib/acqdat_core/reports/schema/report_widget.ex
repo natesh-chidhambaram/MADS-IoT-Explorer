@@ -10,14 +10,13 @@ defmodule AcqdatCore.Reports.Schema.ReportWidget do
 
   use AcqdatCore.Schema
   alias AcqdatCore.Widgets.Schema.Widget
-  alias AcqdatCore.DashboardManagement.Schema.WidgetInstance.SeriesData
+  alias AcqdatCore.Reports.Schema.ReportWidget.SeriesData
   alias AcqdatCore.Reports.Schema.ReportWidget.FilterMetadata
   alias AcqdatCore.Reports.TemplateInstance
 
   # item, object, thing
   schema("acqdat_reports_widgets") do
     field(:label, :string, null: false)
-    # field(:slug, :string, null: false)
     field(:widget_settings, :map)
     field(:uuid, :string)
     field(:visual_properties, :map)
@@ -83,6 +82,50 @@ defmodule AcqdatCore.Reports.Schema.ReportWidget.FilterMetadata do
 
   def changeset(%__MODULE__{} = settings, params) do
     settings
+    |> cast(params, @permitted)
+  end
+end
+
+defmodule AcqdatCore.Reports.Schema.ReportWidget.SeriesData do
+  @moduledoc """
+  Embed schema for Series Data and its data-sources.
+  """
+
+  use AcqdatCore.Schema
+  alias AcqdatCore.Reports.Schema.ReportWidget.Axes
+
+  embedded_schema do
+    field(:name, :string)
+    field(:color, :string)
+    field(:unit, :string)
+    embeds_many(:axes, Axes)
+  end
+
+  @permitted ~w(name color unit)a
+
+  def changeset(%__MODULE__{} = series, params) do
+    series
+    |> cast(params, @permitted)
+    |> cast_embed(:axes, with: &Axes.changeset/2)
+  end
+end
+
+defmodule AcqdatCore.Reports.Schema.ReportWidget.Axes do
+  @moduledoc """
+  Embed schema for Axes of widget.
+  """
+
+  use AcqdatCore.Schema
+
+  embedded_schema do
+    field(:name, :string)
+    field(:source_type, :string)
+    field(:source_metadata, :map)
+  end
+
+  @permitted ~w(name source_type source_metadata)a
+  def changeset(%__MODULE__{} = axes, params) do
+    axes
     |> cast(params, @permitted)
   end
 end

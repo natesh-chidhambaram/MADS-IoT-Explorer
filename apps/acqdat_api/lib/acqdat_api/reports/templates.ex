@@ -24,8 +24,8 @@ defmodule AcqdatApi.Reports.Templates do
 
   defdelegate delete(template), to: TemplateModel
 
-  defp template_create_attrs(%{name: name, type: type, pages: pages, uuid: uuid}) do
-    %{name: name, type: type, pages: pages, uuid: uuid}
+  defp template_create_attrs(%{name: name, type: type, pages: pages,}) do
+    %{name: name, type: type, pages: pages}
   end
 
 end

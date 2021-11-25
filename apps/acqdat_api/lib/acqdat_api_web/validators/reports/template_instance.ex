@@ -4,8 +4,8 @@ defmodule AcqdatApiWeb.Validators.Reports.TemplateInstance do
   defparams(
     verify_params(%{
       type!: :string,
+      org_id!: :integer,
       name!: :string,
-      uuid!: :string,
       pages: {:array, :map}
     })
   )
@@ -13,8 +13,8 @@ defmodule AcqdatApiWeb.Validators.Reports.TemplateInstance do
   defparams(
     verify_update_params(%{
       type!: :string,
+      org_id!: :integer,
       name!: :string,
-      uuid!: :string,
       pages: {:array, :map}
     })
   )

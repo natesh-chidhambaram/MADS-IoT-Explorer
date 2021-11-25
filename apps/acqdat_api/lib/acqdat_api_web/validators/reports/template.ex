@@ -5,7 +5,6 @@ defmodule AcqdatApiWeb.Validators.Reports.Template do
     verify_params(%{
       type!: :string,
       name!: :string,
-      uuid!: :string,
       pages: {:array, :map}
     })
   )
@@ -14,7 +13,6 @@ defmodule AcqdatApiWeb.Validators.Reports.Template do
     verify_update_params(%{
       type!: :string,
       name!: :string,
-      uuid!: :string,
       pages: {:array, :map}
     })
   )

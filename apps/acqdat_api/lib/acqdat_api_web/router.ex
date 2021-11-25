@@ -452,30 +452,12 @@ defmodule AcqdatApiWeb.Router do
   scope "/reports/orgs/:org_id", AcqdatApiWeb.Reports do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
-    get "/templates", TemplateController, :index
-    get "/templates/:id", TemplateController, :show
+    resources "/templates", TemplateController, only: [:create, :update, :delete, :index, :show]
+    resources "/template_instances", TemplateController, only: [:create, :update, :delete, :index, :show]
 
-    post("/templates", TemplateController, :create)
-    put("/templates/:template_id", TemplateController, :update)
-    delete("/templates/:template_id/delete", TemplateController, :delete)
+    resources "/widgets", WidgetMouldController, only: [:create, :update, :delete, :index, :show]
 
-    get "/template_instances", TemplateInstanceController, :index
-    get "/template_instances/:id", TemplateInstanceController, :show
-
-    post("/template_instances", TemplateInstanceController, :create)
-    put("/template_instances/:template_instance_id", TemplateInstanceController, :update)
-
-    delete(
-      "/template_instances/:template_instance_id/delete",
-      TemplateInstanceController,
-      :delete
-    )
-
-    resources "/widgets", WidgetMouldController, only: [:show, :index]
-
-    resources "/widget_instances", WidgetInstanceController,
-      only: [:create, :show, :update, :delete]
-
+    resources "/widget_instances", WidgetInstanceController, only: [:create, :update, :delete, :index, :show]
     get "/widget_instances/:id/data", WidgetInstanceController, :data
   end
 end

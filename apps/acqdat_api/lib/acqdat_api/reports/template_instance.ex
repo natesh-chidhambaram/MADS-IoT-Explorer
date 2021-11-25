@@ -24,7 +24,7 @@ defmodule AcqdatApi.Reports.TemplateInstance do
 
   defdelegate delete(template), to: TemplateInstanceModel
 
-  defp template_instance_create_attrs(%{name: name, type: type, pages: pages, uuid: uuid}) do
-    %{name: name, type: type, pages: pages, uuid: uuid}
+  defp template_instance_create_attrs(%{name: name, type: type, pages: pages, org_id: org_id}) do
+    %{name: name, type: type, pages: pages, org_id: org_id}
   end
 end
