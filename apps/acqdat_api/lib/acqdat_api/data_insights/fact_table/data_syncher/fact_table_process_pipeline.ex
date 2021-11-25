@@ -52,16 +52,11 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
             |> Enum.reduce([], fn message, acc ->
               data = Jason.decode!(message.data)
 
-              if is_leaf?(leaf_nodes.leaf_nodes, data) != [] do
-                IO.inspect("this is leaf node data")
-                row_computation(fact_table, data, subtree)
-              end
+              if is_leaf?(leaf_nodes.leaf_nodes, data) != [],
+                do: row_computation(fact_table, data, subtree)
 
               acc = [data | acc]
             end)
-
-          IO.inspect("res_meaasges")
-          IO.inspect(res)
         end
 
       {:error, error} ->
@@ -77,55 +72,62 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
         event,
         subtree
       ) do
-    IO.inspect(headers_metadata)
     row = List.duplicate(nil, headers_metadata["rows_len"])
     leaf_id = "#{event["entity_id"]}_#{event["entity_name"]}"
-    leaf_pos = headers_metadata["headers"][leaf_id][event["metadata_id"]]
 
     row =
-      if event["metadata_id"] == "name" do
-        List.replace_at(row, leaf_pos, event["metadata_val"])
-      else
-        row = List.replace_at(row, leaf_pos, event["metadata_val"])
-        leaf_tim_pos = headers_metadata["headers"][leaf_id]["#{event["metadata_id"]}_dateTime"]
-        if leaf_tim_pos, do: List.replace_at(row, leaf_tim_pos, event["event_id"]), else: row
-      end
-
-    IO.inspect(row)
-
-    IO.inspect(subtree)
-
-    subtree = NaryTree.from_map(subtree)
-    leaf_node = NaryTree.get(subtree, leaf_id)
-
-    {:ok, child} =
-      if event["entity_type"] == "SensorType" do
-        {:ok, sen} = AcqdatCore.Model.EntityManagement.Sensor.get(event["entity_source_id"])
-      else
-        {:ok, asset} = AcqdatCore.Model.EntityManagement.Asset.get(event["entity_source_id"])
+      if event["entity_source_name"] == "name" do
+        leaf_pos = headers_metadata["headers"][leaf_id][event["entity_source_name"]]
+        if leaf_pos, do: List.replace_at(row, leaf_pos, event["entity_source_val"]), else: row
       end
 
     row =
-      if child && child.parent_id do
-        {:ok, asset} = AssetModel.get(child.parent_id)
-
-        subtree_computation(
-          subtree,
-          leaf_node,
-          headers_metadata,
-          row,
-          asset,
-          asset.asset_type_id,
-          asset.asset_type.name
-        )
+      if event["metadata"] do
+        Enum.reduce(event["metadata"], row, fn metadata, acc ->
+          pos = headers_metadata["headers"][leaf_id][metadata["uuid"]]
+          acc = if pos, do: List.replace_at(acc, pos, metadata["value"]), else: acc
+          tim_pos = headers_metadata["headers"][leaf_id]["#{metadata["uuid"]}_dateTime"]
+          acc = if tim_pos, do: List.replace_at(acc, tim_pos, event["event_id"]), else: acc
+          acc
+        end)
+      else
+        if Enum.count(headers_metadata["headers"][leaf_id]) >= 2,
+          do: List.duplicate(nil, headers_metadata["rows_len"]),
+          else: row
       end
 
-    IO.inspect("row lits")
-    IO.inspect(row)
+    if Enum.count(headers_metadata["headers"][leaf_id]) >= 2 && event["metadata"] == nil do
+      row
+    else
+      subtree = NaryTree.from_map(subtree)
+      leaf_node = NaryTree.get(subtree, leaf_id)
 
-    res = insert_to_fact_table(fact_table, row)
-    IO.inspect(res)
-    res
+      {:ok, child} =
+        if event["entity_type"] == "SensorType" do
+          {:ok, sen} = AcqdatCore.Model.EntityManagement.Sensor.get(event["entity_source_id"])
+        else
+          {:ok, asset} = AcqdatCore.Model.EntityManagement.Asset.get(event["entity_source_id"])
+        end
+
+      row =
+        if child && child.parent_id do
+          {:ok, asset} = AssetModel.get(child.parent_id)
+
+          subtree_computation(
+            subtree,
+            leaf_node,
+            headers_metadata,
+            row,
+            asset,
+            asset.asset_type_id,
+            asset.asset_type.name
+          )
+        end
+
+      if length(Enum.filter(row, &(!is_nil(&1)))) == 0,
+        do: [],
+        else: insert_to_fact_table(fact_table, row)
+    end
   end
 
   # TODO: Refactor this function
@@ -145,17 +147,12 @@ defmodule AcqdatApi.DataInsights.FactTable.FactTableProcessPipeline do
           end
         end)
 
-      IO.inspect(asset)
-      IO.inspect("SDaerf")
       parent_asset = AsNestedSet.ancestors(asset) |> AsNestedSet.execute(Repo)
 
       if parent_asset == [] do
         res
       else
-        IO.inspect(parent_asset)
         [asset] = parent_asset
-
-        # %Asset{asset_type: %AssetType{name: name, id: asset_type_id}} = asset |> Repo.preload([:asset_type])
         asset = asset |> Repo.preload([:asset_type])
 
         node = NaryTree.get(subtree, tree_node.parent)

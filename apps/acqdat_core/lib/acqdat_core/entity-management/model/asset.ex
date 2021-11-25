@@ -8,6 +8,7 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
   alias Ecto.Multi
   alias AcqdatCore.Repo
   alias AcqdatCore.Model.Helper, as: ModelHelper
+  alias AcqdatApi.DataStructure.Queues.Rabbitmq.Amqp
 
   def get(id) when is_integer(id) do
     case Repo.get(Asset, id) |> Repo.preload([:org, :project, :asset_type]) do
@@ -135,6 +136,7 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
       {:ok, asset} ->
         Task.start_link(fn ->
           ElasticSearch.update_asset("assets", asset)
+          asset_type = asset |> Repo.preload(:asset_type)
         end)
 
         {:ok, asset |> Repo.preload(:asset_type)}
@@ -198,6 +200,8 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
         ElasticSearch.insert_asset("assets", taxon)
       end)
 
+      publish_to_rabbitmq(taxon)
+
       {:ok, taxon}
     rescue
       error in Ecto.InvalidChangesetError ->
@@ -225,6 +229,8 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
       Task.start_link(fn ->
         ElasticSearch.insert_asset("assets", taxon)
       end)
+
+      publish_to_rabbitmq(taxon)
 
       {:ok, taxon}
     rescue
@@ -456,6 +462,29 @@ defmodule AcqdatCore.Model.EntityManagement.Asset do
       {:error, _failed_operation, failed_value, _changes_so_far} ->
         {:error, failed_value}
     end
+  end
+
+  defp publish_to_rabbitmq(taxon) do
+    Task.start_link(fn ->
+      asset = taxon |> Repo.preload(:asset_type)
+
+      metadata = Enum.map(asset.metadata, fn m -> Map.from_struct(m) end)
+
+      params = %{
+        project_id: taxon.project_id,
+        entity_type: "AssetType",
+        entity_name: asset.asset_type.name,
+        entity_id: asset.asset_type.id,
+        entity_source_name: "name",
+        entity_source_val: taxon.name,
+        metadata: metadata,
+        entity_source_id: taxon.id,
+        event_generator: "entity_manager",
+        event_id: Timex.now()
+      }
+
+      Amqp.publish_thr_exc("entity_exch", "entity.AssetType.#{asset.asset_type.id}", params)
+    end)
   end
 
   def get_all(%{

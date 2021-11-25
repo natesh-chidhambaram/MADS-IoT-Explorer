@@ -7,6 +7,7 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
   alias Elixlsx.{Workbook, Sheet}
   alias AcqdatCore.Model.IotManager.Gateway
   import Ecto.Query
+  alias AcqdatApi.DataStructure.Queues.Rabbitmq.Amqp
 
   def create(params) do
     changeset = Sensor.changeset(%Sensor{}, params)
@@ -16,6 +17,8 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
         Task.start_link(fn ->
           ElasticSearch.insert_sensor("sensors", sensor)
         end)
+
+        publish_to_rabbitmq(sensor)
 
         {:ok, sensor}
 
@@ -522,5 +525,25 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     {datetime, _} = Integer.parse(datetime)
     {:ok, res} = datetime |> DateTime.from_unix(:millisecond)
     res
+  end
+
+  defp publish_to_rabbitmq(sensor) do
+    Task.start_link(fn ->
+      sensor = sensor |> Repo.preload(:sensor_type)
+
+      params = %{
+        project_id: sensor.project_id,
+        entity_type: "SensorType",
+        entity_name: sensor.sensor_type.name,
+        entity_id: sensor.sensor_type.id,
+        entity_source_name: "name",
+        entity_source_val: sensor.name,
+        entity_source_id: sensor.id,
+        event_generator: "entity_manager",
+        event_id: Timex.now()
+      }
+
+      Amqp.publish_thr_exc("entity_exch", "entity.SensorType.#{sensor.sensor_type.id}", params)
+    end)
   end
 end

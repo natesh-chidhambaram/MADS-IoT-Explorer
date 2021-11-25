@@ -68,6 +68,8 @@ defmodule AcqdatCore.IotManager.DataParser do
           inserted_at: DateTime.truncate(DateTime.utc_now(), :second)
         }
 
+        publish_to_rabbitmq(params)
+
         parameters = prepare_sensor_parameters(parameters)
         params = Map.replace!(params, :parameters, parameters)
         acc ++ [params]
@@ -78,6 +80,27 @@ defmodule AcqdatCore.IotManager.DataParser do
   end
 
   ##################### parsing data private helpers ###################
+
+  defp publish_to_rabbitmq(%{sensor_id: sensor_id, project_id: project_id, parameters: parameters}) do
+    Task.start_link(fn ->
+      {:ok, sensor} = SModel.get(sensor_id)
+
+      params = %{
+        project_id: project_id,
+        entity_type: "SensorType",
+        entity_name: sensor.sensor_type.name,
+        entity_id: sensor.sensor_type.id,
+        entity_source_name: "name",
+        entity_source_val: sensor.name,
+        entity_source_id: sensor.id,
+        metadata: parameters,
+        event_generator: "entity_manager",
+        event_id: Timex.now()
+      }
+
+      Amqp.publish_thr_exc("entity_exch", "entity.SensorType.#{sensor.sensor_type.id}", params)
+    end)
+  end
 
   defp prepare_gateway_parameters(parameters) do
     Enum.reduce(parameters, [], fn param, acc ->
