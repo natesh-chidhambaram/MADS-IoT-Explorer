@@ -48,9 +48,12 @@ defmodule AcqdatCore.Schema.Streams.Action do
     |> validate_inclusion(:type, @action_types)
     |> validate_required(@required_params)
     |> assoc_constraint(:pipeline)
-    |> cast_polymorphic_embed(:config, required: true, with: [
-	  init: &Init.create_changeset/2
-	])
+    |> cast_polymorphic_embed(:config,
+      required: true,
+      with: [
+        init: &Init.create_changeset/2
+      ]
+    )
   end
 
   @spec update_changeset(t | Ecto.Changeset.t(), map) :: Ecto.Changeset.t()

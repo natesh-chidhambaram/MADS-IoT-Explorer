@@ -15,7 +15,7 @@ defmodule AcqdatCore.Schema.Streams.ActionTest do
       params = %{
         pipeline_id: pipeline.id,
         type: :init,
-	config: %{}
+        config: %{}
       }
 
       %{valid?: validity} = Action.create_changeset(%Action{}, params)
@@ -47,7 +47,7 @@ defmodule AcqdatCore.Schema.Streams.ActionTest do
       params = %{
         pipeline_id: UUID.uuid4(),
         type: :init,
-	config: %{}
+        config: %{}
       }
 
       changeset = Action.create_changeset(%Action{}, params)
