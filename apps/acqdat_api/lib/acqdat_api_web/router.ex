@@ -454,7 +454,7 @@ defmodule AcqdatApiWeb.Router do
     resources "/templates", TemplateController, only: [:create, :update, :delete, :index, :show]
     resources "/template_instances", TemplateController, only: [:create, :update, :delete, :index, :show]
 
-    resources "/widgets", WidgetMouldController, only: [:create, :update, :delete, :index, :show]
+    resources "/widgets", WidgetMouldController, only: [:index, :show]
 
     resources "/widget_instances", WidgetInstanceController, only: [:create, :update, :delete, :index, :show]
     get "/widget_instances/:id/data", WidgetInstanceController, :data
