@@ -2,17 +2,17 @@ defmodule AcqdatApiWeb.Reports.WidgetMouldView do
     use AcqdatApiWeb, :view
     alias AcqdatApiWeb.Reports.WidgetMouldView
 
-    def render("widget_moulds.json", %{data: data}) do
+    def render("widgets.json", %{data: data}) do
       %{
-        data: render_many(data, WidgetMouldView, "widget_mould.json")
+        data: render_many(data, WidgetMouldView, "widget.json")
       }
     end
 
-    def render("widget_mould.json",  %{widget_mould: data}) do
+    def render("widget.json",  %{widget_mould: data}) do
       %{
         classification: data.classification,
         count: data.count,
-        widget_moulds: render_many(data.widgets, WidgetMouldView, "widget_mould_details.json")
+        widgets: render_many(data.widgets, WidgetMouldView, "widget_mould_details.json")
       }
     end
 

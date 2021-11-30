@@ -53,8 +53,6 @@ defmodule AcqdatApiWeb.Reports.WidgetInstanceController do
     end
   end
 
-  # line timeseries.
-  # minus label
   def data(conn, %{"id" => id} = params) do
     case conn.status do
       nil ->
@@ -81,8 +79,4 @@ defmodule AcqdatApiWeb.Reports.WidgetInstanceController do
     end
   end
 
-  # TODO - discuss. probably there should be no id or no widget instance here.
-  # As we collect data_settings and visual_settings from template_instance.
-  # The other params we send will be to_date, from_date.
-  # Needs to be discussed.
 end

@@ -9,25 +9,15 @@ defmodule AcqdatCore.Reports.Model.ReportWidget do
     Repo.insert(changeset)
   end
 
-  # filter
   def get_by_filter(id, filter_params) when is_integer(id) do
-    # report widget = widget instance
 
     case Repo.get(ReportWidget, id) |> Repo.preload([:widget]) do
       nil ->
-        IO.puts("report widget not FOUND .......")
-
         {:error, "widget instance in this report with this id not found"}
 
       report_widget ->
-        IO.puts("report widget .......###########")
-        # require IEx; IEx.pry()
 
         filtered_params = parse_filtered_params(filter_params, report_widget.filter_metadata)
-
-        # source app check
-
-        #   filtered_params = parse_filtered_params(filter_params, widget_instance.filter_params)
 
         widget_instance_data =
           if report_widget.source_app != nil do
@@ -37,10 +27,6 @@ defmodule AcqdatCore.Reports.Model.ReportWidget do
           else
             report_widget |> HighCharts.fetch_highchart_details(filtered_params)
           end
-
-        # IO.inspect(widget_instance_data, label: "repo in data")
-
-        # widget_instance_data = HighCharts.fetch_highchart_details(filtered_params)
 
         {:ok, widget_instance_data}
     end
@@ -84,6 +70,4 @@ defmodule AcqdatCore.Reports.Model.ReportWidget do
     res
   end
 
-  # update
-  # delete
 end

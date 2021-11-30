@@ -440,7 +440,6 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
   # ]
 
   def fetch_highchart_details(widget_inst, filter_params) do
-    IO.inspect(filter_params, label: "filter params for gen series data")
     widget_inst |> gen_series_data(filter_params)
   end
 
@@ -523,8 +522,6 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
     # validate data source?
 
     Enum.reduce(axes, [], fn axis, acc ->
-      IO.inspect(axis, label: "axis")
-
       res = validate_data_source(axis, filter_metadata, "latest")
       acc ++ (res || [])
     end)

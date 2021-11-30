@@ -7,14 +7,12 @@ defmodule AcqdatApiWeb.Reports.WidgetMouldController do
   alias AcqdatApi.Reports.WidgetMould
   alias AcqdatApiWeb.Reports.WidgetErrorHelper
 
-  # TODO avoid having the schema call in controller.
   alias AcqdatCore.Widgets.Schema.Vendors.HighCharts
 
   plug(AcqdatApiWeb.Plug.LoadWidget when action in [:show])
   plug(:put_view, AcqdatApiWeb.Widgets.WidgetView when action in [:show])
-  # plug(:put_view, AcqdatApiWeb.DashboardManagement.WidgetInstanceView when action in [:data])
 
-  # fetch widgets
+
   def index(conn, params) do
     changeset = verify_widget_params(params)
 
@@ -25,7 +23,7 @@ defmodule AcqdatApiWeb.Reports.WidgetMouldController do
 
         conn
         |> put_status(200)
-        |> render("widget_moulds.json", %{data: widgets})
+        |> render("widgets.json", %{data: widgets})
 
       404 ->
         conn
@@ -37,8 +35,6 @@ defmodule AcqdatApiWeb.Reports.WidgetMouldController do
     end
   end
 
-  # widget mould
-  # show widget mould.
   def show(conn, _params) do
     case conn.status do
       nil ->

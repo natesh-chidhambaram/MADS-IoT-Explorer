@@ -1,8 +1,6 @@
 defmodule AcqdatApiWeb.Validators.Reports.WidgetMould do
   use Params
 
-  # TODO - we dont create a mould here.
-  # create no allowed.
   defparams(
     verify_widget_params(%{
       widget_type_id!: :integer,
@@ -24,10 +22,4 @@ defmodule AcqdatApiWeb.Validators.Reports.WidgetMould do
     })
   )
 
-  defparams(
-    verify_widget_create_params(%{
-      page_size: :integer,
-      page_number: :integer
-    })
-  )
 end

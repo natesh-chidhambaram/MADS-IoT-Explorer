@@ -448,7 +448,6 @@ defmodule AcqdatApiWeb.Router do
   end
 
   #################### Reports ######################################
-  #  http://localhost:4000/metrics/orgs/1/reports
   scope "/reports/orgs/:org_id", AcqdatApiWeb.Reports do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
