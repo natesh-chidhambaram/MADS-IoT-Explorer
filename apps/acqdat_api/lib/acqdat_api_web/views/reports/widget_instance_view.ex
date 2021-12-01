@@ -2,7 +2,6 @@ defmodule AcqdatApiWeb.Reports.WidgetInstanceView do
   use AcqdatApiWeb, :view
   alias AcqdatApiWeb.Reports.WidgetInstanceView
 
-
   def render("widget_instance_data.json", %{widget: data}) do
     %{
       classification: data.classification,
@@ -12,11 +11,11 @@ defmodule AcqdatApiWeb.Reports.WidgetInstanceView do
     }
   end
 
-  def render("show.json", %{widget: widget}) do
+  def render("show.json", %{widget_instance: widget_instance}) do
     %{
-      id: widget.id,
-      label: widget.label,
-      uuid: widget.uuid
+      id: widget_instance.id,
+      label: widget_instance.label,
+      uuid: widget_instance.uuid
     }
   end
 

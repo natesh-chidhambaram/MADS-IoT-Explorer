@@ -14,7 +14,6 @@ defmodule AcqdatCore.Reports.Schema.ReportWidget do
   alias AcqdatCore.Reports.Schema.ReportWidget.FilterMetadata
   alias AcqdatCore.Reports.TemplateInstance
 
-  # item, object, thing
   schema("acqdat_reports_widgets") do
     field(:label, :string, null: false)
     field(:widget_settings, :map)
@@ -34,15 +33,23 @@ defmodule AcqdatCore.Reports.Schema.ReportWidget do
     timestamps(type: :utc_datetime)
   end
 
-  @required ~w(label widget_id template_instance_id uuid)a
+  @required ~w(label widget_id template_instance_id)a
   @optional ~w(widget_settings visual_properties source_app source_metadata)a
   @permitted @required ++ @optional
 
   def changeset(%__MODULE__{} = report_widget, params) do
     report_widget
     |> cast(params, @permitted)
-    # |> add_slug()
     |> add_uuid()
+    |> cast_embed(:series_data, with: &SeriesData.changeset/2)
+    |> cast_embed(:filter_metadata, with: &FilterMetadata.changeset/2)
+    |> validate_required(@required)
+    |> common_changeset()
+  end
+
+  def update_changeset(%__MODULE__{} = report_widget, params) do
+    report_widget
+    |> cast(params, @permitted)
     |> cast_embed(:series_data, with: &SeriesData.changeset/2)
     |> cast_embed(:filter_metadata, with: &FilterMetadata.changeset/2)
     |> validate_required(@required)
@@ -53,11 +60,6 @@ defmodule AcqdatCore.Reports.Schema.ReportWidget do
     changeset
     |> assoc_constraint(:widget)
     |> assoc_constraint(:template_instance)
-
-    # |> unique_constraint(:label,
-    #   name: :unique_widget_name_per_report,
-    #   message: "unique widget label per Report"
-    # )
   end
 end
 

@@ -10,13 +10,11 @@ defmodule AcqdatCore.Reports.Model.ReportWidget do
   end
 
   def get_by_filter(id, filter_params) when is_integer(id) do
-
     case Repo.get(ReportWidget, id) |> Repo.preload([:widget]) do
       nil ->
         {:error, "widget instance in this report with this id not found"}
 
       report_widget ->
-
         filtered_params = parse_filtered_params(filter_params, report_widget.filter_metadata)
 
         widget_instance_data =
@@ -30,6 +28,25 @@ defmodule AcqdatCore.Reports.Model.ReportWidget do
 
         {:ok, widget_instance_data}
     end
+  end
+
+  def get_by_id(id) when is_integer(id) do
+    case Repo.get(ReportWidget, id) do
+      nil ->
+        {:error, "widget_instance with this id not found"}
+
+      widget_instance ->
+        {:ok, widget_instance}
+    end
+  end
+
+  def update(widget_instance, params) do
+    changeset = ReportWidget.update_changeset(widget_instance, params)
+    Repo.update(changeset)
+  end
+
+  def delete(widget_instance) do
+    Repo.delete(widget_instance)
   end
 
   defp parse_filtered_params(params, %{
@@ -69,5 +86,4 @@ defmodule AcqdatCore.Reports.Model.ReportWidget do
     {:ok, res} = datetime |> DateTime.from_unix(:millisecond)
     res
   end
-
 end
