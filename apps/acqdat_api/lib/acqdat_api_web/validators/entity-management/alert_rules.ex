@@ -29,7 +29,9 @@ defmodule AcqdatApiWeb.Validators.EntityManagement.AlertRules do
     verify_index_params(%{
       page_size: :integer,
       page_number: :integer,
-      org_id!: :integer
+      org_id!: :integer,
+      project_id!: :integer,
+      entity_id!: :integer
     })
   )
 end
