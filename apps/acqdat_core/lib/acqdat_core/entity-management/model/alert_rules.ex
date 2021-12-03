@@ -78,10 +78,10 @@ defmodule AcqdatCore.Model.EntityManagement.AlertRules do
     end
   end
 
-  def get_all(%{page_size: page_size, page_number: page_number, org_id: org_id}) do
+  def get_all(%{page_size: page_size, page_number: page_number, org_id: org_id, project_id: project_id, entity_id: entity_id}) do
     query =
       from(alert_rules in AlertRules,
-        where: alert_rules.org_id == ^org_id
+        where: alert_rules.org_id == ^org_id and alert_rules.project_id == ^project_id and alert_rules.entity == ^entity_id
       )
 
     query |> order_by(:id) |> Repo.paginate(page: page_number, page_size: page_size)
