@@ -3,7 +3,6 @@ defmodule AcqdatApi.Reports.Templates do
 
   defdelegate get_by_id(template_id), to: TemplateModel
 
-  # pagination params
   def get_all(_data) do
     TemplateModel.get_all()
   end
@@ -24,8 +23,7 @@ defmodule AcqdatApi.Reports.Templates do
 
   defdelegate delete(template), to: TemplateModel
 
-  defp template_create_attrs(%{name: name, type: type, pages: pages,}) do
+  defp template_create_attrs(%{name: name, type: type, pages: pages}) do
     %{name: name, type: type, pages: pages}
   end
-
 end

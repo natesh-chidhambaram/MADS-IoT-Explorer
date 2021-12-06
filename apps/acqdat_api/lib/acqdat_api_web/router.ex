@@ -452,7 +452,7 @@ defmodule AcqdatApiWeb.Router do
     pipe_through [:api, :api_bearer_auth, :api_ensure_auth]
 
     resources "/templates", TemplateController, only: [:create, :update, :delete, :index, :show]
-    resources "/template_instances", TemplateController, only: [:create, :update, :delete, :index, :show]
+    resources "/template_instances", TemplateInstanceController, only: [:create, :update, :delete, :index, :show]
 
     resources "/widgets", WidgetMouldController, only: [:index, :show]
 

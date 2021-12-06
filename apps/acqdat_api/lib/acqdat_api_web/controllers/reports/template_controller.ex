@@ -10,13 +10,9 @@ defmodule AcqdatApiWeb.Reports.TemplateController do
 
   def index(conn, params) do
     changeset = verify_index_params(params)
-
-    # TODO pagination
     {:ok, data} = extract_changeset_data(changeset)
-
     templates = Templates.get_all(data)
     resp_data = %{templates: templates}
-
     conn
     |> put_status(200)
     |> render("index.json", resp_data)

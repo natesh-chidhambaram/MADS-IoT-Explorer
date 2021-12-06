@@ -3,7 +3,6 @@ defmodule AcqdatApi.Reports.TemplateInstance do
 
   defdelegate get_by_id(template_instance_id), to: TemplateInstanceModel
 
-  # pagination params
   def get_all(_data) do
     TemplateInstanceModel.get_all()
   end

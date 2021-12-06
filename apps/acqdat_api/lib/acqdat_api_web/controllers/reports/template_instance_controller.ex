@@ -11,10 +11,7 @@ defmodule AcqdatApiWeb.Reports.TemplateInstanceController do
 
   def index(conn, params) do
     changeset = verify_index_params(params)
-
-    # TODO pagination
     {:ok, data} = extract_changeset_data(changeset)
-
     template_instances = TemplateInstance.get_all(data)
     resp_data = %{template_instances: template_instances}
 
