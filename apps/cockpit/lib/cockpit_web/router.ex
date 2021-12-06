@@ -19,6 +19,14 @@ defmodule CockpitWeb.Router do
     get "/", PageController, :index
   end
 
+  scope "/api/v1/", CockpitWeb do
+    pipe_through :api
+
+    post "/sign-up", AuthController, :registration
+    post "/sign-in", AuthController, :login
+    post "/forgot-password", AuthController, :forgot_password
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", CockpitWeb do
   #   pipe_through :api

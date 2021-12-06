@@ -23,6 +23,14 @@ config :acqdat_api, AcqdatApiWeb.Endpoint,
   check_origin: false,
   watchers: []
 
+# phoenix configuration cockpit app
+config :cockpit, CockpitWeb.Endpoint,
+  http: [port: 4003],
+  debug_errors: true,
+  code_reloader: true,
+  check_origin: false,
+  watchers: []
+
 config :acqdat_core, AcqdatCore.Mailer, adapter: Bamboo.LocalAdapter
 
 config :tirexs, :uri, "http://127.0.0.1:9200"

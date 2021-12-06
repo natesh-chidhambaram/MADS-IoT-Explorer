@@ -21,6 +21,13 @@ config :acqdat_iot, AcqdatIotWeb.Endpoint,
   render_errors: [view: AcqdatIotWeb.ErrorView, accepts: ~w(json)],
   pubsub: [name: AcqdatIot.PubSub, adapter: Phoenix.PubSub.PG2]
 
+# Configures the endpoint
+config :cockpit, CockpitWeb.Endpoint,
+  url: [host: "localhost"],
+  secret_key_base: "lP7dclAfa1MpPzXgrJxfcH2vfrUP6zKzwlsKY6Te2vJ13l1sDVQZBwy5eA8O+/7T",
+  render_errors: [view: CockpitWeb.ErrorView, accepts: ~w(html json)],
+  pubsub: [name: Cockpit.PubSub, adapter: Phoenix.PubSub.PG2]
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
