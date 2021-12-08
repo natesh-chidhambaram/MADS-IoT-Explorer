@@ -16,7 +16,7 @@ defmodule Cockpit.Validations.Authentication do
   )
 
   defparams(
-    validate_login_credentials(%{
+    validate_signin_credentials(%{
       email!: :string,
       password!: :string
     })

@@ -23,7 +23,7 @@ defmodule CockpitWeb.Router do
     pipe_through :api
 
     post "/sign-up", AuthController, :registration
-    post "/sign-in", AuthController, :login
+    post "/sign-in", AuthController, :sign_in
     post "/forgot-password", AuthController, :forgot_password
   end
 

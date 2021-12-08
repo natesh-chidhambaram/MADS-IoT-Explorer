@@ -9,7 +9,6 @@ defmodule Cockpit.Schemas.User do
 
   @password_min_length 8
   @required_keys ~w(first_name email password)a
-  @optional_keys ~w(last_name phone_number avatar)a
   @cast_keys ~w(first_name email password password_hash last_name phone_number avatar)a
   @primary_key {:uuid, :binary_id, autogenerate: true}
 
@@ -30,6 +29,8 @@ defmodule Cockpit.Schemas.User do
     |> cast(params, @cast_keys)
     |> validate_required(@required_keys)
     |> validate_format(:email, ~r/@/)
+    |> update_change(:email, &String.downcase/1)
+    |> unique_constraint(:email)
     |> validate_length(:password, min: @password_min_length)
     |> validate_format(:password, ~r/[0-9]+/, message: "Password must contain a number")
     |> validate_format(:password, ~r/[A-Z]+/,
@@ -47,7 +48,6 @@ defmodule Cockpit.Schemas.User do
     |> fetch_change(:password)
     |> case do
       {:ok, password} -> change(changeset, Argon2.add_hash(password))
-
       :error -> changeset
     end
   end
