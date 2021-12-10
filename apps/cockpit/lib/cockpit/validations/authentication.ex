@@ -5,6 +5,12 @@ defmodule Cockpit.Validations.Authentication do
   use Params
 
   defparams(
+    validate_email(%{
+      email!: :string
+    })
+  )
+
+  defparams(
     validate_registration_credentials(%{
       first_name!: :string,
       last_name: :string,

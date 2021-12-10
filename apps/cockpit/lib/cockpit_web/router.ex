@@ -13,6 +13,10 @@ defmodule CockpitWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :reset_password_auth do
+    plug(CockpitWeb.ResetPasswordAuth)
+  end
+
   scope "/", CockpitWeb do
     pipe_through :browser
 
@@ -27,8 +31,9 @@ defmodule CockpitWeb.Router do
     post "/forgot-password", AuthController, :forgot_password
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", CockpitWeb do
-  #   pipe_through :api
-  # end
+  scope "/", CockpitWeb do
+    pipe_through [:api, :reset_password_auth]
+    put "/reset_password", AuthController, :reset_password
+  end
+
 end

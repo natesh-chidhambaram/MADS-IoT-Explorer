@@ -133,3 +133,20 @@ config :acqdat_core,
          "SECRET_KEY_BASE",
          "i6gwFKNscK4NSgptoHjMsYjmbUgFLKzehE6EBUMOkZpWF5h7Ac+J+IT9z5XVtK/d"
        )
+
+# Configuration for cockpit application
+config :cockpit,
+  cockpit_url: System.get_env("COCKPIT_URL", "http://localhost:8080/"),
+  from_email: System.get_env("COCKPIT_FROM_EMAIL", "nitesh.datakrew@gmail.com"),
+  access_time_hours_login: System.get_env("COCKPIT_ACCESS_TIME_HR_LOGIN", "10"),
+  access_time_hours_forgot_pass: System.get_env("COCKPIT_ACCESS_TIME_HR_FORGOT_PASS", "24"),
+  refresh_time_weeks: System.get_env("COCKPIT_REFRESH_TIME_WEEKS", "7")
+
+# Configure mailer using Thoughtbot/Bamboo
+config :cockpit, Cockpit.Mailer,
+  adapter: Bamboo.SendGridAdapter,
+  api_key:
+    System.get_env(
+      "COCKPIT_SENDGRID_KEY",
+      "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"
+    )

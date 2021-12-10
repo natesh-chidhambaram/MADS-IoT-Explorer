@@ -18,7 +18,7 @@ defmodule CockpitWeb.ErrorView do
     %{title: assigns.title, errors: assigns.errors}
   end
 
-  def render("login_error.json", assigns) do
+  def render("auth_error.json", assigns) do
     %{title: "Invalid credentials", errors: %{credential: assigns.error}}
   end
 end

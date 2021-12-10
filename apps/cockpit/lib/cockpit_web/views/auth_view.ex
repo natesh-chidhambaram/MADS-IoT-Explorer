@@ -13,4 +13,12 @@ defmodule CockpitWeb.AuthView do
       refresh_token: manifest.refresh_token
     }
   end
+
+  def render("forgot_password.json", assigns) do
+    %{status: assigns.status}
+  end
+
+  def render("reset_password.json", assigns) do
+    %{status: assigns.status}
+  end
 end
