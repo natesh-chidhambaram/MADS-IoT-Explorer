@@ -16,6 +16,7 @@ defmodule CockpitWeb.ResetPasswordAuth do
   end
 
   defp sanitize_token(true, conn), do: conn.params["token"]
+
   defp sanitize_token(false, conn) do
     conn
     |> get_req_header("authorization")

@@ -35,5 +35,4 @@ defmodule CockpitWeb.Router do
     pipe_through [:api, :reset_password_auth]
     put "/reset_password", AuthController, :reset_password
   end
-
 end

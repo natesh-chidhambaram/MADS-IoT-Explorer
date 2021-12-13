@@ -62,8 +62,8 @@ defmodule CockpitWeb.AuthController do
 
   def reset_password(conn, %{"password" => password}) do
     with nil <- conn.status,
-    current_user <- conn.assigns.current_user,
-    {:ok, _current_user} <- Account.reset_password(current_user, password) do
+         current_user <- conn.assigns.current_user,
+         {:ok, _current_user} <- Account.reset_password(current_user, password) do
       conn
       |> put_status(200)
       |> render("reset_password.json", %{status: :success})

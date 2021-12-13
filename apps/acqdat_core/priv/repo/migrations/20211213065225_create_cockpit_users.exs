@@ -12,6 +12,7 @@ defmodule AcqdatCore.Repo.Migrations.CreateCockpitUsers do
       add(:password_hash, :string, null: false)
       add(:phone_number, :string)
       add(:avatar, :string)
+      add(:status, :string, default: "init")
 
       timestamps(type: :timestamptz)
     end

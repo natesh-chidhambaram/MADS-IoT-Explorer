@@ -42,7 +42,7 @@ defmodule Cockpit.Account do
   end
 
   def reset_password(current_user, password),
-   do: User.password_reset(current_user, %{password: password})
+    do: User.password_reset(current_user, %{password: password})
 
   def validate_user_by_email(email) do
     with current_user <- User.get_user_by_email(email),
@@ -87,16 +87,22 @@ defmodule Cockpit.Account do
     do: @base_url <> "reset_password?token=" <> email_token
 
   defp verify_user_credentials(nil, _), do: {:error, "Invalid email or password"}
+  defp verify_user_credentials(user, password), do: is_user_active(user.status, password)
 
-  defp verify_user_credentials(user, password),
+  def is_user_active("active", user, password),
     do: validate_password(user, Argon2.checkpw(password, user.password_hash))
+
+  def is_user_active(_, _, _), do: {:error, "Invalid email or password"}
 
   defp validate_password(user, true), do: {:ok, user}
   defp validate_password(_user, _), do: {:error, "Invalid email or password"}
 
   defp get_jwt_tokens(user) do
-    {:ok, access_token, _} = create_jwt_token(user, {sanitize_data(@access_time_hours_login), :hours}, :access)
-    {:ok, refresh_token, _} = create_jwt_token(user, {sanitize_data(@refresh_time_weeks), :weeks}, :refresh)
+    {:ok, access_token, _} =
+      create_jwt_token(user, {sanitize_data(@access_time_hours_login), :hours}, :access)
+
+    {:ok, refresh_token, _} =
+      create_jwt_token(user, {sanitize_data(@refresh_time_weeks), :weeks}, :refresh)
 
     {access_token, refresh_token}
   end
