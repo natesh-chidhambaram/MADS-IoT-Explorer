@@ -162,7 +162,7 @@ defmodule AcqdatCore.Alerts.AlertCreation do
         rule_uuid: alert_rule.uuid,
         parameter_uuid: parameter.uuid
       },
-      grouping_meta: alert_rule.grouping_meta,
+      grouping_meta: Map.from_struct(alert_rule.grouping_meta),
       org_id: alert_rule.org_id,
       project_id: alert_rule.project_id,
       recipient_ids: format_recipient_ids(alert_rule.recepient_ids),
