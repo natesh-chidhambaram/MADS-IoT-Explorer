@@ -46,7 +46,25 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelView do
       widget_layouts: panel.widget_layouts,
       widgets: render_many(panel.widgets, WidgetInstanceView, "show_without_data.json"),
       command_widgets: render_many(panel.command_widgets, CommandWidgetView, "show.json"),
-      filter_metadata: render_one(panel.filter_metadata, PanelView, "filter_metadata.json")
+      filter_metadata: render_one(panel.filter_metadata, PanelView, "filter_metadata.json"),
+      subpanels: render_many(panel.subpanels, PanelView, "subpanel.json")
+    }
+  end
+
+  def render("subpanel.json", %{panel: subpanel}) do
+    %{
+      id: subpanel.id,
+      name: subpanel.name,
+      icon: subpanel.icon,
+      description: subpanel.description,
+      org_id: subpanel.org_id,
+      dashboard_id: subpanel.dashboard_id,
+      panel_id: subpanel.parent_id,
+      slug: subpanel.slug,
+      uuid: subpanel.uuid,
+      settings: subpanel.settings,
+      widget_layouts: subpanel.widget_layouts,
+      filter_metadata: render_one(subpanel.filter_metadata, PanelView, "filter_metadata.json")
     }
   end
 
@@ -62,4 +80,5 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelView do
       type: metadata.type
     }
   end
+
 end
