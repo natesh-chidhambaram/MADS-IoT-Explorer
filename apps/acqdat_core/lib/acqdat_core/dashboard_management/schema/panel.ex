@@ -10,7 +10,7 @@ defmodule AcqdatCore.DashboardManagement.Schema.Panel do
   """
   use AcqdatCore.Schema
   alias AcqdatCore.Schema.EntityManagement.Organisation
-  alias AcqdatCore.DashboardManagement.Schema.{Dashboard, WidgetInstance, CommandWidget}
+  alias AcqdatCore.DashboardManagement.Schema.{Dashboard, Panel, WidgetInstance, CommandWidget}
   alias AcqdatCore.DashboardManagement.Schema.Panel.FilterMetadata
 
   @typedoc """
@@ -31,6 +31,7 @@ defmodule AcqdatCore.DashboardManagement.Schema.Panel do
     # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:dashboard, Dashboard, on_replace: :delete)
+    belongs_to(:parent, Panel, on_replace: :delete)
     has_many(:widget_instances, WidgetInstance, on_replace: :delete)
     has_many(:command_widgets, CommandWidget)
 
@@ -41,7 +42,7 @@ defmodule AcqdatCore.DashboardManagement.Schema.Panel do
   end
 
   @required_params ~w(uuid slug name org_id dashboard_id)a
-  @optional_params ~w(settings description widget_layouts icon)a
+  @optional_params ~w(settings description widget_layouts icon parent_id)a
   @permitted @optional_params ++ @required_params
 
   def changeset(%__MODULE__{} = panel, params) do

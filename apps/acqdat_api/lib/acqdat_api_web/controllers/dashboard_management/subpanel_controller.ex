@@ -1,9 +1,24 @@
 defmodule AcqdatApiWeb.DashboardManagement.SubpanelController do
+  @moduledoc """
+  This controller is basically reference of panel_controller and following the below pattern:
+
+  Dashboard
+    |-> Panel1
+      |-> Subpanel-1
+      |-> Subpanel-2
+    |-> Panel2
+      |-> Subpanel-1
+      |-> Subpanel-2
+
+  We are actually using alot of reference module from Panel
+  """
   use AcqdatApiWeb, :authorized_controller
+
   import AcqdatApiWeb.Helpers
   import AcqdatApiWeb.Validators.DashboardManagement.Subpanel
+
   alias AcqdatApi.DashboardManagement.Subpanel
-  alias AcqdatApiWeb.DashboardManagement.SubpanelErrorHelper
+  alias AcqdatApiWeb.DashboardManagement.PanelErrorHelper
 
   plug AcqdatApiWeb.Plug.LoadOrg
   plug AcqdatApiWeb.Plug.LoadSubpanel when action in [:update, :delete]
@@ -17,50 +32,48 @@ defmodule AcqdatApiWeb.DashboardManagement.SubpanelController do
       |> put_status(200)
       |> render("subpanel.json", %{subpanel: subpanel})
     else
-      401 -> send_error(conn, 404, SubpanelErrorHelper.error_message(:resource_not_found))
-      404 -> send_error(conn, 401, SubpanelErrorHelper.error_message(:unauthorized))
+      401 -> send_error(conn, 404, PanelErrorHelper.error_message(:resource_not_found))
+      404 -> send_error(conn, 401, PanelErrorHelper.error_message(:unauthorized))
       {:extract, {:error, error}} -> send_error(conn, 400, error)
       {:create, {:error, message}} -> send_error(conn, 400, message.error)
     end
   end
 
-  # TODO: We need to return this pannel with widgets
-  def show(conn, %{"id" => uuid}) do
+  def show(conn, %{"id" => subpanel_id}) do
     with nil <- conn.status,
-         {:ok, subpanel} <- Subpanel.get_with_widgets(uuid) do
+         {:ok, subpanel} <- Subpanel.get_with_widgets(subpanel_id) do
       conn
       |> put_status(200)
       |> render("show.json", %{subpanel: subpanel})
     else
       404 ->
-        send_error(conn, 404, SubpanelErrorHelper.error_message(:resource_not_found))
+        send_error(conn, 404, PanelErrorHelper.error_message(:resource_not_found))
 
       401 ->
-        send_error(conn, 401, SubpanelErrorHelper.error_message(:unauthorized))
+        send_error(conn, 401, PanelErrorHelper.error_message(:unauthorized))
 
       {:error, reason} ->
-        send_error(conn, 400, SubpanelErrorHelper.error_message(:not_found, reason))
+        send_error(conn, 400, PanelErrorHelper.error_message(:not_found, reason))
     end
   end
 
-  # TODO: We need to return this pannel with widgets
   def index(conn, params) do
     with nil <- conn.status,
          changeset <- verify_index_params(params),
          {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
-         {:ok, subpanels} <- Subpanel.get_all_with_widgets(data) do
+         {:ok, subpanels} <- Subpanel.get_all(data) do
       conn
       |> put_status(200)
       |> render("index.json", %{subpanels: subpanels})
     else
       404 ->
-        send_error(conn, 404, SubpanelErrorHelper.error_message(:resource_not_found))
+        send_error(conn, 404, PanelErrorHelper.error_message(:resource_not_found))
 
       401 ->
-        send_error(conn, 401, SubpanelErrorHelper.error_message(:unauthorized))
+        send_error(conn, 401, PanelErrorHelper.error_message(:unauthorized))
 
       {:error, reason} ->
-        send_error(conn, 400, SubpanelErrorHelper.error_message(:not_found, reason))
+        send_error(conn, 400, PanelErrorHelper.error_message(:not_found, reason))
     end
   end
 
@@ -81,10 +94,10 @@ defmodule AcqdatApiWeb.DashboardManagement.SubpanelController do
         send_error(conn, 400, reason)
 
       404 ->
-        send_error(conn, 404, SubpanelErrorHelper.error_message(:resource_not_found))
+        send_error(conn, 404, PanelErrorHelper.error_message(:resource_not_found))
 
       401 ->
-        send_error(conn, 401, SubpanelErrorHelper.error_message(:unauthorized))
+        send_error(conn, 401, PanelErrorHelper.error_message(:unauthorized))
     end
   end
 
@@ -93,13 +106,13 @@ defmodule AcqdatApiWeb.DashboardManagement.SubpanelController do
          {:ok, subpanel} <- Subpanel.delete(conn.assigns.subpanel) do
       conn
       |> put_status(200)
-      |> render("subpanel.json", %{subpanel: subpanel})
+      |> render("delete_all.json", %{message: :deleted})
     else
       401 ->
-        send_error(conn, 401, SubpanelErrorHelper.error_message(:unauthorized))
+        send_error(conn, 401, PanelErrorHelper.error_message(:unauthorized))
 
       404 ->
-        send_error(conn, 404, SubpanelErrorHelper.error_message(:resource_not_found))
+        send_error(conn, 404, PanelErrorHelper.error_message(:resource_not_found))
 
       {:error, reason} ->
         send_error(conn, 400, reason)

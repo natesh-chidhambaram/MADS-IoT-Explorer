@@ -6,13 +6,15 @@ defmodule AcqdatApiWeb.DashboardManagement.SubpanelView do
 
   def render("subpanel.json", %{subpanel: subpanel}) do
     %{
-      uuid: subpanel.uuid,
+      id: subpanel.id,
       name: subpanel.name,
       icon: subpanel.icon,
       description: subpanel.description,
       org_id: subpanel.org_id,
       dashboard_id: subpanel.dashboard_id,
-      panel_id: subpanel.panel_id,
+      panel_id: subpanel.parent_id,
+      slug: subpanel.slug,
+      uuid: subpanel.uuid,
       settings: subpanel.settings,
       widget_layouts: subpanel.widget_layouts,
       filter_metadata: render_one(subpanel.filter_metadata, SubpanelView, "filter_metadata.json")
@@ -21,13 +23,14 @@ defmodule AcqdatApiWeb.DashboardManagement.SubpanelView do
 
   def render("show.json", %{subpanel: subpanel}) do
     %{
+
       uuid: subpanel.uuid,
       name: subpanel.name,
       icon: subpanel.icon,
       description: subpanel.description,
       org_id: subpanel.org_id,
       dashboard_id: subpanel.dashboard_id,
-      panel_id: subpanel.panel_id,
+      panel_id: subpanel.parent_id,
       settings: subpanel.settings,
       widget_layouts: subpanel.widget_layouts,
       filter_metadata: render_one(subpanel.filter_metadata, SubpanelView, "filter_metadata.json")
@@ -38,11 +41,9 @@ defmodule AcqdatApiWeb.DashboardManagement.SubpanelView do
     %{subpanels: render_many(subpanels, SubpanelView, "subpanel.json")}
   end
 
-  # def render("delete_all.json", %{message: message}) do
-  #   %{
-  #     status: message
-  #   }
-  # end
+  def render("delete_all.json", %{message: message}) do
+    %{status: message}
+  end
 
   def render("filter_metadata.json", %{subpanel: metadata}) do
     %{

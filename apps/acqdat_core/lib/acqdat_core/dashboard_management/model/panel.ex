@@ -25,6 +25,15 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
     end
   end
 
+  def get_all_by_parent_id(parent_id) do
+    query = from(s in Panel, where: s.parent_id == ^parent_id)
+
+    case Repo.all(query) do
+      [] -> {:error, :not_found}
+      panels -> {:ok, panels}
+    end
+  end
+
   def get_with_widgets(id, %{"filter_metadata" => filter_metadata}) do
     case Repo.get(Panel, id) do
       nil ->

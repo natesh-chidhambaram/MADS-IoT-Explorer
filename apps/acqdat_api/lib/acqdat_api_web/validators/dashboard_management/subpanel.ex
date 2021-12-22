@@ -17,10 +17,10 @@ defmodule AcqdatApiWeb.Validators.DashboardManagement.Subpanel do
       dashboard_id!: :integer,
       panel_id!: :integer,
       name!: :string,
+      icon!: :string,
       description: :string,
       settings: :map,
       widget_layouts: :map,
-      icon!: :string,
       filter_metadata: :map
     })
   )

@@ -14,4 +14,12 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelErrorHelper do
       source: nil
     }
   end
+
+  def error_message(:not_found, reason \\ "Not found") do
+    %{
+      title: :not_found,
+      error: reason,
+      source: nil
+    }
+  end
 end
