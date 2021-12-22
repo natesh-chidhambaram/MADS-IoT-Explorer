@@ -164,6 +164,7 @@ defmodule AcqdatApiWeb.Router do
 
         scope "/dashboards/:dashboard_id" do
           resources "/panels", PanelController, except: [:new, :edit]
+          post "/duplicate", PanelController, :duplicate_panel
         end
 
         scope "/panels/:panel_id" do

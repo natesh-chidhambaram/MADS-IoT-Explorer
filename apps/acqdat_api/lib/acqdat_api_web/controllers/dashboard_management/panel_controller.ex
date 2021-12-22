@@ -6,7 +6,7 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelController do
   alias AcqdatApiWeb.DashboardManagement.PanelErrorHelper
 
   plug AcqdatApiWeb.Plug.LoadOrg
-  plug AcqdatApiWeb.Plug.LoadPanel when action in [:update, :delete]
+  plug AcqdatApiWeb.Plug.LoadPanel when action in [:update, :delete, :duplicate_panel]
 
   def index(conn, params) do
     changeset = verify_index_params(params)
@@ -37,6 +37,34 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelController do
 
         with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
              {:create, {:ok, panel}} <- {:create, Panel.create(data)} do
+          conn
+          |> put_status(200)
+          |> render("panel.json", %{panel: panel})
+        else
+          {:extract, {:error, error}} ->
+            send_error(conn, 400, error)
+
+          {:create, {:error, message}} ->
+            send_error(conn, 400, message.error)
+        end
+
+      404 ->
+        conn
+        |> send_error(404, PanelErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, PanelErrorHelper.error_message(:unauthorized))
+    end
+  end
+
+  def duplicate_panel(conn, params) do
+    case conn.status do
+      nil ->
+        changeset = verify_duplicate(params)
+
+        with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
+             {:create, {:ok, panel}} <- {:create, Panel.duplicate(conn.assigns.panel, data)} do
           conn
           |> put_status(200)
           |> render("panel.json", %{panel: panel})

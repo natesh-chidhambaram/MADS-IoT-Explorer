@@ -1,5 +1,6 @@
 defmodule AcqdatCore.Model.DashboardManagement.Panel do
   import Ecto.Query
+  alias Ecto.Multi
   alias AcqdatCore.DashboardManagement.Schema.Panel
   alias AcqdatCore.Model.DashboardManagement.WidgetInstance, as: WidgetInstanceModel
   alias AcqdatCore.Model.DashboardManagement.CommandWidget
@@ -8,6 +9,22 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   def create(params) do
     changeset = Panel.changeset(%Panel{}, params)
     Repo.insert(changeset)
+  end
+
+  def duplicate(panel, data) do
+    panel_details = Repo.preload(panel, [:widget_instances, :command_widgets])
+    Multi.new()
+    |> Multi.run(:create_panel, fn _, _changes ->
+      params = create_params(panel, data)
+      Panel.changeset(%Panel{}, params) |> Repo.insert()
+    end)
+    |> Multi.run(:create_widget_instance, fn _, %{create_panel: panel} ->
+      attrs = create_widget_instance_attributes(panel_details.widget_instances, panel)
+      WidgetInstanceModel.bulk_create(attrs)
+    end)
+    |> Multi.run(:create_command_widgets, fn _, %{create_panel: panel} ->
+
+    end)
   end
 
   def update(panel, params) do
@@ -56,6 +73,25 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   def delete_all(ids) when is_list(ids) do
     from(panel in Panel, where: panel.id in ^ids)
     |> Repo.delete_all()
+  end
+
+  defp create_widget_instance_attributes(widget_instances, panel) do
+    Enum.reduce(widget_instances, [], fn instance, acc ->
+      acc ++ [widget_create_attrs(instance, panel)]
+    end)
+  end
+
+  defp create_params(panel, data) do
+    %{
+      dashboard_id: panel.dashboard_id,
+      description: panel.description,
+      filter_metadata: Map.from_struct(panel.filter_metadata),
+      icon: data.icon,
+      name: data.name,
+      org_id: panel.org_id,
+      settings: panel.settings,
+      widget_layouts: panel.widget_layouts
+    }
   end
 
   defp fetch_panel_widgets_data(panel, filter_params) do
@@ -154,4 +190,38 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   defp transform_map(map) do
     for {key, val} <- map, into: %{}, do: {String.to_atom(key), val}
   end
+
+  defp widget_create_attrs(%{
+    label: label,
+    widget_id: widget_id,
+    series_data: series_data,
+    widget_settings: widget_settings,
+    visual_properties: visual_properties
+  }, panel) do
+%{
+ label: label,
+ panel_id: panel.id,
+ widget_id: widget_id,
+ series_data: series_data,
+ widget_settings: widget_settings,
+ visual_properties: visual_properties
+}
+end
+
+defp widget_create_attrs(%{
+    label: label,
+    widget_id: widget_id,
+    source_app: source_app,
+    source_metadata: source_metadata,
+    visual_properties: visual_properties
+  }, panel) do
+%{
+ label: label,
+ panel_id: panel.id,
+ widget_id: widget_id,
+ source_app: source_app,
+ source_metadata: source_metadata,
+ visual_properties: visual_properties
+}
+end
 end
