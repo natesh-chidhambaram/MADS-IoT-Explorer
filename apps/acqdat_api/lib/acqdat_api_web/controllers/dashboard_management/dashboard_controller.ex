@@ -429,11 +429,11 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardController do
           ImageDeletion.delete_operation(persisted_image, "dashboard_#{type}/#{dashboard.id}")
         end
 
-        add_image_url(conn, params, dashboard.id, type)
+        add_image_url(params, dashboard.id, type)
     end
   end
 
-  defp add_image_url(conn, params, entity_id, type) do
+  defp add_image_url(params, entity_id, type) do
     scope = "dashboard_#{type}/#{entity_id}"
 
     image = if type == "settings", do: params["settings"]["client_logo"], else: params["image"]

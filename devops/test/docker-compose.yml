@@ -127,7 +127,8 @@ volumes:
   redis-data:
   vernemqdata:
   vernemqlogs:
-  vernemqetc:
+ 
+vernemqetc:
   rabbitmq_data:
   rabbitmq_logs:
- 
+
