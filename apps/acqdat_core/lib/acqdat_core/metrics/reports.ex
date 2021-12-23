@@ -3,9 +3,6 @@ defmodule AcqdatCore.Metrics.Reports do
 
   alias AcqdatCore.Repo
   alias AcqdatCore.Schema.Metrics
-  alias AcqdatCore.Metrics.OrgMetrics
-
-  alias AcqdatCore.Schema.EntityManagement.Organisation
 
   @moduledoc """
   A module for handling all the organisation related metrics.
@@ -40,37 +37,6 @@ defmodule AcqdatCore.Metrics.Reports do
   organisation and then logs them. The logs are then aggregated every month for
   or uptil the given date to give the trends for a specific month.
   """
-  @doc """
-  Returns the monthly report for an organisation.
-
-  Expects a month in the integer representation or a date as the input.
-  """
-  def range_report(org_id, start_date, end_date, type, app, entity, group_action)
-      when type == "column" do
-    number_of_days = Date.diff(end_date, start_date)
-
-    grp_parms = if group_action == "weekly", do: "7 days", else: "30 days"
-
-    query =
-      from(
-        metric in Metrics,
-        where:
-          metric.org_id == ^org_id and
-            fragment("?::date BETWEEN ? AND ?", metric.inserted_time, ^start_date, ^end_date),
-        group_by: fragment("date_filt"),
-        select: [
-          fragment(
-            "EXTRACT(EPOCH FROM (time_bucket(?::VARCHAR::INTERVAL, ?)))*1000 as date_filt",
-            ^grp_parms,
-            metric.inserted_time
-          ),
-          fragment("sum((? -> ? -> ? -> 'count')::integer)", metric.metrics, ^app, ^entity) /
-            fragment("count(*)")
-        ]
-      )
-
-    {:ok, Repo.all(query)}
-  end
 
   def fetch_data(org_id, start_date, end_date, filter_metadata) do
     out =
@@ -93,7 +59,37 @@ defmodule AcqdatCore.Metrics.Reports do
     Ecto.Adapters.SQL.query!(Repo, res, [])
   end
 
-  def range_report(org_id, start_date, end_date, type, group_action) when type == "cards" do
+  @doc """
+  Returns the report for an organisation based on group action provided for particular range.
+
+  Expects a date range(start_date and end_date) and group action as input.
+  """
+  def range_report(org_id, start_date, end_date, type, app, entity, group_action)
+      when type == "column" do
+    grouping_days = convert_group_action_to_days(group_action)
+
+    query =
+      from(
+        metric in Metrics,
+        where:
+          metric.org_id == ^org_id and
+            fragment("?::date BETWEEN ? AND ?", metric.inserted_time, ^start_date, ^end_date),
+        group_by: fragment("date_filt"),
+        select: [
+          fragment(
+            "EXTRACT(EPOCH FROM (time_bucket(?::VARCHAR::INTERVAL, ?)))*1000 as date_filt",
+            ^grouping_days,
+            metric.inserted_time
+          ),
+          fragment("sum((? -> ? -> ? -> 'count')::integer)", metric.metrics, ^app, ^entity) /
+            fragment("count(*)")
+        ]
+      )
+
+    {:ok, Repo.all(query)}
+  end
+
+  def range_report(org_id, start_date, end_date, type, _group_action) when type == "cards" do
     query =
       from(
         metric in Metrics,
@@ -136,7 +132,7 @@ defmodule AcqdatCore.Metrics.Reports do
   end
 
   def range_report(org_id, start_date, end_date, type, group_action) when type == "list" do
-    grp_parms = if group_action == "weekly", do: "7 days", else: "30 days"
+    grouping_days = convert_group_action_to_days(group_action)
 
     query =
       from(
@@ -149,7 +145,7 @@ defmodule AcqdatCore.Metrics.Reports do
           date_time:
             fragment(
               "time_bucket(?::VARCHAR::INTERVAL, ?) as date_filt",
-              ^grp_parms,
+              ^grouping_days,
               metric.inserted_time
             ),
           dashboards:
@@ -212,7 +208,7 @@ defmodule AcqdatCore.Metrics.Reports do
 
   # TODO: Needs to refactor this code
   def range_report(org_id, start_date, end_date, type, group_action) when type == "highlights" do
-    grp_parms = if group_action == "weekly", do: "7 days", else: "30 days"
+    grouping_days = convert_group_action_to_days(group_action)
 
     query =
       from(
@@ -225,7 +221,7 @@ defmodule AcqdatCore.Metrics.Reports do
           date_time:
             fragment(
               "time_bucket(?::VARCHAR::INTERVAL, ?) as date_filt",
-              ^grp_parms,
+              ^grouping_days,
               metric.inserted_time
             ),
           days_count: fragment("count(*)"),
@@ -352,6 +348,12 @@ defmodule AcqdatCore.Metrics.Reports do
       {:error, "Data missing for organisation on some days, cannot generate report"}
     end
   end
+
+  defp convert_group_action_to_days("daily"), do: "1 day"
+  defp convert_group_action_to_days("weekly"), do: "7 days"
+  defp convert_group_action_to_days("monthly"), do: "30 days"
+  defp convert_group_action_to_days("quaterly"), do: "90 days"
+  defp convert_group_action_to_days("yearly"), do: "365 days"
 
   defp report_computation(query) do
     report_map = %{

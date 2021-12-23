@@ -1,6 +1,7 @@
 defmodule AcqdatApi.Metrics.Reports do
+  alias AcqdatApi.Utils.Helper
   alias AcqdatCore.Metrics.Reports
-  alias AcqdatCore.Schema.Metrics.{Meta, Entities, Dashboards, DataInsights, RoleManager}
+  alias AcqdatCore.Schema.Metrics.Meta
   alias AcqdatCore.Model.EntityManagement.Organisation
   alias AcqdatCore.Notifications.Service.Notification
   alias Elixlsx.{Workbook, Sheet}
@@ -41,8 +42,8 @@ defmodule AcqdatApi.Metrics.Reports do
         "entity" => entity,
         "group_action" => group_action
       }) do
-    end_date = end_date |> string_to_date()
-    start_date = start_date |> string_to_date()
+    start_date = Helper.string_to_date(start_date)
+    end_date = Helper.string_to_date(end_date)
     Reports.range_report(org_id, start_date, end_date, type, app, entity, group_action)
   end
 
@@ -53,8 +54,8 @@ defmodule AcqdatApi.Metrics.Reports do
         "type" => type,
         "group_action" => group_action
       }) do
-    end_date = end_date |> string_to_date()
-    start_date = start_date |> string_to_date()
+    start_date = Helper.string_to_date(start_date)
+    end_date = Helper.string_to_date(end_date)
     Reports.range_report(org_id, start_date, end_date, type, group_action)
   end
 
@@ -124,9 +125,5 @@ defmodule AcqdatApi.Metrics.Reports do
 
   def delete_temp_file(path) do
     File.rm(path)
-  end
-
-  defp string_to_date(date) do
-    date |> Timex.parse!("{YYYY}-{0M}-{D}") |> Timex.to_date()
   end
 end
