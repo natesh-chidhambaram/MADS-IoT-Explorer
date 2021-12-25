@@ -24,7 +24,7 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
   alias AcqdatCore.EntityManagement.AlertCreation
   alias Notifications
   alias AcqdatCore.AlertMessage.Token
-  alias AcqdatCore.Alerts.Model.Grouping
+  alias AcqdatCore.EntityManagement.Model.Grouping
   alias AcqdatCore.Model.EntityManagement.Sensor
   use Broadway
 
@@ -121,12 +121,15 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
             |> evaluate_partials(alert_rule)
             |> case do
               true ->
-                true
+                {:ok, sensor} = Sensor.get(sensor_id, [:project])
+                context = prepare_context(sensor)
 
-              # context = prepare_context(sensor)
-              # alert_rule
-              # |> data_manifest(parameter, context)
-              # |> Grouping.create_alert()
+                Enum.each(parameters, fn parameter ->
+                  alert_rule
+                  |> data_manifest(parameter, context)
+                  |> Grouping.create_alert()
+                end)
+
               false ->
                 :no_reply
             end
@@ -154,7 +157,7 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
         end
       end)
 
-    case Case.eval_string(expression) do
+    case Code.eval_string(expression) do
       {true, []} -> true
       {false, []} -> false
       _ -> false
@@ -172,7 +175,8 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
       result =
         alert_rules
         |> Stream.filter(fn
-          alert_rule -> alert_rule.entity_parameters.uuid == parameter.uuid
+          alert_rule ->
+            alert_rule.entity_parameters.uuid == parameter["uuid"]
         end)
         |> Enum.reduce(%{}, fn alert_rule, acc ->
           Map.put_new(
@@ -217,7 +221,7 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
 
   # check the eligibility of that parameter with the given policy
   defp check_eligibility(parameter, alert_rule, context) do
-    case alert_rule.policy_name.eligible?(alert_rule.rule_parameters, parameter.value) do
+    case alert_rule.policy_name.eligible?(alert_rule.rule_parameters, parameter["value"]) do
       true ->
         true
 
@@ -228,28 +232,34 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
 
   # Create alert token with all the valid parameters
   defp data_manifest(alert_rule, parameter, context) do
+    entity =
+      case is_atom(alert_rule.entity) do
+        true -> to_string(alert_rule.entity)
+        false -> alert_rule.entity
+      end
+
     %Token{
       name: alert_rule.rule_name,
       description: format_description(alert_rule, parameter, context),
       alert_policy_meta: %{
         rule_uuid: alert_rule.uuid,
-        parameter_uuid: parameter.uuid
+        parameter_uuid: parameter["uuid"]
       },
-      grouping_meta: alert_rule.grouping_meta,
+      grouping_meta: Map.from_struct(alert_rule.grouping_meta),
       org_id: alert_rule.org_id,
       project_id: alert_rule.project_id,
       recipient_ids: format_recipient_ids(alert_rule.recepient_ids),
       severity: alert_rule.severity,
       communication_medium: alert_rule.communication_medium,
-      entity_name: alert_rule.entity,
+      entity_name: entity,
       entity_id: alert_rule.entity_id,
       # TODO: take a look into this, should contain sensor, asset and value of the
       # parameter
       alert_log: %{
         sensor_name: context.sensor_name,
         project_name: context.project_name,
-        parameter: parameter.name,
-        value: parameter.value
+        parameter: parameter["name"],
+        value: parameter["value"]
       },
       app: alert_rule.app,
       inserted_timestamp: DateTime.truncate(DateTime.utc_now(), :second),
@@ -265,7 +275,7 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
 
   defp format_description(alert_rule, parameter, context) do
     message = """
-      Alert for parameter #{parameter.name} for sensor #{context.sensor_name}
+      Alert for parameter #{parameter["name"]} for sensor #{context.sensor_name}
       under the project #{context.project_name}
     """
 
