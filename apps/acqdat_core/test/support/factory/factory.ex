@@ -59,6 +59,10 @@ defmodule AcqdatCore.Support.Factory do
     ToolReturn
   }
 
+  alias AcqdatCore.Schema.Streams.{
+    Pipeline
+  }
+
   def policy_factory() do
     %Policy{
       app: sequence(:first_name, &"Tony-#{&1}"),
@@ -505,6 +509,14 @@ defmodule AcqdatCore.Support.Factory do
           uuid: "771e9f94b49511eabc9998460aa1c6de"
         }
       ]
+    }
+  end
+
+  def pipeline_factory() do
+    %Pipeline{
+      project: build(:project),
+      name: "root",
+      description: "dummy pipeline"
     }
   end
 end
