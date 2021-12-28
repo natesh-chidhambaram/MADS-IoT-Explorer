@@ -80,5 +80,4 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelView do
       type: metadata.type
     }
   end
-
 end

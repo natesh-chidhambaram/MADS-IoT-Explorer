@@ -23,15 +23,16 @@ defmodule AcqdatApiWeb.DashboardManagement.SubpanelView do
 
   def render("show.json", %{subpanel: subpanel}) do
     %{
-
-      uuid: subpanel.uuid,
+      id: subpanel.id,
       name: subpanel.name,
       icon: subpanel.icon,
+      uuid: subpanel.uuid,
+      slug: subpanel.slug,
       description: subpanel.description,
+      settings: subpanel.settings,
       org_id: subpanel.org_id,
       dashboard_id: subpanel.dashboard_id,
       panel_id: subpanel.parent_id,
-      settings: subpanel.settings,
       widget_layouts: subpanel.widget_layouts,
       filter_metadata: render_one(subpanel.filter_metadata, SubpanelView, "filter_metadata.json")
     }

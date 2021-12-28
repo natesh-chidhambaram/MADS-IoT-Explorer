@@ -169,6 +169,17 @@ defmodule AcqdatCore.Support.Factory do
     }
   end
 
+  def subpanel_factory() do
+    %Panel{
+      uuid: UUID.uuid1(:hex),
+      name: sequence(:dashboard_name, &"Panel#{&1}"),
+      slug: sequence(:dashboard_name, &"Panel#{&1}"),
+      dashboard: build(:dashboard),
+      org: build(:organisation),
+      parent: build(:panel)
+    }
+  end
+
   def command_widget_factory() do
     %CommandWidget{
       uuid: UUID.uuid1(:hex),

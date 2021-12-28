@@ -10,8 +10,8 @@ defmodule AcqdatApi.DashboardManagement.Subpanel do
 
   def get_all(%{panel_id: parent_id}) do
     case PanelModel.get_all_by_parent_id(parent_id) do
-      {:ok, subpanels} -> {:ok, subpanels}
-      {:error, :not_found} -> {:error, "No subpanel for this panel"}
+      [] -> {:error, "No subpanel for this panel"}
+      subpanels -> {:ok, subpanels}
     end
   end
 
@@ -25,7 +25,7 @@ defmodule AcqdatApi.DashboardManagement.Subpanel do
       settings: attrs.settings,
       icon: attrs.icon,
       filter_metadata:
-      attrs.filter_metadata ||
+        attrs.filter_metadata ||
           %{from_date: from_date, to_date: DateTime.to_unix(DateTime.utc_now(), :millisecond)},
       widget_layouts: attrs.widget_layouts
     }

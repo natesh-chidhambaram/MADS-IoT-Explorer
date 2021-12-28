@@ -16,7 +16,7 @@ defmodule AcqdatApiWeb.Plug.LoadSubpanel do
 
   defp check_subpanel(conn, subpanel_id) do
     with {subpanel_id, _} <- Integer.parse(subpanel_id),
-      {:ok, subpanel} <- PanelModel.get_by_id(subpanel_id) do
+         {:ok, subpanel} <- PanelModel.get_by_id(subpanel_id) do
       assign(conn, :subpanel, subpanel)
     else
       _ -> put_status(conn, 404)
