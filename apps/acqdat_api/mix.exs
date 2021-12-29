@@ -61,7 +61,14 @@ defmodule AcqdatApi.MixProject do
       {:hackney, "~> 1.8"},
 
       # writer for the MS Excel OpenXML format
-      {:elixlsx, "~> 0.4.2"}
+      {:elixlsx, "~> 0.4.2"},
+
+      # Rabbitmq wrapper
+      {:amqp, "~> 1.6"},
+      {:broadway, "~> 0.6.0"},
+
+      # RabbitMQ connector for Broadway
+      {:broadway_rabbitmq, "~> 0.6.0"}
     ]
   end
 end
