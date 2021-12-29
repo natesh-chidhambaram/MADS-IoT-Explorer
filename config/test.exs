@@ -35,6 +35,10 @@ config :acqdat_core, AcqdatCore.Repo,
 # queue_target: 1500,
 # queue_interval: 1000
 
+config :acqdat_core, :mqtt_broker,
+  host: System.get_env("MQTT_HOST", "localhost"),
+  port: System.get_env("MQTT_PORT", "1882")
+
 config :tirexs, :uri, System.get_env("ELASTIC_SEARCH_HOST", "http://localhost:9200")
 
 config :argon2_elixir,

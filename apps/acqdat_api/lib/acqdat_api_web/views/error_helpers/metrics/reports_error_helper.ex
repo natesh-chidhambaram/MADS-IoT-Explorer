@@ -10,7 +10,7 @@ defmodule AcqdatApiWeb.Metrics.ReportsErrorHelper do
   def error_message(:unauthorized) do
     %{
       title: "Unauthorized Access",
-      error: "You are not allowed to perform this action.",
+      error: "You are not allowed to perform this action",
       source: nil
     }
   end
@@ -18,6 +18,14 @@ defmodule AcqdatApiWeb.Metrics.ReportsErrorHelper do
   def error_message(:gen_report_error, message) do
     %{
       title: "Error while generating report",
+      error: message,
+      source: nil
+    }
+  end
+
+  def error_message(:malformed_data, message) do
+    %{
+      title: "Request malformed",
       error: message,
       source: nil
     }

@@ -160,7 +160,21 @@ defmodule AcqdatCore.Alerts.Model.Grouping do
   # TODO: optimize creating grouping_meta
   defp prepare_insert_params(%Token{} = params, grouping_hash) do
     grouping_params =
-      Map.put(params.grouping_meta.grouping_parameters, :previous_time, params.inserted_timestamp)
+      case Map.has_key?(params.grouping_meta.grouping_parameters, :unit) do
+        true ->
+          Map.put(
+            params.grouping_meta.grouping_parameters,
+            :previous_time,
+            params.inserted_timestamp
+          )
+
+        false ->
+          Map.put(
+            params.grouping_meta.grouping_parameters,
+            "previous_time",
+            params.inserted_timestamp
+          )
+      end
 
     grouping_meta = Map.put(params.grouping_meta, :grouping_parameters, grouping_params)
 

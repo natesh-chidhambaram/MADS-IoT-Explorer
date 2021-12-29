@@ -51,6 +51,20 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      mqtt_broker:
+        image: vernemq/vernemq:latest-alpine
+        ports: 
+          - 1883:1883
+        env:
+          DOCKER_VERNEMQ_ALLOW_ANONYMOUS: 'on'
+          DOCKER_VERNEMQ_ACCEPT_EULA: 'yes'
+        # Set health checks to wait until broker has started
+        options: >-
+          --health-cmd "vernemq ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v1
     - name: Add Build essential
@@ -68,6 +82,8 @@ jobs:
         DB_HOST: db
         ELASTIC_SEARCH_HOST: http://elastic_search:9200
         REDIS_PORT: redis://redis:6379/3
+        MQTT_HOST: mqtt_broker
+        MQTT_PORT: 1883
     - name: Report coverage to Codecov
       uses: codecov/codecov-action@v1 
       with: 

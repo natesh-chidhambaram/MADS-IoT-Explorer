@@ -4,7 +4,7 @@ defmodule AcqdatCore.Schema.IotManager.BrokerCredentials do
   """
 
   use AcqdatCore.Schema
-  @entity_type ~w(Project Gateway)s
+  @entity_type ~w(Project Gateway Server)s
 
   @type t :: %__MODULE__{}
 

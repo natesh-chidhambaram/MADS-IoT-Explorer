@@ -25,6 +25,7 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
   alias Notifications
   alias AcqdatCore.AlertMessage.Token
   alias AcqdatCore.EntityManagement.Model.Grouping
+  # alias AcqdatCore.Alerts.Model.Grouping
   alias AcqdatCore.Model.EntityManagement.Sensor
   use Broadway
 
@@ -81,8 +82,9 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
            queue: @entity_queue,
            declare: [durable: true],
            connection: [
-             username: "guest",
-             password: "guest"
+             username: System.get_env("BROADWAY_CONN_USERNAME"),
+             password: System.get_env("BROADWAY_CONN_PASSWORD"),
+             host: System.get_env("BROADWAY_CONN_HOST")
            ],
            on_failure: :reject},
         concurrency: 1

@@ -15,11 +15,12 @@ defmodule AcqdatApi.EntityManagement.AlertRules do
     verify_alert_rules(AlertRules.create(params))
   end
 
-  def verify_alert_rules({:ok, alert_rules}) do
+
+  defp verify_alert_rules({:ok, alert_rules}) do
     {:ok, alert_rules}
   end
 
-  def verify_alert_rules({:error, message}) do
+  defp verify_alert_rules({:error, message}) do
     {:error, %{error: extract_changeset_error(message)}}
   end
 

@@ -1,6 +1,6 @@
 defmodule AcqdatIotWeb.DataParser.DataDumpController do
   use AcqdatIotWeb, :controller
-  alias AcqdatCore.IotManager.DataDump.Worker.Server
+  alias AcqdatCore.IotManager.Server
   alias AcqdatApiWeb.EntityManagement.AssetErrorHelper
   import AcqdatIoTWeb.Helpers
 
@@ -10,18 +10,12 @@ defmodule AcqdatIotWeb.DataParser.DataDumpController do
 
   @doc """
   Adds data recieved from gateway to IoT Storage.
-
-  TODO: At present data being received is not enriched and needs the client
-  to send data in our format inspite of providing mapped parameters support
-  we need to modify this so gateway_id doesn't need to be part of the json
-  being sent both for MQTT as well as HTTP. For HTTP we can do it by using
-  query params instead of putting ids in body.
   """
   def create(conn, params) do
     case conn.status do
       nil ->
         params = add_metadata(conn.assigns, params)
-        Server.create(params)
+        Server.log_data(params)
 
         conn
         |> put_status(202)
@@ -39,7 +33,8 @@ defmodule AcqdatIotWeb.DataParser.DataDumpController do
       org_uuid: assigns.org.uuid,
       project_uuid: assigns.project.uuid,
       gateway_uuid: assigns.gateway.uuid,
-      data: params
+      data: params,
+      mode: "http"
     }
   end
 end

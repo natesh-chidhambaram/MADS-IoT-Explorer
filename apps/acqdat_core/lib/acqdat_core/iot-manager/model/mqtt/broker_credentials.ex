@@ -51,6 +51,29 @@ defmodule AcqdatCore.Model.IotManager.MQTT.BrokerCredentials do
     Repo.insert(changeset)
   end
 
+  def create(server_uuid, access_token, entity_type = "Server") do
+    topics = [
+      %{
+        topic: "org/+/project/+/gateway/+",
+        qos: 0
+      },
+      %{
+        topic: "org/+/project/+/gateway/+/request-config",
+        qos: 0
+      }
+    ]
+
+    params = %{
+      entity_uuid: server_uuid,
+      entity_type: entity_type,
+      access_token: access_token,
+      subscriptions: topics
+    }
+
+    changeset = BrokerCredentials.changeset(%BrokerCredentials{}, params)
+    Repo.insert(changeset)
+  end
+
   def create(project, access_token, entity_type = "Project") do
     topics = [
       %{
@@ -77,5 +100,15 @@ defmodule AcqdatCore.Model.IotManager.MQTT.BrokerCredentials do
   def delete(entity_uuid) do
     entity = Repo.get_by(BrokerCredentials, entity_uuid: entity_uuid)
     Repo.delete(entity)
+  end
+
+  def get_all(entity_type) do
+    query =
+      from(
+        data in BrokerCredentials,
+        where: data.entity_type == ^entity_type
+      )
+
+    Repo.all(query)
   end
 end
