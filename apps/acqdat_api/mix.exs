@@ -24,7 +24,8 @@ defmodule AcqdatApi.MixProject do
   def application do
     [
       mod: {AcqdatApi.Application, []},
-      extra_applications: [:logger, :google_maps, :runtime_tools, :gen_retry]
+      extra_applications: [:lager, :logger, :google_maps, :runtime_tools, :gen_retry, :amqp],
+      erl_opts: [parse_transform: "lager_transform"]
     ]
   end
 
@@ -37,6 +38,9 @@ defmodule AcqdatApi.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:lager, github: "basho/lager"},
+      {:jsx, "~> 2.8.3", override: true},
+      {:exjsx, "~> 3.2.0", override: true},
       {:phoenix, "~> 1.4.10"},
       {:phoenix_pubsub, "~> 1.1"},
       {:gettext, "~> 0.11"},
@@ -61,7 +65,15 @@ defmodule AcqdatApi.MixProject do
       {:hackney, "~> 1.8"},
 
       # writer for the MS Excel OpenXML format
-      {:elixlsx, "~> 0.4.2"}
+      {:elixlsx, "~> 0.4.2"},
+
+      # Rabbitmq wrapper
+      {:amqp, "~> 1.3"},
+      {:broadway, "~> 0.6.0"},
+      {:rabbit_common, "~> 3.9.8", override: true},
+
+      # RabbitMQ connector for Broadway
+      {:broadway_rabbitmq, "~> 0.6.0"}
     ]
   end
 end
