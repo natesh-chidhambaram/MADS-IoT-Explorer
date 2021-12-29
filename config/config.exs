@@ -44,7 +44,11 @@ config :acqdat_api, AcqdatApiWeb.Guardian,
 # Configure Guardian for Cockpit
 config :cockpit, CockpitWeb.Guardian,
   issuer: "cockpit",
-  secret_key: System.get_env("GUARDIAN_API_KEY")
+  secret_key:
+    System.get_env(
+      "GUARDIAN_API_KEY",
+      "C8eXIzhSlAKucHLAPGtgpPodI2lwGdyEr0wktDmwR3AFDvgF3KgrLUQNj6TGILwT"
+    )
 
 # Configure Guardian
 config :acqdat_iot, AcqdatIotWeb.Guardian,

@@ -42,7 +42,14 @@ defmodule Cockpit.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:params, "~> 2.0"},
+      {:bamboo, github: "thoughtbot/bamboo"},
+      {:plug_cowboy, "~> 2.0"},
+      {:guardian, "~> 2.0"},
+      {:comeonin, "~> 4.1.1"},
+      {:argon2_elixir, "~> 1.2"},
+      {:faker, "~> 0.17", only: [:dev, :test]},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
     ]
   end
 end

@@ -8,7 +8,7 @@ defmodule CockpitWeb.Guardian do
   end
 
   def subject_for_token(resource, _claims) do
-    sub = to_string(resource.uuid)
+    sub = to_string(resource.id)
     {:ok, sub}
   end
 

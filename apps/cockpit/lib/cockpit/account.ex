@@ -3,7 +3,7 @@ defmodule Cockpit.Account do
   Module to handle authentication related operations
   """
 
-  alias Cockpit.Models.User
+  alias AcqdatCore.Cockpit.Models.User
   alias Comeonin.Argon2
   alias CockpitWeb.Guardian
   alias Cockpit.Email
@@ -87,7 +87,7 @@ defmodule Cockpit.Account do
     do: @base_url <> "reset_password?token=" <> email_token
 
   defp verify_user_credentials(nil, _), do: {:error, "Invalid email or password"}
-  defp verify_user_credentials(user, password), do: is_user_active(user.status, password)
+  defp verify_user_credentials(user, password), do: is_user_active(user.status, user, password)
 
   def is_user_active("active", user, password),
     do: validate_password(user, Argon2.checkpw(password, user.password_hash))

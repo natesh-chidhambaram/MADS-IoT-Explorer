@@ -1,10 +1,10 @@
-defmodule Cockpit.Models.User do
+defmodule AcqdatCore.Cockpit.Models.User do
   @moduledoc """
-  Service module to perform database CRUD operations.
+  Service module to perform database CRUD operations for cockpit users.
   """
 
   alias AcqdatCore.Repo
-  alias Cockpit.Schemas.User
+  alias AcqdatCore.Cockpit.Schemas.User
 
   def register_user(params) do
     %User{}

@@ -26,8 +26,7 @@ defmodule CockpitWeb.ResetPasswordAuth do
   end
 
   defp verify_token({:error, _message}, conn) do
-    conn
-    |> put_status(401)
+    put_status(conn, 401)
   end
 
   defp verify_token({:ok, resource}, conn) do

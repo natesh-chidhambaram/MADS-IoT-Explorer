@@ -1,24 +1,24 @@
-defmodule Cockpit.Schemas.User do
+defmodule AcqdatCore.Cockpit.Schemas.User do
   @moduledoc """
-  Model for cockpit users
+  Schemas for cockpit users
   """
 
-  use Ecto.Schema
-  import Ecto.Changeset
+  use AcqdatCore.Schema
   alias Comeonin.Argon2
 
   @password_min_length 8
-  @required_keys ~w(first_name email password)a
-  @cast_keys ~w(first_name email password password_hash last_name phone_number avatar status)a
-  @primary_key {:uuid, :binary_id, autogenerate: true}
+  @required_keys ~w(first_name email password uuid slug)a
+  @cast_keys ~w(first_name email password password_hash last_name uuid slug phone_number avatar status)a
 
   schema("cockpit_users") do
-    field(:first_name, :string)
+    field(:first_name, :string, null: false)
     field(:last_name, :string)
-    field(:email, :string)
+    field(:email, :string, null: false)
+    field(:uuid, :string, null: false)
+    field(:slug, :string, null: false)
     field(:phone_number, :string)
     field(:avatar, :string)
-    field(:status, :string)
+    field(:status, :string, default: "init")
     field(:password_hash, :string)
     field(:password, :string, virtual: true)
 
@@ -28,6 +28,8 @@ defmodule Cockpit.Schemas.User do
   def registration_changeset(%__MODULE__{} = cockpit_user, params) do
     cockpit_user
     |> cast(params, @cast_keys)
+    |> add_slug()
+    |> add_uuid()
     |> validate_required(@required_keys)
     |> validate_format(:email, ~r/@/)
     |> update_change(:email, &String.downcase/1)
@@ -58,6 +60,15 @@ defmodule Cockpit.Schemas.User do
     )
     |> put_pass_hash()
   end
+
+  defp add_uuid(%Ecto.Changeset{valid?: true} = changeset),
+    do: put_change(changeset, :uuid, UUID.uuid1(:hex))
+
+  defp add_slug(%Ecto.Changeset{valid?: true} = changeset),
+    do: put_change(changeset, :slug, Slugger.slugify(random_string(12)))
+
+  defp random_string(length),
+    do: :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
 
   defp put_pass_hash(%Ecto.Changeset{valid?: true} = changeset) do
     changeset
