@@ -24,7 +24,7 @@ defmodule AcqdatCore.EntityManagement.AlertCreation do
   alias AcqdatCore.EntityManagement.AlertCreation
   alias Notifications
   alias AcqdatCore.AlertMessage.Token
-  alias AcqdatCore.EntityManagement.Model.Grouping
+  alias AcqdatCore.Alerts.Model.Grouping
   alias AcqdatCore.Model.EntityManagement.Sensor
   use Broadway
 
