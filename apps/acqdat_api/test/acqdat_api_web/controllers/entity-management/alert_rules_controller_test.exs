@@ -230,15 +230,17 @@ defmodule AcqdatApiWeb.EntityManagement.AlertRulesControllerTest do
     setup :setup_conn
     setup :setup_alert_rules
 
-    test "list alert rules", %{conn: conn, alert_rule: alert_rule, org: org} do
+    test "list alert rules", %{conn: conn, alert_rule: alert_rule} do
       params = %{
         "page_size" => 100,
-        "page_number" => 1
+        "page_number" => 1,
+        "entity_id" => 1,
+        "project_id" => alert_rule.project_id
       }
 
       AlertRules.create(alert_rule)
 
-      conn = get(conn, Routes.entity_alert_rule_path(conn, :index, org.id, params))
+      conn = get(conn, Routes.entity_alert_rule_path(conn, :index, alert_rule.org_id, params))
 
       response = conn |> json_response(200)
       assert response["alert_rules"]
@@ -310,7 +312,7 @@ defmodule AcqdatApiWeb.EntityManagement.AlertRulesControllerTest do
       assignee_ids: [user3.id],
       severity: "Low",
       status: "enable",
-      app: "iot_manager",
+      app: "entity_manager",
       project_id: sensor.project_id,
       org_id: sensor.org_id,
       creator_id: user1.id
