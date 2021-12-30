@@ -17,7 +17,10 @@ defmodule AcqdatCore.EntityManagement.Schema.Partials do
     field(:rule_parameters, :map, null: false)
   end
 
-  @params ~w(name policy_name logic rule_parameters)a
+  @required_params ~w(name policy_name rule_parameters)a
+  @optional_params ~w(logic)a
+
+  @params @required_params ++ @optional_params
   @embedded_required_params ~w(name uuid data_type)a
   @embedded_optional_params ~w(unit)a
   @permitted_embedded @embedded_optional_params ++ @embedded_required_params
@@ -26,7 +29,7 @@ defmodule AcqdatCore.EntityManagement.Schema.Partials do
     partials
     |> cast(params, @params)
     |> cast_embed(:entity_parameters, with: &parameters_changeset/2)
-    |> validate_required(@params)
+    |> validate_required(@required_params)
     |> unique_constraint(:name, name: :partial_name_not_unique)
   end
 

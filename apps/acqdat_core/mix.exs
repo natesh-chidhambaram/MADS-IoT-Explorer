@@ -110,7 +110,14 @@ defmodule AcqdatCore.MixProject do
 
       ## hashing
       {:murmur, "~> 1.0"},
-      {:gen_stage, "~> 1.0"}
+      {:gen_stage, "~> 1.0"},
+
+      # Rabbitmq wrapper
+      {:amqp, "~> 1.6"},
+      {:broadway, "~> 0.6.0"},
+
+      # RabbitMQ connector for Broadway
+      {:broadway_rabbitmq, "~> 0.6.0"}
     ]
   end
 

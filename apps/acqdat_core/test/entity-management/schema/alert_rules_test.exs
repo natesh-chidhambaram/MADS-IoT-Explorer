@@ -4,7 +4,6 @@ defmodule AcqdatCore.EntityManagement.Schema.AlertRulesTest do
   """
   use ExUnit.Case, async: true
   use AcqdatCore.DataCase
-  alias AcqdatCore.Repo
   alias AcqdatCore.Schema.EntityManagement.AlertRules
   import AcqdatCore.Support.Factory
 
@@ -12,8 +11,27 @@ defmodule AcqdatCore.EntityManagement.Schema.AlertRulesTest do
     setup :setup_alert_rules
 
     test "returns a valid changeset", %{alert_rule: alert_rule} do
-      %{valid?: validity} = AlertRules.changeset(%AlertRules{}, alert_rule) |> Repo.insert()
+      %{valid?: validity} = AlertRules.changeset(%AlertRules{}, alert_rule)
       assert validity
+    end
+
+    test "returns invalid changeset for missing required params" do
+      %{valid?: validity} = changeset = AlertRules.changeset(%AlertRules{}, %{})
+      refute validity
+
+      assert %{
+               app: ["can't be blank"],
+               communication_medium: ["can't be blank"],
+               creator_id: ["can't be blank"],
+               entity: ["can't be blank"],
+               entity_id: ["can't be blank"],
+               org_id: ["can't be blank"],
+               recepient_ids: ["can't be blank"],
+               severity: ["can't be blank"],
+               status: ["can't be blank"],
+               expression: ["can't be blank"],
+               rule_name: ["can't be blank"]
+             } = errors_on(changeset)
     end
   end
 
@@ -55,7 +73,7 @@ defmodule AcqdatCore.EntityManagement.Schema.AlertRulesTest do
       assignee_ids: [user3.id],
       severity: "Low",
       status: "enable",
-      app: "iot_manager",
+      app: "entity_manager",
       project_id: sensor.project_id,
       org_id: sensor.org_id,
       creator_id: user1.id
