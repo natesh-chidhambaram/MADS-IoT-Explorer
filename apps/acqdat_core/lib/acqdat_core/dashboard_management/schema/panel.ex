@@ -31,9 +31,11 @@ defmodule AcqdatCore.DashboardManagement.Schema.Panel do
     # associations
     belongs_to(:org, Organisation, on_replace: :delete)
     belongs_to(:dashboard, Dashboard, on_replace: :delete)
-    belongs_to(:parent, Panel, on_replace: :delete)
+    belongs_to(:parent, Panel, on_replace: :mark_as_invalid)
+
     has_many(:widget_instances, WidgetInstance, on_replace: :delete)
     has_many(:command_widgets, CommandWidget)
+    has_many(:children, Panel, foreign_key: :parent_id)
 
     # embedded associations
     embeds_one(:filter_metadata, FilterMetadata, on_replace: :delete)
