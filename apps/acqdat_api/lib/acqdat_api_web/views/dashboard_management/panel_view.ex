@@ -24,7 +24,8 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelView do
       settings: panel.settings,
       widget_layouts: panel.widget_layouts,
       panel_id: panel.parent_id,
-      filter_metadata: render_one(panel.filter_metadata, PanelView, "filter_metadata.json")
+      filter_metadata: render_one(panel.filter_metadata, PanelView, "filter_metadata.json"),
+      subpanels: render_many(panel.subpanels, SubpanelView, "subpanel.json")
     }
   end
 
