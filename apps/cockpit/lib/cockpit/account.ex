@@ -17,7 +17,7 @@ defmodule Cockpit.Account do
   def registration(params) do
     params
     |> Map.put(:status, "active")
-    |> User.register_user()
+    |> User.register()
   end
 
   def sign_in(%{email: email, password: password}) do

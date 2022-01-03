@@ -9,6 +9,7 @@ defmodule AcqdatCore.Cockpit.Schemas.User do
   @password_min_length 8
   @required_keys ~w(first_name email password uuid slug)a
   @cast_keys ~w(first_name email password password_hash last_name uuid slug phone_number avatar status)a
+  @initiate_keys ~w(first_name email password)a
 
   schema("cockpit_users") do
     field(:first_name, :string, null: false)
@@ -25,6 +26,18 @@ defmodule AcqdatCore.Cockpit.Schemas.User do
     timestamps(type: :utc_datetime)
   end
 
+  def initial_changeset(%__MODULE__{} = cockpit_user, params) do
+    cockpit_user
+    |> cast(params, @initiate_keys)
+    |> add_slug()
+    |> add_uuid()
+    |> validate_required(@initiate_keys)
+    |> validate_format(:email, ~r/@/)
+    |> update_change(:email, &String.downcase/1)
+    |> unique_constraint(:email)
+    |> put_pass_hash()
+  end
+
   def registration_changeset(%__MODULE__{} = cockpit_user, params) do
     cockpit_user
     |> cast(params, @cast_keys)
@@ -34,6 +47,23 @@ defmodule AcqdatCore.Cockpit.Schemas.User do
     |> validate_format(:email, ~r/@/)
     |> update_change(:email, &String.downcase/1)
     |> unique_constraint(:email)
+    |> validate_length(:password, min: @password_min_length)
+    |> validate_format(:password, ~r/[0-9]+/, message: "Password must contain a number")
+    |> validate_format(:password, ~r/[A-Z]+/,
+      message: "Password must contain an upper-case letter"
+    )
+    |> validate_format(:password, ~r/[a-z]+/, message: "Password must contain a lower-case letter")
+    |> validate_format(:password, ~r/[#\!\?&@\$%^&*\(\)]+/,
+      message: "Password must contain a symbol"
+    )
+    |> put_pass_hash()
+  end
+
+  def update_changeset(%__MODULE__{} = cockpit_user, params) do
+    cockpit_user
+    |> cast(params, @cast_keys)
+    |> add_slug()
+    |> add_uuid()
     |> validate_length(:password, min: @password_min_length)
     |> validate_format(:password, ~r/[0-9]+/, message: "Password must contain a number")
     |> validate_format(:password, ~r/[A-Z]+/,

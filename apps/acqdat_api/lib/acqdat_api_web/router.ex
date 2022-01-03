@@ -27,6 +27,10 @@ defmodule AcqdatApiWeb.Router do
     plug(AcqdatApiWeb.PasswordResetAuth)
   end
 
+  pipeline :load_current_user do
+    plug(AcqdatApiWeb.Plug.LoadCurrentUser)
+  end
+
   scope "/", AcqdatApiWeb do
     pipe_through(:password_reset_auth)
     put("/reset_password", RoleManagement.ForgotPasswordController, :reset_password)
@@ -130,6 +134,13 @@ defmodule AcqdatApiWeb.Router do
         get "/alert_status", AlertFilterListingController, :alert_status_listing
       end
     end
+  end
+
+  ################### Resource share management ############################
+  scope "/orgs/:org_id/:resource_type/:resource_id", AcqdatApiWeb do
+    pipe_through [:api, :api_bearer_auth, :api_ensure_auth, :load_current_user]
+
+    post("/share", ShareResourceController, :share)
   end
 
   ################### Dashboard management ############################

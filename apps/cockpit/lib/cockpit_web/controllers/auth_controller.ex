@@ -20,6 +20,9 @@ defmodule CockpitWeb.AuthController do
       {:error, errors = %Ecto.Changeset{}} ->
         errors = fragment_error_changeset(errors, "Invalid request")
         render_error(conn, 400, "error.json", errors)
+
+      {:error, reason} ->
+        render_error(conn, 400, "error.json", reason)
     end
   end
 
