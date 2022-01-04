@@ -38,6 +38,34 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceController do
     end
   end
 
+  def duplicate_widget(conn, params) do
+    case conn.status do
+      nil ->
+        changeset = verify_duplicate(params)
+
+        with {:extract, {:ok, data}} <- {:extract, extract_changeset_data(changeset)},
+             {:create, {:ok, widget_inst}} <- {:create, WidgetInstance.duplicate(data)} do
+          conn
+          |> put_status(200)
+          |> render("create.json", %{widget_instance: widget_inst})
+        else
+          {:extract, {:error, error}} ->
+            send_error(conn, 400, error)
+
+          {:create, {:error, message}} ->
+            send_error(conn, 400, message.error)
+        end
+
+      404 ->
+        conn
+        |> send_error(404, WidgetInstanceErrorHelper.error_message(:resource_not_found))
+
+      401 ->
+        conn
+        |> send_error(401, WidgetInstanceErrorHelper.error_message(:unauthorized))
+    end
+  end
+
   def update(conn, params) do
     case conn.status do
       nil ->
