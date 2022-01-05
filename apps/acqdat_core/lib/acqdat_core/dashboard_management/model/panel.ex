@@ -25,6 +25,12 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
     end
   end
 
+  def get_all_by_parent_id(parent_id) do
+    query = from(s in Panel, where: s.parent_id == ^parent_id)
+
+    Repo.all(query)
+  end
+
   def get_with_widgets(id, %{"filter_metadata" => filter_metadata}) do
     case Repo.get(Panel, id) do
       nil ->
@@ -61,11 +67,13 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   defp fetch_panel_widgets_data(panel, filter_params) do
     widgets = WidgetInstanceModel.get_all_by_panel_id(panel.id, filter_params)
     command_widgets = CommandWidget.get_all_by_panel_id(panel.id)
+    subpanels = get_all_by_parent_id(panel.id)
 
     panel =
       panel
       |> Map.put(:widgets, widgets)
       |> Map.put(:command_widgets, command_widgets)
+      |> Map.put(:subpanels, subpanels)
 
     {:ok, panel}
   end

@@ -60,7 +60,7 @@ defmodule AcqdatApiWeb.DashboardManagement.DashboardView do
       archived: dashboard.archived,
       settings: render_one(dashboard.settings, DashboardView, "settings.json"),
       avatar: dashboard.avatar,
-      panels: render_many(dashboard.panels, PanelView, "panel.json"),
+      panels: render_many(dashboard.panels, PanelView, "panel_with_subpanels.json"),
       exported_url:
         render_one(dashboard.dashboard_export, DashboardView, "exported_dashboard.json"),
       creator: render_one(dashboard.creator, DashboardView, "creator.json")

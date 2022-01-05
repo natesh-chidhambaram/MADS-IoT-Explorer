@@ -164,6 +164,12 @@ defmodule AcqdatApiWeb.Router do
 
         scope "/dashboards/:dashboard_id" do
           resources "/panels", PanelController, except: [:new, :edit]
+
+          # NOTE: this scope is for subpanels ans related APIs
+          # which ultimately refer panel model and schema
+          scope "/panels/:panel_id" do
+            resources "/subpanels", SubpanelController, except: [:new, :edit]
+          end
         end
 
         scope "/panels/:panel_id" do

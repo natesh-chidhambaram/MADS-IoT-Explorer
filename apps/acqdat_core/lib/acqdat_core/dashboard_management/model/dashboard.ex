@@ -3,6 +3,7 @@ defmodule AcqdatCore.Model.DashboardManagement.Dashboard do
   alias AcqdatCore.DashboardManagement.Schema.Dashboard
   alias AcqdatCore.Model.DashboardManagement.WidgetInstance, as: WidgetInstanceModel
   alias AcqdatCore.Model.DashboardManagement.CommandWidget
+  alias AcqdatCore.Model.DashboardManagement.Panel
   alias AcqdatCore.Repo
 
   def create(params) do
@@ -105,14 +106,30 @@ defmodule AcqdatCore.Model.DashboardManagement.Dashboard do
   end
 
   def reorder_panels(dashboard) do
+    dashboard = add_subpanels_to_panel(dashboard)
     panels_order = dashboard.settings && dashboard.settings.panels_order
 
     updated_data =
       if panels_order do
-        panels = Enum.sort_by(dashboard.panels, fn panel -> panels_order["#{panel.id}"] end)
+        panels =
+          Enum.sort_by(dashboard.panels, fn panel ->
+            panels_order["#{panel.id}"]
+          end)
+
         %{dashboard | panels: panels}
       end
 
     updated_data || dashboard
+  end
+
+  defp add_subpanels_to_panel(dashboard) do
+    panels =
+      dashboard.panels
+      |> Enum.filter(fn panel -> panel.parent_id == -1 end)
+      |> Enum.map(fn panel ->
+        Map.put(panel, :subpanels, Panel.get_all_by_parent_id(panel.id))
+      end)
+
+    %{dashboard | panels: panels}
   end
 end
