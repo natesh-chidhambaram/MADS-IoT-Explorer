@@ -23,11 +23,6 @@ defmodule AcqdatApiWeb.Metrics.ReportsErrorHelper do
     }
   end
 
-  def error_message(:malformed_data, message) do
-    %{
-      title: "Request malformed",
-      error: message,
-      source: nil
-    }
-  end
+  def error_message(:malformed_data, errors),
+    do: errors
 end

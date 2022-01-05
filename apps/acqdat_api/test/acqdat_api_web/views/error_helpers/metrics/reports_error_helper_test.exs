@@ -26,7 +26,9 @@ defmodule AcqdatApiWeb.Metrics.ReportsErrorHelperTest do
     end
 
     test "when malformed_data" do
-      error_map = ReportsErrorHelper.error_message(:malformed_data, "Invalid request payload")
+      # set up
+      payload = %{error: "Invalid request payload", title: "Request malformed"}
+      error_map = ReportsErrorHelper.error_message(:malformed_data, payload)
 
       assert "Request malformed" == error_map.title
       assert "Invalid request payload" == error_map.error

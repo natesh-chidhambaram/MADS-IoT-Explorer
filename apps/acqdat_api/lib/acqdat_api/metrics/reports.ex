@@ -1,5 +1,4 @@
 defmodule AcqdatApi.Metrics.Reports do
-  alias AcqdatApi.Utils.Helper
   alias AcqdatCore.Metrics.Reports
   alias AcqdatCore.Schema.Metrics.Meta
   alias AcqdatCore.Model.EntityManagement.Organisation
@@ -34,28 +33,24 @@ defmodule AcqdatApi.Metrics.Reports do
   end
 
   def gen_report(%{
-        "org_id" => org_id,
-        "start_date" => start_date,
-        "end_date" => end_date,
-        "type" => type,
-        "app" => app,
-        "entity" => entity,
-        "group_action" => group_action
+        org_id: org_id,
+        start_date: start_date,
+        end_date: end_date,
+        type: type,
+        app: app,
+        entity: entity,
+        group_action: group_action
       }) do
-    start_date = Helper.string_to_date(start_date)
-    end_date = Helper.string_to_date(end_date)
     Reports.range_report(org_id, start_date, end_date, type, app, entity, group_action)
   end
 
   def gen_report(%{
-        "org_id" => org_id,
-        "start_date" => start_date,
-        "end_date" => end_date,
-        "type" => type,
-        "group_action" => group_action
+        org_id: org_id,
+        start_date: start_date,
+        end_date: end_date,
+        type: type,
+        group_action: group_action
       }) do
-    start_date = Helper.string_to_date(start_date)
-    end_date = Helper.string_to_date(end_date)
     Reports.range_report(org_id, start_date, end_date, type, group_action)
   end
 

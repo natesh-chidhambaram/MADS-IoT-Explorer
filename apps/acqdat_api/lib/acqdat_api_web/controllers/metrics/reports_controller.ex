@@ -3,14 +3,14 @@ defmodule AcqdatApiWeb.Metrics.ReportsController do
   import AcqdatApiWeb.Helpers
   alias AcqdatApi.Metrics.Reports
   alias AcqdatApiWeb.Metrics.ReportsErrorHelper
-  alias AcqdatApiWeb.Validators.Metrics.ValidateData
+  alias AcqdatApiWeb.Validators.Metrics.ReportMetric
 
   plug AcqdatApiWeb.Plug.LoadCurrentUser when action in [:downloads]
   plug :put_view, AcqdatApiWeb.Notifications.NotificationView when action in [:downloads]
 
   def create(conn, params) do
     with nil <- conn.status,
-         {:ok, params} <- ValidateData.validate_params(params),
+         {:ok, params} <- ReportMetric.validate_params(params),
          {:ok, data} <- Reports.gen_report(params) do
       conn
       |> put_status(200)
@@ -22,8 +22,9 @@ defmodule AcqdatApiWeb.Metrics.ReportsController do
       401 ->
         send_error(conn, 401, ReportsErrorHelper.error_message(:unauthorized))
 
-      {:validation_error, message} ->
-        send_error(conn, 400, ReportsErrorHelper.error_message(:malformed_data, message))
+      {:validation_error, errors} ->
+        errors = extract_changeset_error(errors)
+        send_error(conn, 400, ReportsErrorHelper.error_message(:malformed_data, errors))
 
       {:error, message} ->
         send_error(conn, 400, ReportsErrorHelper.error_message(:gen_report_error, message))
