@@ -22,4 +22,12 @@ defmodule AcqdatApiWeb.Validators.DashboardManagement.Panel do
       filter_metadata: :map
     })
   )
+
+  defparams(
+    verify_duplicate(%{
+      org_id!: :integer,
+      name!: :string,
+      icon!: :string
+    })
+  )
 end
