@@ -107,8 +107,7 @@ defmodule AcqdatCore.Seed.Helpers.WidgetHelpers do
   end
 
   def set_default_or_given_value(key, value, metadata) do
-    #TODO: Need to remove key workaround from here
-    if !is_list(value) ||  key == :center do
+    if !is_list(value) do
       %{
         data:
         cond do

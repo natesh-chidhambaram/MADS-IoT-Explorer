@@ -26,7 +26,10 @@ defmodule AcqdatCore.Seed.Widgets.SolidGauge do
         pane: [startAngle: %{data_type: :integer, value: -90, properties: %{}},
                endAngle: %{data_type: :integer, value: 90, properties: %{}},
                size: %{data_type: :string, value: "140%", properties: %{}},
-               center: %{data_type: :list, value: ["50%", "85%"], properties: %{}},
+               center: [
+                 x:  %{data_type: :string, value: "50%", properties: %{}},
+                 y:  %{data_type: :string, value: "85%", properties: %{}}
+                ],
                background: [
                 backgroundColor: %{data_type: :color, value: "#EEE", properties: %{}},
                 innerRadius: %{data_type: :string, value: "60%", properties: %{}},

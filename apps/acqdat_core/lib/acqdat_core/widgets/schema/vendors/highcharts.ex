@@ -106,7 +106,14 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
               data_type: :object,
               user_controlled: false,
               properties: %{
-                center: %{data_type: :list, default_value: [], user_controlled: true},
+                center: %{
+                  data_type: :list,
+                  user_controlled: false,
+                  properties: %{
+                    x: %{data_type: :string, default_value: "50%", user_controlled: true},
+                    y: %{data_type: :string, default_value: "85%", user_controlled: true}
+                  }
+                },
                 size: %{data_type: :string, default_value: "85%", user_controlled: false},
                 background: %{
                   data_type: :list,
@@ -262,7 +269,6 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
                   }
                 },
                 visible: %{data_type: :boolean, default_value: true, user_controlled: false},
-                type: %{data_type: :string, default_value: true, user_controlled: true},
                 min: %{data_type: :integer, default_value: "null", user_controlled: true},
                 max: %{data_type: :integer, default_value: "null", user_controlled: true},
                 plotBands: %{data_type: :list, default_value: %{}, user_controlled: true}
@@ -448,7 +454,15 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
       if (Map.has_key?(setting, :value) && setting.value != %{}) || setting.properties == [] do
         Map.put(acc, setting.key, setting.value["data"])
       else
-        value = parse_properties(setting.properties)
+        value =
+          if setting.key == "center" do
+            # NOTE: MIP-359 expects x & y as properties in center key but it's value should be a list
+            [x | y] = setting.properties
+            [x.value["data"], hd(y).value["data"]]
+          else
+            parse_properties(setting.properties)
+          end
+
         Map.put(acc, setting.key, value)
       end
     end)
