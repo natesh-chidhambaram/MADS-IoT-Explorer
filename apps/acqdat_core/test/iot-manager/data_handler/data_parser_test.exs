@@ -10,9 +10,13 @@ defmodule AcqdatIotWeb.DataParserTest do
   alias AcqdatCore.Schema.IotManager.GatewayDataDump, as: GDD
   alias AcqdatCore.Test.Support.DataDump
   alias AcqdatCore.Repo
+  import Mock
 
   describe "data parser test/1" do
-    test "data parser" do
+    test_with_mock "data parser",
+                   AcqdatCore.IotManager.DataParser,
+                   [:passthrough],
+                   send_to_rabbitmq_queue: fn data -> data end do
       [data_dump, _sensor1, _sensor2, gateway] = DataDump.setup_gateway()
       DataParser.start_parsing(struct(GDD, data_dump))
       sensors_data = Repo.all(SensorsData)
@@ -58,7 +62,10 @@ defmodule AcqdatIotWeb.DataParserTest do
       end)
     end
 
-    test "data parser with object inside list" do
+    test_with_mock "data parser with object inside list",
+                   AcqdatCore.IotManager.DataParser,
+                   [:passthrough],
+                   send_to_rabbitmq_queue: fn data -> data end do
       [data_dump, _sensor1, _sensor2, gateway] = DataDump.setup_gateway(:object_parameter)
       DataParser.start_parsing(struct(GDD, data_dump))
       sensors_data = Repo.all(SensorsData)
@@ -107,7 +114,11 @@ defmodule AcqdatIotWeb.DataParserTest do
       end)
     end
 
-    test "data parser with list inside list " do
+    test_with_mock "data parser with list inside list",
+                   AcqdatCore.IotManager.DataParser,
+                   [:passthrough],
+                   send_to_rabbitmq_queue: fn data -> data end do
+      assert AcqdatCore.IotManager.DataParser.send_to_rabbitmq_queue(%{}) == %{}
       [data_dump, _sensor1, _sensor2, gateway] = DataDump.setup_gateway(:list_parameter)
       DataParser.start_parsing(struct(GDD, data_dump))
       sensors_data = Repo.all(SensorsData)

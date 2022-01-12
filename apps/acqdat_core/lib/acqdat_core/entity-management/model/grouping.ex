@@ -1,4 +1,4 @@
-defmodule AcqdatCore.Alerts.Model.Grouping do
+defmodule AcqdatCore.EntityManagement.Model.Grouping do
   @moduledoc """
   A module which takes care of the grouping logic for the alerts.
 
@@ -24,7 +24,7 @@ defmodule AcqdatCore.Alerts.Model.Grouping do
   from the `alert_policy_meta`.
   """
 
-  alias AcqdatCore.Alerts.Model.Alert
+  alias AcqdatCore.EntityManagement.Model.Alert
   alias AcqdatCore.AlertMessage.Token
   alias Ecto.Multi
   alias AcqdatCore.Repo
@@ -45,7 +45,7 @@ defmodule AcqdatCore.Alerts.Model.Grouping do
   end
 
   def list_grouping() do
-    Enum.reduce(AlertGroupingEnum.__enum_map__(), [], fn {key, value}, acc ->
+    Enum.reduce(EntityAlertGroupingEnum.__enum_map__(), [], fn {key, value}, acc ->
       acc ++ [key]
     end)
   end
@@ -159,7 +159,6 @@ defmodule AcqdatCore.Alerts.Model.Grouping do
 
   # TODO: optimize creating grouping_meta
   defp prepare_insert_params(%Token{} = params, grouping_hash) do
-    # Map.put(params.grouping_meta.grouping_parameters, :previous_time, params.inserted_timestamp)
     grouping_params =
       case Map.has_key?(params.grouping_meta.grouping_parameters, :unit) do
         true ->

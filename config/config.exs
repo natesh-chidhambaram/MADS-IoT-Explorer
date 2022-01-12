@@ -121,3 +121,16 @@ config :acqdat_core,
          "SECRET_KEY_BASE",
          "i6gwFKNscK4NSgptoHjMsYjmbUgFLKzehE6EBUMOkZpWF5h7Ac+J+IT9z5XVtK/d"
        )
+
+config :amqp,
+  connections: [
+    myconn: [
+      url:
+        "amqp://#{System.get_env("BROADWAY_CONN_USERNAME")}:#{
+          System.get_env("BROADWAY_CONN_PASSWORD")
+        }@#{System.get_env("BROADWAY_CONN_HOST")}:5672"
+    ]
+  ],
+  channels: [
+    mychan: [connection: :myconn]
+  ]

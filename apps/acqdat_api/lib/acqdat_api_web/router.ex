@@ -273,6 +273,15 @@ defmodule AcqdatApiWeb.Router do
         resources "/sensor_type", SensorTypeController, only: [:create, :index, :delete, :update]
       end
 
+      scope "/" do
+        get "/policies", AlertRulesController, :policies
+        get "/grouping_rules", AlertRulesController, :grouping_rules
+
+        resources "/alert-rules", AlertRulesController,
+          except: [:new, :edit],
+          as: :entity_alert_rule
+      end
+
       get("/projects/:project_id/users", ProjectController, :fetch_project_users)
     end
 

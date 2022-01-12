@@ -83,6 +83,17 @@ defmodule AcqdatCore.Model.EntityManagement.Sensor do
     end
   end
 
+  def get(id, preloads) when is_bitstring(id) do
+    case Repo.get(Sensor, String.to_integer(id)) do
+      nil ->
+        {:error, "not found"}
+
+      sensor ->
+        sensor = Repo.preload(sensor, [:sensor_type] ++ preloads)
+        {:ok, sensor}
+    end
+  end
+
   def get(query, preloads) when is_map(query) do
     case Repo.get_by(Sensor, query) do
       nil ->

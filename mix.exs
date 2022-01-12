@@ -66,9 +66,6 @@ defmodule AcqdatUmbrella.MixProject do
       # JSON API View
       {:ja_serializer, "~> 0.15"},
 
-      # elasticsearch
-      {:tirexs, "~> 0.8"},
-
       # logger
       {:gen_retry, "~> 1.2.0"},
 

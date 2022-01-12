@@ -73,16 +73,16 @@ defmodule AcqdatCore.MixProject do
       # image uploading
       {:arc, "~> 0.11.0"},
       {:arc_ecto, "~> 0.11.0"},
-      {:ex_aws, "~> 2.1.6"},
+      {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
-      {:hackney, "~> 1.6"},
+      {:hackney, "~> 1.9"},
       {:sweet_xml, "~> 0.6"},
 
       # slugger
       {:slugger, "~> 0.3"},
 
       # mailer
-      {:bamboo, github: "thoughtbot/bamboo"},
+      {:bamboo, "~> 1.7.1"},
       {:phoenix, "~> 1.4.10"},
       {:gettext, "~> 0.11"},
       {:phoenix_html, "~> 2.13.2"},
@@ -91,7 +91,7 @@ defmodule AcqdatCore.MixProject do
       {:ex_phone_number, "~> 0.2"},
 
       # elasticsearch
-      {:tirexs, "~> 0.8"},
+      {:tirexs, git: "https://github.com/DataKrewTech/tirexs.git"},
 
       # csv parsing
       {:nimble_csv, "~> 0.7"},
@@ -110,7 +110,17 @@ defmodule AcqdatCore.MixProject do
 
       ## hashing
       {:murmur, "~> 1.0"},
-      {:gen_stage, "~> 1.0"}
+      {:gen_stage, "~> 1.0"},
+
+      # Rabbitmq wrapper
+      {:amqp, "~> 3.0"},
+      {:broadway, "~> 1.0"},
+
+      # RabbitMQ connector for Broadway
+      {:broadway_rabbitmq, "~> 0.7.1"},
+
+      # A mocking library for the Elixir language
+      {:mock, "~> 0.3.0", only: :test}
     ]
   end
 

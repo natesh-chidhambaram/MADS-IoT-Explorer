@@ -8,6 +8,10 @@ defmodule AcqdatCore.IotManager.DataParser do
   alias AcqdatCore.Schema.EntityManagement.SensorsData.Parameters, as: SParam
   alias AcqdatCore.Model.EntityManagement.Sensor, as: SModel
 
+  @entity_queue "entity_queue"
+  @alert_queue "alert_queue"
+  @exchange "alert_exchange"
+
   def start_parsing(data_dump) do
     %{gateway_uuid: gateway_uuid, data: iot_data, inserted_timestamp: inserted_timestamp} =
       data_dump
@@ -24,18 +28,28 @@ defmodule AcqdatCore.IotManager.DataParser do
         parse_data(key_mapped_parameters, value, acc)
       end
     end)
-    |> persist_data(gateway.org.id, gateway.project.id, inserted_timestamp)
+    |> persist_data(
+      gateway.org.id,
+      gateway.project.id,
+      inserted_timestamp
+    )
   end
 
   ######### persist data private helpers #############
 
-  defp persist_data(iot_data, org_id, project_id, inserted_timestamp) do
+  def persist_data(iot_data, org_id, project_id, inserted_timestamp) do
     Enum.map(iot_data, fn {key, data} ->
-      data_manifest(key, data, org_id, project_id, inserted_timestamp)
+      data_manifest(
+        key,
+        data,
+        org_id,
+        project_id,
+        inserted_timestamp
+      )
     end)
   end
 
-  defp data_manifest(:gateway_data, data, org_id, project_id, inserted_timestamp) do
+  def data_manifest(:gateway_data, data, org_id, project_id, inserted_timestamp) do
     gateway_data =
       Enum.reduce(data, [], fn {key, parameters}, acc ->
         params = %{
@@ -56,7 +70,7 @@ defmodule AcqdatCore.IotManager.DataParser do
     AlertCreation.gateway_alert(data)
   end
 
-  defp data_manifest(:sensor_data, data, org_id, project_id, inserted_timestamp) do
+  def data_manifest(:sensor_data, data, org_id, project_id, inserted_timestamp) do
     sensor_data =
       Enum.reduce(data, [], fn {key, parameters}, acc ->
         params = %{
@@ -74,10 +88,26 @@ defmodule AcqdatCore.IotManager.DataParser do
       end)
 
     Repo.insert_all(SDSchema, sensor_data)
-    AlertCreation.sensor_alert(data)
+    AcqdatCore.IotManager.DataParser.send_to_rabbitmq_queue(data)
   end
 
   ##################### parsing data private helpers ###################
+
+  def send_to_rabbitmq_queue(data) do
+    # TODO: Need to Refactor more, to open AMQP connection only once instead of open it again and again per data chunk
+    {:ok, connection} = AMQP.Application.get_connection(:myconn)
+    {:ok, channel} = AMQP.Channel.open(connection)
+
+    with :ok <- AMQP.Exchange.declare(channel, @exchange, :fanout, durable: true),
+         {:ok, _} <- AMQP.Queue.declare(channel, @entity_queue, durable: true),
+         :ok <- AMQP.Queue.bind(channel, @entity_queue, @exchange),
+         {:ok, _} <- AMQP.Queue.declare(channel, @alert_queue, durable: true),
+         :ok <- AMQP.Queue.bind(channel, @alert_queue, @exchange) do
+      AMQP.Basic.publish(channel, @exchange, "", Jason.encode!(data))
+    end
+
+    AMQP.Channel.close(channel)
+  end
 
   defp prepare_gateway_parameters(parameters) do
     Enum.reduce(parameters, [], fn param, acc ->
