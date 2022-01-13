@@ -15,8 +15,36 @@ defmodule AcqdatCore.Seed.Widgets.AreaTimeseries do
         title: [text: %{}, align: %{}, style: [color: %{value: "#495057"}, fontSize: %{value: "15px"}]],
         caption: [text: %{}, align: %{}],
         subtitle: [text: %{}, align: %{}, style: [color: %{value: "#74788d"}, fontSize: %{value: "14px"}]],
-        yAxis: [title: [text: %{}]],
-        xAxis: [type: %{value: "datetime"}, title: [text: %{value: "Date"}]],
+        yAxis: [title: [text: %{}],
+                plotBands: %{
+                  data_type: :list,
+                  value: [
+                    %{color: "#55BF3B", from: 0, to: 120},
+                    %{color: "#DDDF0D", from: 120, to: 160},
+                    %{color: "#DF5353", from: 160, to: 200}
+                  ],
+                  properties: %{
+                    color: %{data_type: :color, value: "#55BF3B", properties: %{}},
+                    from: %{data_type: :integer, value: 0, properties: %{}},
+                    to: %{data_type: :integer, value: 120, properties: %{}}
+                  }
+                }
+              ],
+        xAxis: [type: %{value: "datetime"}, title: [text: %{value: "Date"}],
+                plotBands: %{
+                  data_type: :list,
+                  value: [
+                    %{color: "#55BF3B", from: 0, to: 120},
+                    %{color: "#DDDF0D", from: 120, to: 160},
+                    %{color: "#DF5353", from: 160, to: 200}
+                  ],
+                  properties: %{
+                    color: %{data_type: :color, value: "#55BF3B", properties: %{}},
+                    from: %{data_type: :integer, value: 0, properties: %{}},
+                    to: %{data_type: :integer, value: 120, properties: %{}}
+                  }
+                }
+              ],
         credits: [enabled: %{value: false}],
         legend: [enabled: %{value: true}]
       },

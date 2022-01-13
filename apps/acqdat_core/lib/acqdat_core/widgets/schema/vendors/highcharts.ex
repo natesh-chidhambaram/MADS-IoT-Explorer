@@ -271,7 +271,27 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.HighCharts do
                 visible: %{data_type: :boolean, default_value: true, user_controlled: false},
                 min: %{data_type: :integer, default_value: "null", user_controlled: true},
                 max: %{data_type: :integer, default_value: "null", user_controlled: true},
-                plotBands: %{data_type: :list, default_value: %{}, user_controlled: true}
+                plotBands: %{
+                  data_type: :list,
+                  user_controlled: true,
+                  properties: %{
+                    color: %{
+                      data_type: :color,
+                      default_value: "#cccccc",
+                      user_controlled: false
+                    },
+                    from: %{
+                      data_type: :integer,
+                      default_value: 0,
+                      user_controlled: false
+                    },
+                    to: %{
+                      data_type: :integer,
+                      default_value: 100,
+                      user_controlled: false
+                    }
+                  }
+                }
               }
             },
             yAxis: %{
