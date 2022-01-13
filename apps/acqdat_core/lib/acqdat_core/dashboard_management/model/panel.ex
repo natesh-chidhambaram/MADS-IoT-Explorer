@@ -6,6 +6,7 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   alias AcqdatCore.Model.DashboardManagement.CommandWidget
   alias AcqdatCore.Repo
   import AcqdatApiWeb.Helpers
+  alias AcqdatApi.DashboardManagement.Subpanel
 
   def create(params) do
     changeset = Panel.changeset(%Panel{}, params)
@@ -13,19 +14,26 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   end
 
   def duplicate(panel, data) do
-    panel_details = Repo.preload(panel, [:widget_instances, :command_widgets])
-    Multi.new()
-    |> Multi.run(:create_panel, fn _, _changes ->
-      params = create_params(panel, data)
-      create(params)
-      # Panel.changeset(%Panel{}, params) |> Repo.insert!()
-    end)
-    |> Multi.run(:create_widget_instance, fn _, %{create_panel: panel} ->
-      attrs = create_widget_instance_attributes(panel_details.widget_instances, panel)
-      WidgetInstanceModel.bulk_create(attrs)
-      {:ok, panel}    # since insert_all returns {integer, nil | term}
-    end)
-    |> run_transaction()
+    if is_nil(data.parent_id) == false do
+      subpanel_params = create_subpanel_params(panel, data)
+      Subpanel.create(subpanel_params)
+    else
+      panel_details = Repo.preload(panel, [:widget_instances, :command_widgets])
+
+      Multi.new()
+      |> Multi.run(:create_panel, fn _, _changes ->
+        params = create_params(panel, data)
+        create(params)
+        # Panel.changeset(%Panel{}, params) |> Repo.insert!()
+      end)
+      |> Multi.run(:create_widget_instance, fn _, %{create_panel: panel} ->
+        attrs = create_widget_instance_attributes(panel_details.widget_instances, panel)
+        WidgetInstanceModel.bulk_create(attrs)
+        # since insert_all returns {integer, nil | term}
+        {:ok, panel}
+      end)
+      |> run_transaction()
+    end
   end
 
   def update(panel, params) do
@@ -97,6 +105,21 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
       name: data.name,
       org_id: panel.org_id,
       settings: panel.settings,
+      widget_layouts: panel.widget_layouts
+    }
+  end
+
+  defp create_subpanel_params(panel, data) do
+    %{
+      name: data.name,
+      icon: data.icon,
+      parent_id: data.parent_id,
+      panel_id: data.panel_id,
+      description: panel.description,
+      org_id: panel.org_id,
+      dashboard_id: panel.dashboard_id,
+      settings: panel.settings,
+      filter_metadata: Map.from_struct(panel.filter_metadata),
       widget_layouts: panel.widget_layouts
     }
   end
@@ -200,66 +223,72 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
     for {key, val} <- map, into: %{}, do: {String.to_atom(key), val}
   end
 
-  defp widget_create_attrs(%{
-    label: label,
-    widget_id: widget_id,
-    series_data: series_data,
-    widget_settings: widget_settings,
-    visual_properties: visual_properties
-  }, panel) do
+  defp widget_create_attrs(
+         %{
+           label: label,
+           widget_id: widget_id,
+           series_data: series_data,
+           widget_settings: widget_settings,
+           visual_properties: visual_properties
+         },
+         panel
+       ) do
     datetime = DateTime.truncate(DateTime.utc_now(), :second)
-%{
-  uuid: UUID.uuid1(:hex),
-  slug: Slugger.slugify(random_string(12)),
-  inserted_at: datetime,
-  updated_at: datetime,
- label: label,
- panel_id: panel.id,
- widget_id: widget_id,
- series_data: series_data,
- widget_settings: widget_settings,
- visual_properties: visual_properties
-}
-end
 
-defp random_string(length) do
-  :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
-end
-
-defp run_transaction(multi_query) do
-  result = Repo.transaction(multi_query)
-
-  case result do
-    {:ok, %{create_panel: panel, create_widget_instance: _widget_instance}} ->
-      {:ok, panel}
-
-    {:error, failed_operation, failed_value, _changes_so_far} ->
-      case failed_operation do
-        :create_panel -> verify_error_changeset({:error, failed_value})
-        :create_widget_instance -> verify_error_changeset({:error, failed_value})
-      end
+    %{
+      uuid: UUID.uuid1(:hex),
+      slug: Slugger.slugify(random_string(12)),
+      inserted_at: datetime,
+      updated_at: datetime,
+      label: label,
+      panel_id: panel.id,
+      widget_id: widget_id,
+      series_data: series_data,
+      widget_settings: widget_settings,
+      visual_properties: visual_properties
+    }
   end
-end
 
-defp verify_error_changeset({:error, changeset}) do
-  {:error, %{error: extract_changeset_error(changeset)}}
-end
+  defp random_string(length) do
+    :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
+  end
 
+  defp run_transaction(multi_query) do
+    result = Repo.transaction(multi_query)
 
-defp widget_create_attrs(%{
-    label: label,
-    widget_id: widget_id,
-    source_app: source_app,
-    source_metadata: source_metadata,
-    visual_properties: visual_properties
-  }, panel) do
-%{
- label: label,
- panel_id: panel.id,
- widget_id: widget_id,
- source_app: source_app,
- source_metadata: source_metadata,
- visual_properties: visual_properties
-}
-end
+    case result do
+      {:ok, %{create_panel: panel, create_widget_instance: _widget_instance}} ->
+        {:ok, panel}
+
+      {:error, failed_operation, failed_value, _changes_so_far} ->
+        case failed_operation do
+          :create_panel -> verify_error_changeset({:error, failed_value})
+          :create_widget_instance -> verify_error_changeset({:error, failed_value})
+        end
+    end
+  end
+
+  defp verify_error_changeset({:error, changeset}) do
+    {:error, %{error: extract_changeset_error(changeset)}}
+  end
+
+  defp widget_create_attrs(
+         %{
+           label: label,
+           widget_id: widget_id,
+           source_app: source_app,
+           source_metadata: source_metadata,
+           visual_properties: visual_properties
+         },
+         panel
+       ) do
+    %{
+      label: label,
+      panel_id: panel.id,
+      widget_id: widget_id,
+      source_app: source_app,
+      source_metadata: source_metadata,
+      visual_properties: visual_properties
+    }
+  end
 end

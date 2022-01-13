@@ -15,20 +15,23 @@ defmodule AcqdatApiWeb.Plug.LoadPanel do
   end
 
   defp check_panel(conn, panel_id) do
-      panel_id =
-        case is_integer(panel_id) do
-          true -> panel_id
-          false ->
-            {panel_id, _} = Integer.parse(panel_id)
-            panel_id
-        end
-        case PanelModel.get_by_id(panel_id) do
-          {:ok, panel} ->
-            assign(conn, :panel, panel)
+    panel_id =
+      case is_integer(panel_id) do
+        true ->
+          panel_id
 
-          {:error, _message} ->
-            conn
-            |> put_status(404)
-        end
+        false ->
+          {panel_id, _} = Integer.parse(panel_id)
+          panel_id
+      end
+
+    case PanelModel.get_by_id(panel_id) do
+      {:ok, panel} ->
+        assign(conn, :panel, panel)
+
+      {:error, _message} ->
+        conn
+        |> put_status(404)
+    end
   end
 end
