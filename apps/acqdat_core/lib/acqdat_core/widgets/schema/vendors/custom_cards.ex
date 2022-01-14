@@ -94,5 +94,26 @@ defmodule AcqdatCore.Widgets.Schema.Vendors.CustomCards do
               data_type: :list,
               user_defined: false,
               properties: %{}
+            },
+            threshold: %{
+              data_type: :list,
+              user_controlled: true,
+              properties: %{
+                color: %{
+                  data_type: :color,
+                  default_value: "#cccccc",
+                  user_controlled: false
+                },
+                from: %{
+                  data_type: :integer,
+                  default_value: 0,
+                  user_controlled: false
+                },
+                to: %{
+                  data_type: :integer,
+                  default_value: 100,
+                  user_controlled: false
+                }
+              }
             }
 end

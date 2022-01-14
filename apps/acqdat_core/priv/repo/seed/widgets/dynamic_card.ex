@@ -16,7 +16,20 @@ defmodule AcqdatCore.Seed.Widgets.DynamicCard do
         unit: [text: %{}, align: %{}],
         image: [url: %{}, align: %{}],
         description: [text: %{}, fontSize: %{value: "14px"}, fontColor: %{value: "#212529"}, align: %{}],
-        subtitle: [text: %{}, fontSize: %{value: "14px"}, fontColor: %{value: "#74788d"}, align: %{}]
+        subtitle: [text: %{}, fontSize: %{value: "14px"}, fontColor: %{value: "#74788d"}, align: %{}],
+        threshold: %{
+          data_type: :list,
+          value: [
+            %{color: "#55BF3B", from: 0, to: 30},
+            %{color: "#DDDF0D", from: 30, to: 45},
+            %{color: "#DF5353", from: 45, to: 100}
+          ],
+          properties: %{
+            color: %{value: "#55BF3B" },
+            from: %{value: 0 },
+            to: %{value: 30 }
+          }
+        }
       },
       data: %{
         series: %{

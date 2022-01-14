@@ -14,7 +14,20 @@ defmodule AcqdatCore.Seed.Widgets.DataCard do
         card: [type: %{value: "data card"}, backgroundColor: %{}, fontColor: %{}],
         title: [text: %{}, align: %{value: ["left", "right", "center", "top", "bottom"]}, fontSize: %{value: "15px"}, fontColor: %{value: "#495057"}],
         unit: [text: %{}, align: %{}],
-        image: [url: %{}, align: %{value: ["left", "right", "center", "top", "bottom"]}]
+        image: [url: %{}, align: %{value: ["left", "right", "center", "top", "bottom"]}],
+        threshold: %{
+          data_type: :list,
+          value: [
+            %{color: "#55BF3B", from: 0, to: 30},
+            %{color: "#DDDF0D", from: 30, to: 45},
+            %{color: "#DF5353", from: 45, to: 100}
+          ],
+          properties: %{
+            color: %{value: "#55BF3B" },
+            from: %{value: 0 },
+            to: %{value: 30 }
+          }
+        }
       },
       data: %{
         series: %{
