@@ -7,7 +7,7 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceController do
 
   plug AcqdatApiWeb.Plug.LoadOrg
   plug AcqdatApiWeb.Plug.LoadPanel
-  plug AcqdatApiWeb.Plug.LoadWidget
+  plug AcqdatApiWeb.Plug.LoadWidget when action not in [:duplicate_widgets]
   plug AcqdatApiWeb.Plug.LoadWidgetInstance when action in [:update, :delete]
 
   def create(conn, params) do
@@ -38,7 +38,7 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceController do
     end
   end
 
-  def duplicate_widget(conn, params) do
+  def duplicate_widgets(conn, params) do
     case conn.status do
       nil ->
         changeset = verify_duplicate(params)

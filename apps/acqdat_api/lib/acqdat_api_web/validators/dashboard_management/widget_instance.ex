@@ -17,7 +17,6 @@ defmodule AcqdatApiWeb.Validators.DashboardManagement.WidgetInstance do
     verify_duplicate(%{
       org_id!: :integer,
       widget_id!: :integer,
-      # The target panel-Id
       panel_id!: :integer,
       label!: :string
     })
