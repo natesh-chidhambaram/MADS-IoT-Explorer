@@ -14,17 +14,25 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   end
 
   def duplicate(panel, data) do
-    if is_nil(data.parent_id) == false do
-      subpanel_params = create_subpanel_params(panel, data)
-      Subpanel.create(subpanel_params)
-    else
-      panel_details = Repo.preload(panel, [:widget_instances, :command_widgets])
+    panel_details = Repo.preload(panel, [:widget_instances])
 
+    if data.parent_id != nil do
+      Multi.new()
+      |> Multi.run(:create_sub_panel, fn _, _changes ->
+        create_subpanel_params(panel, data)
+        |> Subpanel.create()
+      end)
+      |> Multi.run(:create_widget_instance, fn _, %{create_sub_panel: sub_panel} ->
+        attrs = create_widget_instance_attributes(panel_details.widget_instances, sub_panel)
+        WidgetInstanceModel.bulk_create(attrs)
+        {:ok, sub_panel}
+      end)
+      |> run_transaction()
+    else
       Multi.new()
       |> Multi.run(:create_panel, fn _, _changes ->
-        params = create_params(panel, data)
-        create(params)
-        # Panel.changeset(%Panel{}, params) |> Repo.insert!()
+        create_params(panel, data)
+        |> create()
       end)
       |> Multi.run(:create_widget_instance, fn _, %{create_panel: panel} ->
         attrs = create_widget_instance_attributes(panel_details.widget_instances, panel)
@@ -96,31 +104,51 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
     end)
   end
 
-  defp create_params(panel, data) do
+  defp create_params(
+         %{
+           dashboard_id: dashboard_id,
+           description: description,
+           filter_metadata: filter_metadata,
+           org_id: org_id,
+           settings: settings,
+           widget_layouts: widget_layouts
+         },
+         %{icon: icon, name: name}
+       ) do
     %{
-      dashboard_id: panel.dashboard_id,
-      description: panel.description,
-      filter_metadata: Map.from_struct(panel.filter_metadata),
-      icon: data.icon,
-      name: data.name,
-      org_id: panel.org_id,
-      settings: panel.settings,
-      widget_layouts: panel.widget_layouts
+      dashboard_id: dashboard_id,
+      description: description,
+      filter_metadata: Map.from_struct(filter_metadata),
+      icon: icon,
+      name: name,
+      org_id: org_id,
+      settings: settings,
+      widget_layouts: widget_layouts
     }
   end
 
-  defp create_subpanel_params(panel, data) do
+  defp create_subpanel_params(
+         %{
+           description: description,
+           org_id: org_id,
+           dashboard_id: dashboard_id,
+           settings: settings,
+           filter_metadata: filter_metadata,
+           widget_layouts: widget_layouts
+         },
+         %{name: name, icon: icon, parent_id: parent_id, panel_id: panel_id}
+       ) do
     %{
-      name: data.name,
-      icon: data.icon,
-      parent_id: data.parent_id,
-      panel_id: data.panel_id,
-      description: panel.description,
-      org_id: panel.org_id,
-      dashboard_id: panel.dashboard_id,
-      settings: panel.settings,
-      filter_metadata: Map.from_struct(panel.filter_metadata),
-      widget_layouts: panel.widget_layouts
+      name: name,
+      icon: icon,
+      parent_id: parent_id,
+      panel_id: panel_id,
+      description: description,
+      org_id: org_id,
+      dashboard_id: dashboard_id,
+      settings: settings,
+      filter_metadata: Map.from_struct(filter_metadata),
+      widget_layouts: widget_layouts
     }
   end
 
@@ -260,9 +288,13 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
       {:ok, %{create_panel: panel, create_widget_instance: _widget_instance}} ->
         {:ok, panel}
 
+      {:ok, %{create_sub_panel: sub_panel, create_widget_instance: _widget_instance}} ->
+         {:ok, sub_panel}
+
       {:error, failed_operation, failed_value, _changes_so_far} ->
         case failed_operation do
           :create_panel -> verify_error_changeset({:error, failed_value})
+          :create_sub_panel -> verify_error_changeset({:error, failed_value})
           :create_widget_instance -> verify_error_changeset({:error, failed_value})
         end
     end

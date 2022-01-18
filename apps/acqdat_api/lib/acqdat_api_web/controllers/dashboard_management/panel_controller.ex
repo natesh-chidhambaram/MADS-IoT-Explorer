@@ -6,7 +6,7 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelController do
   alias AcqdatApiWeb.DashboardManagement.PanelErrorHelper
 
   plug AcqdatApiWeb.Plug.LoadOrg
-  plug AcqdatApiWeb.Plug.LoadPanel when action in [:update, :delete, :duplicate_panel]
+  plug AcqdatApiWeb.Plug.LoadPanel when action in [:update, :delete, :duplicate_panels]
 
   def index(conn, params) do
     changeset = verify_index_params(params)
@@ -58,7 +58,7 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelController do
     end
   end
 
-  def duplicate_panel(conn, params) do
+  def duplicate_panels(conn, params) do
     case conn.status do
       nil ->
         changeset = verify_duplicate(params)

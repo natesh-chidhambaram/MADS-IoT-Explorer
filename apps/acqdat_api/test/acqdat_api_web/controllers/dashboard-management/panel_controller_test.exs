@@ -481,5 +481,4 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelControllerTest do
              }
     end
   end
-
 end
