@@ -174,6 +174,7 @@ defmodule AcqdatApiWeb.Router do
 
         scope "/panels/:panel_id" do
           resources "/command_widgets", CommandWidgetController, except: [:new, :index, :edit]
+          post "/duplicate_widgets", WidgetInstanceController, :duplicate_widgets
         end
 
         get "/command_widget_types",

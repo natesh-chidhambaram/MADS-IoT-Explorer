@@ -24,6 +24,17 @@ defmodule AcqdatApi.DashboardManagement.WidgetInstance do
     |> broadcast_to_channel(attrs)
   end
 
+  def duplicate(%{widget_id: widget_id, panel_id: panel_id, label: label}) do
+    case WidgetInstanceModel.get_by_id(widget_id) do
+      {:ok, widget_instance} ->
+        duplicate_widget_create_attrs(widget_instance, panel_id, label)
+        |> create()
+
+      {:error, message} ->
+        {:error, message}
+    end
+  end
+
   def update(widget_instance, attrs) do
     WidgetInstanceModel.update(widget_instance, attrs)
     |> verify_widget()
@@ -103,6 +114,33 @@ defmodule AcqdatApi.DashboardManagement.WidgetInstance do
       source_metadata: source_metadata,
       visual_properties: visual_properties
     }
+  end
+
+  defp duplicate_widget_create_attrs(widget_instance, panel_id, label) do
+    %{
+      label: label,
+      panel_id: panel_id,
+      widget_id: widget_instance.widget_id,
+      series_data: convert_struct_to_map(widget_instance.series_data),
+      widget_settings: widget_instance.widget_settings,
+      visual_properties: widget_instance.visual_properties
+    }
+  end
+
+  defp convert_struct_to_map(series_data) do
+    Enum.reduce(series_data, [], fn data, acc ->
+      data = Map.from_struct(data) |> convert_axes()
+      acc ++ [data]
+    end)
+  end
+
+  defp convert_axes(%{axes: axes} = data) do
+    modified_axes =
+    Enum.reduce(axes, [], fn axe, acc ->
+      acc ++ [Map.from_struct(axe)]
+    end)
+
+    Map.replace(data, :axes, modified_axes)
   end
 
   defp verify_widget({:ok, widget}) do

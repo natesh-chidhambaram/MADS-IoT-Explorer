@@ -12,4 +12,13 @@ defmodule AcqdatApiWeb.Validators.DashboardManagement.WidgetInstance do
       series_data: [field: {:array, :map}, default: []]
     })
   )
+
+  defparams(
+    verify_duplicate(%{
+      org_id!: :integer,
+      widget_id!: :integer,
+      panel_id!: :integer,
+      label!: :string
+    })
+  )
 end
