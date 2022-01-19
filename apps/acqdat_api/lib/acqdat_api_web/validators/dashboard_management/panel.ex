@@ -35,7 +35,8 @@ defmodule AcqdatApiWeb.Validators.DashboardManagement.Panel do
       name!: :string,
       icon!: :string,
       panel_id!: :integer,
-      parent_id: :integer
+      parent_id: :integer,
+      target_dashboard_id!: :integer
     })
   )
 end

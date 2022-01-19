@@ -13,6 +13,13 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
     Repo.insert(changeset)
   end
 
+  @doc """
+  For panel duplication, if the received request contains value for parent-id, then the target is going to be subpanel which comes under the received parent-id.
+  Else the target is going to be the root panel.
+  We are having One level hirerchy for panel and it's children (Widgets and subpanels).
+  So, we can duplicate a subpanel as root panel or as a subpanel.
+  But, if the root panel has subpanels then we can duplicate it only as a root panel, we can't make the target duplication to be a subpanel.
+  """
   def duplicate(panel, data) do
     panel_details = Repo.preload(panel, [:widget_instances])
 
@@ -106,14 +113,13 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
 
   defp create_params(
          %{
-           dashboard_id: dashboard_id,
            description: description,
            filter_metadata: filter_metadata,
            org_id: org_id,
            settings: settings,
            widget_layouts: widget_layouts
          },
-         %{icon: icon, name: name}
+         %{icon: icon, name: name, target_dashboard_id: dashboard_id}
        ) do
     %{
       dashboard_id: dashboard_id,
@@ -131,12 +137,12 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
          %{
            description: description,
            org_id: org_id,
-           dashboard_id: dashboard_id,
+          #  dashboard_id: dashboard_id,
            settings: settings,
            filter_metadata: filter_metadata,
            widget_layouts: widget_layouts
          },
-         %{name: name, icon: icon, parent_id: parent_id, panel_id: panel_id}
+         %{name: name, icon: icon, target_dashboard_id: dashboard_id, parent_id: parent_id, panel_id: panel_id}
        ) do
     %{
       name: name,
