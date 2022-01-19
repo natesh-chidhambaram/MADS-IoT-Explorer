@@ -4,6 +4,7 @@ defmodule AcqdatApi.DashboardManagement.Panel do
   import AcqdatApiWeb.Helpers
 
   defdelegate delete(panel), to: PanelModel
+  defdelegate duplicate(panel, data), to: PanelModel
   defdelegate get_with_widgets(panel_id), to: PanelModel
   defdelegate update(panel, data), to: PanelModel
 

@@ -385,4 +385,100 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelControllerTest do
              }
     end
   end
+
+  describe "duplicate_panel/2" do
+    setup :setup_conn
+
+    test "duplicate panel", %{conn: conn} do
+      panel_manifest = build(:panel)
+      org = insert(:organisation)
+      dashboard = insert(:dashboard)
+
+      data = %{
+        name: panel_manifest.name,
+        icon: "home"
+      }
+
+      conn = post(conn, Routes.panel_path(conn, :duplicate, org.id, dashboard.id), data)
+      response = conn |> json_response(200)
+      assert Map.has_key?(response, "name")
+      assert Map.has_key?(response, "id")
+    end
+
+    test "failure for panel with duplicate name", %{conn: conn} do
+      panel = insert(:panel)
+      org_id = panel.org.id
+      dashboard_id = panel.dashboard.id
+
+      params = %{name: panel.name, icon: "home"}
+      conn = post(conn, Routes.panel_path(conn, :duplicate, org_id, dashboard_id), params)
+      result = conn |> json_response(400)
+
+      assert result == %{
+               "detail" =>
+                 "Parameters provided to perform current action is either not valid or missing or not unique",
+               "source" => %{"name" => ["unique panel name under dashboard"]},
+               "status_code" => 400,
+               "title" => "Insufficient or not unique parameters"
+             }
+    end
+
+    test "fails if authorization header not found", %{conn: conn} do
+      bad_access_token = "qwerty1234567uiop"
+      org = insert(:organisation)
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{bad_access_token}")
+
+      data = %{}
+      conn = post(conn, Routes.panel_path(conn, :duplicate, org.id, 1), data)
+      result = conn |> json_response(403)
+
+      assert result == %{
+               "detail" => "You are not allowed to perform this action.",
+               "source" => nil,
+               "status_code" => 403,
+               "title" => "Unauthorized"
+             }
+    end
+
+    test "fails if required params are missing", %{conn: conn} do
+      org = insert(:organisation)
+      dashboard = insert(:dashboard)
+
+      data = %{}
+
+      conn = post(conn, Routes.panel_path(conn, :duplicate, org.id, dashboard.id), data)
+
+      response = conn |> json_response(400)
+
+      assert response == %{
+               "detail" =>
+                 "Parameters provided to perform current action is either not valid or missing or not unique",
+               "source" => %{"name" => ["can't be blank"], "icon" => ["can't be blank"]},
+               "status_code" => 400,
+               "title" => "Insufficient or not unique parameters"
+             }
+    end
+
+    test "fails if icon param missing", %{conn: conn} do
+      org = insert(:organisation)
+      dashboard = insert(:dashboard)
+
+      data = %{name: "demo"}
+
+      conn = post(conn, Routes.panel_path(conn, :duplicate, org.id, dashboard.id), data)
+
+      response = conn |> json_response(400)
+
+      assert response == %{
+               "detail" =>
+                 "Parameters provided to perform current action is either not valid or missing or not unique",
+               "source" => %{"icon" => ["can't be blank"]},
+               "status_code" => 400,
+               "title" => "Insufficient or not unique parameters"
+             }
+    end
+  end
 end

@@ -11,6 +11,10 @@ defmodule AcqdatCore.Model.DashboardManagement.WidgetInstance do
     Repo.insert(changeset)
   end
 
+  def bulk_create(attrs) do
+    Repo.insert_all(WidgetInstance, attrs)
+  end
+
   def update(widget_instance, params) do
     changeset = WidgetInstance.update_changeset(widget_instance, params)
     Repo.update(changeset)
