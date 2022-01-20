@@ -21,7 +21,7 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   But, if the root panel has subpanels then we can duplicate it only as a root panel, we can't make the target duplication to be a subpanel.
   """
   def duplicate(panel, data) do
-    panel_details = Repo.preload(panel, [:widget_instances])
+    panel_details = Repo.preload(panel, [:widget_instances, :children])
 
     if data.parent_id != nil do
       Multi.new()
@@ -35,7 +35,9 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
         {:ok, sub_panel}
       end)
       |> run_transaction()
+
     else
+
       Multi.new()
       |> Multi.run(:create_panel, fn _, _changes ->
         create_params(panel, data)
@@ -44,8 +46,12 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
       |> Multi.run(:create_widget_instance, fn _, %{create_panel: panel} ->
         attrs = create_widget_instance_attributes(panel_details.widget_instances, panel)
         WidgetInstanceModel.bulk_create(attrs)
-        # since insert_all returns {integer, nil | term}
         {:ok, panel}
+      end)
+      |> Multi.run(:createe_sub_panel, fn _, %{create_widget_instance: root_panel} ->
+        subpanel_attrs = create_subpanel_attributes(panel_details.children, root_panel)
+        Repo.insert_all(Panel, subpanel_attrs)
+        {:ok, root_panel}
       end)
       |> run_transaction()
     end
@@ -109,6 +115,40 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
     Enum.reduce(widget_instances, [], fn instance, acc ->
       acc ++ [widget_create_attrs(instance, panel)]
     end)
+  end
+
+  defp create_subpanel_attributes(subpanels, panel) do
+    Enum.reduce(subpanels, [], fn subpanel, acc ->
+      acc ++ [subpanel_create_attrs(subpanel, panel)]
+    end)
+  end
+
+  defp subpanel_create_attrs(
+    %{name: name, icon: icon, description: description, org_id: org_id, settings: settings,
+     filter_metadata: filter_metadata, widget_layouts: widget_layouts},
+    panel) do
+      datetime = DateTime.truncate(DateTime.utc_now(), :second)
+    %{
+      uuid: UUID.uuid1(:hex),
+      slug: Slugger.slugify(random_string(12)),
+      inserted_at: datetime,
+      updated_at: datetime,
+      name: name,
+      icon: icon,
+      parent_id: panel.id,
+      dashboard_id: panel.dashboard_id,
+      description: description,
+      org_id: org_id,
+      settings: settings,
+      # filter_metadata: Map.from_struct(filter_metadata),
+      filter_metadata: filter_metadata ||
+      %{from_date: from_date, to_date: DateTime.to_unix(DateTime.utc_now(), :millisecond)},
+      widget_layouts: widget_layouts
+    }
+  end
+
+  defp from_date do
+    DateTime.to_unix(Timex.shift(DateTime.utc_now(), hours: -2), :millisecond)
   end
 
   defp create_params(
