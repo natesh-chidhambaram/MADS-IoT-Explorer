@@ -35,9 +35,7 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
         {:ok, sub_panel}
       end)
       |> run_transaction()
-
     else
-
       Multi.new()
       |> Multi.run(:create_panel, fn _, _changes ->
         create_params(panel, data)
@@ -124,10 +122,19 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   end
 
   defp subpanel_create_attrs(
-    %{name: name, icon: icon, description: description, org_id: org_id, settings: settings,
-     filter_metadata: filter_metadata, widget_layouts: widget_layouts},
-    panel) do
-      datetime = DateTime.truncate(DateTime.utc_now(), :second)
+         %{
+           name: name,
+           icon: icon,
+           description: description,
+           org_id: org_id,
+           settings: settings,
+           filter_metadata: filter_metadata,
+           widget_layouts: widget_layouts
+         },
+         panel
+       ) do
+    datetime = DateTime.truncate(DateTime.utc_now(), :second)
+
     %{
       uuid: UUID.uuid1(:hex),
       slug: Slugger.slugify(random_string(12)),
@@ -140,9 +147,9 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
       description: description,
       org_id: org_id,
       settings: settings,
-      # filter_metadata: Map.from_struct(filter_metadata),
-      filter_metadata: filter_metadata ||
-      %{from_date: from_date, to_date: DateTime.to_unix(DateTime.utc_now(), :millisecond)},
+      filter_metadata:
+        filter_metadata ||
+          %{from_date: from_date, to_date: DateTime.to_unix(DateTime.utc_now(), :millisecond)},
       widget_layouts: widget_layouts
     }
   end
@@ -161,28 +168,36 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
          },
          %{icon: icon, name: name, target_dashboard_id: dashboard_id}
        ) do
-    %{
-      dashboard_id: dashboard_id,
-      description: description,
-      filter_metadata: Map.from_struct(filter_metadata),
-      icon: icon,
-      name: name,
-      org_id: org_id,
-      settings: settings,
-      widget_layouts: widget_layouts
-    }
+    (filter_metadata && Map.from_struct(filter_metadata)) ||
+      %{
+        dashboard_id: dashboard_id,
+        description: description,
+        filter_metadata:
+          (filter_metadata && Map.from_struct(filter_metadata)) ||
+            %{from_date: from_date, to_date: DateTime.to_unix(DateTime.utc_now(), :millisecond)},
+        icon: icon,
+        name: name,
+        org_id: org_id,
+        settings: settings,
+        widget_layouts: widget_layouts
+      }
   end
 
   defp create_subpanel_params(
          %{
            description: description,
            org_id: org_id,
-          #  dashboard_id: dashboard_id,
            settings: settings,
            filter_metadata: filter_metadata,
            widget_layouts: widget_layouts
          },
-         %{name: name, icon: icon, target_dashboard_id: dashboard_id, parent_id: parent_id, panel_id: panel_id}
+         %{
+           name: name,
+           icon: icon,
+           target_dashboard_id: dashboard_id,
+           parent_id: parent_id,
+           panel_id: panel_id
+         }
        ) do
     %{
       name: name,
@@ -335,7 +350,7 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
         {:ok, panel}
 
       {:ok, %{create_sub_panel: sub_panel, create_widget_instance: _widget_instance}} ->
-         {:ok, sub_panel}
+        {:ok, sub_panel}
 
       {:error, failed_operation, failed_value, _changes_so_far} ->
         case failed_operation do

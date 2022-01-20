@@ -491,5 +491,4 @@ defmodule AcqdatApiWeb.DashboardManagement.WidgetInstanceControllerTest do
              }
     end
   end
-
 end

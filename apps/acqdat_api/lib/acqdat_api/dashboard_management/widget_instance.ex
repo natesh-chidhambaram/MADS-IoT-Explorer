@@ -136,9 +136,9 @@ defmodule AcqdatApi.DashboardManagement.WidgetInstance do
 
   defp convert_axes(%{axes: axes} = data) do
     modified_axes =
-    Enum.reduce(axes, [], fn axe, acc ->
-      acc ++ [Map.from_struct(axe)]
-    end)
+      Enum.reduce(axes, [], fn axe, acc ->
+        acc ++ [Map.from_struct(axe)]
+      end)
 
     Map.replace(data, :axes, modified_axes)
   end

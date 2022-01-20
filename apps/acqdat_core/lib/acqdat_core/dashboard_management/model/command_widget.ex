@@ -11,10 +11,6 @@ defmodule AcqdatCore.Model.DashboardManagement.CommandWidget do
     Repo.insert(changeset)
   end
 
-  def bulk_create(attrs) do
-    Repo.insert_all(CommandWidget, attrs)
-  end
-
   def update(command_widget, %{"data_settings" => _data_settings} = params) do
     changeset = CommandWidget.changeset(command_widget, params)
     verify_update(Repo.update(changeset))
