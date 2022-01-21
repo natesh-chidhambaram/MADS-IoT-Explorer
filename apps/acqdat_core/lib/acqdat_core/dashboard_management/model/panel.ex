@@ -10,7 +10,6 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
     Repo.insert(changeset)
   end
 
-
   def update(panel, params) do
     changeset = Panel.update_changeset(panel, params)
     Repo.update(changeset)
@@ -163,7 +162,6 @@ defmodule AcqdatCore.Model.DashboardManagement.Panel do
   defp transform_map(map) do
     for {key, val} <- map, into: %{}, do: {String.to_atom(key), val}
   end
-
 
   defp widget_create_attrs(
          %{

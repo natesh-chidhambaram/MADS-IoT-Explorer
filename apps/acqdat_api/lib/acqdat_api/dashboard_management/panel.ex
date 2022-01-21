@@ -9,7 +9,6 @@ defmodule AcqdatApi.DashboardManagement.Panel do
   alias AcqdatCore.DashboardManagement.Schema.Panel
 
   defdelegate delete(panel), to: PanelModel
-  # defdelegate duplicate(panel, data), to: PanelModel
   defdelegate get_with_widgets(panel_id), to: PanelModel
   defdelegate update(panel, data), to: PanelModel
 
@@ -45,7 +44,6 @@ defmodule AcqdatApi.DashboardManagement.Panel do
 
     verify_panel(PanelModel.create(panel_params))
   end
-
 
   @doc """
   For panel duplication, if the received request contains value for parent-id, then the target is going to be subpanel which comes under the received parent-id.
@@ -85,7 +83,6 @@ defmodule AcqdatApi.DashboardManagement.Panel do
     end
   end
 
-
   defp verify_panel({:ok, panel}) do
     {:ok, panel}
   end
@@ -108,19 +105,18 @@ defmodule AcqdatApi.DashboardManagement.Panel do
          },
          %{icon: icon, name: name, target_dashboard_id: dashboard_id}
        ) do
-
-      %{
-        dashboard_id: dashboard_id,
-        description: description,
-        filter_metadata:
-          (filter_metadata && Map.from_struct(filter_metadata)) ||
-            %{from_date: from_date, to_date: DateTime.to_unix(DateTime.utc_now(), :millisecond)},
-        icon: icon,
-        name: name,
-        org_id: org_id,
-        settings: settings,
-        widget_layouts: widget_layouts
-      }
+    %{
+      dashboard_id: dashboard_id,
+      description: description,
+      filter_metadata:
+        (filter_metadata && Map.from_struct(filter_metadata)) ||
+          %{from_date: from_date, to_date: DateTime.to_unix(DateTime.utc_now(), :millisecond)},
+      icon: icon,
+      name: name,
+      org_id: org_id,
+      settings: settings,
+      widget_layouts: widget_layouts
+    }
   end
 
   defp create_subpanel_params(
@@ -256,5 +252,4 @@ defmodule AcqdatApi.DashboardManagement.Panel do
   defp verify_error_changeset({:error, changeset}) do
     {:error, %{error: extract_changeset_error(changeset)}}
   end
-
 end

@@ -3,6 +3,9 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelControllerTest do
   use AcqdatApiWeb.ConnCase
   use AcqdatCore.DataCase
   import AcqdatCore.Support.Factory
+  alias AcqdatCore.DashboardManagement.Schema.WidgetInstance
+  import Ecto.Query
+  alias AcqdatCore.Repo
 
   describe "show/2" do
     setup :setup_conn
@@ -516,28 +519,32 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelControllerTest do
              }
     end
 
-    test "widget_instance creation", %{conn: conn} do
+    test "widget_instance creation", %{conn: conn, panel: panel} do
       widget_instance = insert(:widget_instance)
-      dashboard = insert(:dashboard)
-      org = insert(:organisation)
+      # dashboard = insert(:dashboard)
+      # org = insert(:organisation)
 
       data = %{
         name: "panel1",
         icon: "home",
         panel_id: widget_instance.panel_id,
-        target_dashboard_id: dashboard.id
+        target_dashboard_id: panel.dashboard_id
       }
 
       conn =
         post(
           conn,
-          Routes.panel_path(conn, :duplicate_panels, org.id, dashboard.id),
+          Routes.panel_path(conn, :duplicate_panels, panel.org_id, panel.dashboard_id),
           data
         )
 
       response = conn |> json_response(200)
       assert Map.has_key?(response, "name")
       assert Map.has_key?(response, "id")
+      new_id = response["id"]
+      query = from(s in WidgetInstance, where: s.panel_id == ^new_id)
+      db_resp = Repo.all(query)
+      assert length(db_resp) == 1
     end
   end
 end
