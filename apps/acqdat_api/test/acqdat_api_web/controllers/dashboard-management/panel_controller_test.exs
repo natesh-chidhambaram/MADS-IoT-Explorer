@@ -515,5 +515,28 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelControllerTest do
                "title" => "Insufficient or not unique parameters"
              }
     end
+
+    test "widget_instance creation", %{conn: conn} do
+      widget_instance = insert(:widget_instance)
+      dashboard = insert(:dashboard)
+      org = insert(:organisation)
+      data = %{
+        name: "panel1",
+        icon: "home",
+        panel_id: widget_instance.panel_id,
+        target_dashboard_id: dashboard.id
+      }
+
+      conn =
+        post(
+          conn,
+          Routes.panel_path(conn, :duplicate_panels, org.id, dashboard.id),
+          data
+        )
+
+        response = conn |> json_response(200)
+        assert Map.has_key?(response, "name")
+        assert Map.has_key?(response, "id")
+    end
   end
 end
