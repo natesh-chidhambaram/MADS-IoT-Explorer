@@ -520,6 +520,7 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelControllerTest do
       widget_instance = insert(:widget_instance)
       dashboard = insert(:dashboard)
       org = insert(:organisation)
+
       data = %{
         name: "panel1",
         icon: "home",
@@ -534,9 +535,9 @@ defmodule AcqdatApiWeb.DashboardManagement.PanelControllerTest do
           data
         )
 
-        response = conn |> json_response(200)
-        assert Map.has_key?(response, "name")
-        assert Map.has_key?(response, "id")
+      response = conn |> json_response(200)
+      assert Map.has_key?(response, "name")
+      assert Map.has_key?(response, "id")
     end
   end
 end
